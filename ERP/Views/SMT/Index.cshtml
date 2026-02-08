@@ -1,0 +1,127 @@
+﻿﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = " بار کد اسکن شده لیست SMT";
+    var selectedCityId = ViewBag.SelectedCityId as int?;
+}
+
+
+<div class="container-fluid mt-4" dir="rtl">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header  text-white text-center py-4" style="background-color: #11fff0">
+            <h3 class="mb-0">
+                <i class="bi bi-box-seam-fill me-3"></i>
+                بار کد اسکن شده لیست SMT
+            </h3>
+        </div>
+
+        <div class="card-body p-4">
+
+            <!-- فیلترها و دکمه ایجاد -->
+            <div class="row mb-4 g-3 align-items-end">
+               
+
+                <div class="col-lg-4 col-md-4">
+                    <label class="form-label fw-bold text-secondary">جستجوی آزاد</label>
+                    <input type="text" id="searchInput" class="form-control form-control-lg"
+                        
+                           value="@Context.Request.Query["search"]" />
+                </div>
+           
+            </div>
+
+            <div class="k-rtl" style="overflow-x:auto;width:100%;">
+            <!-- Telerik Grid -->
+                @(
+                        Html.Kendo().Grid<ERP.ViewModels.SMT.SMTViewModel>()
+                                .Name("gridSMTPs")
+                                .Columns(columns =>
+                                {
+
+
+                                    columns.Bound(c => c.DateCreate).Title("تاریخ ثبت").Width(150)
+                                    .ClientTemplate("<strong class='text-primary'>#= DateCreate #</strong>");
+
+                                    columns.Bound(c => c.DailyScanCount).Title("تعداد اسکن شده").Width(160)
+                            .ClientTemplate("<strong class='text-primary'>#= DailyScanCount #</strong>");
+
+                            columns.Command(command =>
+                            {
+                                command.Custom("SMT")
+                            .Text("<i class='fa fa-barcode'></i>")
+                            .Click("CreateSMT")
+                            .HtmlAttributes(new { @class = "btn btn-success ", style = "background-color: #11fff0 ; border-color: #ffc107;", title = "نمایش SMT" });
+
+                            }).Title("عملیات  SMT ").Width(180);
+
+                          
+
+                          
+                        })
+                        .Pageable(p => p
+                        .PageSizes(new[] { 10, 20, 50, 100 })
+                        .Refresh(true)
+                        .ButtonCount(5)
+                        .Messages(m => m
+                        .Display("نمایش {0} - {1} از {2} سفارش")
+                        .Empty("هیچ سفارشی یافت نشد")))
+                        .Sortable()
+                        .Filterable(f => f
+                        .Extra(false)
+                        .Messages(m => m.Info("فیلتر اعمال شده:")))
+                        .Scrollable(s => s.Height("auto"))
+                        .Resizable(r => r.Columns(true))
+                        .Reorderable(r => r.Columns(true))
+                        .NoRecords()
+                        .DataSource(ds => ds
+                        .Ajax()
+                        .PageSize(20)
+                        .ServerOperation(true)
+                        .Read(read => read
+                        .Action("SMT_Read", "SMT")
+                        .Data("getFilterData"))
+                        .Model(m => m.Id(p => p.Id))
+                        )
+                        )
+        </div>
+        </div>
+    </div>
+</div>
+@section styles
+{
+    <link href="~/sweetalert2 new/css.css" rel="stylesheet" />
+}
+@section Scripts {
+
+    <script src="~/sweetalert2 new/js.js"></script>
+    <script>
+        function getFilterData() {
+            return {
+             
+                search: $("#searchInput").val().trim() || null
+            };
+        }
+
+        function applyFilters() {
+            $("#gridSMTPs").data("kendoGrid").dataSource.read();
+        }  let DateCreate = $("#DateCreate").val();
+
+                function CreateSMT(e) {
+            e.preventDefault();
+            const tr = $(e.currentTarget).closest("tr");
+        const dataItem = $("#gridSMTPs").data("kendoGrid").dataItem(tr);
+                    const persianDateString = dataItem.DateCreate; // رشته شمسی مثل "۱۴۰۴/۱۰/۲۹"
+
+            window.location.href = '@Url.Action("Create", "SMT")?DateCreate=' + persianDateString;
+        }
+
+
+        $(document).ready(function () {
+            
+            $("#searchInput").on("keypress", function (e) {
+                if (e.key === "Enter") {
+                    applyFilters();
+                }
+            });
+        });
+    </script>
+}

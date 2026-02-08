@@ -1,0 +1,59 @@
+﻿@model IEnumerable<ERP.Models.WorkflowSection>
+
+@{
+    ViewData["Title"] = "مدیریت بخش‌ها";
+}
+
+<h2>لیست بخش‌ها</h2>
+
+<p>
+    <a asp-action="CreateSection">ایجاد بخش جدید</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.WorkflowSectionID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProcessName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SectionCode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SectionName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OrderIndex)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WorkflowSectionID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProcessName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SectionCode)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SectionName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OrderIndex)
+                </td>
+                <td>
+                    <a asp-action="EditSection" asp-route-id="@item.WorkflowSectionID">ویرایش</a> |
+                    <a asp-action="DeleteSection" asp-route-id="@item.WorkflowSectionID">حذف</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

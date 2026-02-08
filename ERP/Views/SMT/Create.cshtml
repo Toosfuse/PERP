@@ -1,0 +1,142 @@
+﻿@model ERP.ViewModels.SMT.SMTViewModel
+@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "اسکن نیم‌پلت";
+    Layout = "_EmptyLayout";
+}
+@using ERP.ViewModels
+
+<div class="container mt-5" dir="rtl">
+@Html.AntiForgeryToken()
+
+    <!-- ظرف نمایش پیام‌های موفقیت و خطا -->
+    <div id="alertContainer" class="mb-4"></div>
+
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">اسکن SMT اتوماتیک</h3>
+
+        </div>
+        <div class="card-body">
+
+
+
+
+
+            <div class="mb-4 text-center">
+                <label class="form-label fs-4 fw-bold">اسکن بارکد smt</label>
+                <input type="text" id="DataInput" class="form-control form-control-lg text-center fs-3"
+                       autofocus autocomplete="off" placeholder="بارکدخوان را اسکن کنید..."  @(ViewBag.InputDisable == true ? "disabled" : "")/>
+            </div>
+
+
+
+            <div class="k-rtl" style="overflow-x:auto;width:100%;">
+
+                @(
+                                Html.Kendo().Grid<dynamic>()
+                                .Name("guestentrygrid")
+                                .Columns(columns =>
+                                {
+                                    columns.Bound("DataValue").Title("داده").Width(130).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+                                    columns.Bound("DateCreate").Title("تاریخ ثبت").Width(130).ClientTemplate(
+                                    "<strong class='text-primary'>#= DateCreate #</strong>" +
+                                    "<input type='hidden' class='original-date' value='#= kendo.toString(kendo.parseDate(DateCreate), 'yyyy-MM-dd') #'>"
+                                    ); ;
+
+                                })
+                                .ToolBar(toolbar =>
+                                {
+                                    toolbar.Search();
+                                })
+                                .Sortable()
+                                .Filterable()
+                                .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new int[] { 20 }))
+                                .DataSource(b => b
+                                .Ajax().Read(read => read.Data("kendoDataBinding").Action("SMT_ReadData", "SMT"))
+                                )
+                                )
+            </div>
+            </>
+        </div>
+    </div>
+    <input type="hidden" id="Id" value="@Model.Id" />
+    <input type="hidden" id="DataValue" value="@Model.DataValue" />
+    <input type="hidden" id="DateCreate" value="@Model.DateCreate" />
+@section Scripts {
+
+
+        <script>
+                    function DateCreate(i) {
+                                $("#DateCreate").val(i);
+                        $("#guestentrygrid").data("kendoGrid").dataSource.read();
+                    }
+                    function kendoDataBinding() {
+                                        var DateCreate = $("#DateCreate").val();
+                                        return { DateCreate: DateCreate }
+                    }
+
+
+                function showAlert(message, type = 'danger') {
+                    const alertHtml = `
+                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                            ${message}
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>`;
+                    $("#alertContainer").html(alertHtml);
+                    setTimeout(() => $("#alertContainer .alert").alert('close'), 6000);
+                }
+
+                // فوکوس اولیه
+                $("#DataInput").focus();
+                $("#DataInput").on("keypress", function (e) {
+                    if (e.which === 13) {
+                        e.preventDefault();
+                    let DataValue = $("#DataInput").val().trim();
+                    if (!DataValue) {
+                            showAlert('لطفاً بارکد را اسکن کنید.', 'warning');
+                            $(this).val('').focus();
+                            return; // خروج از تابع اگر خالی بود
+                        }
+
+                        // اگر Data معتبر بود، اجرای AJAX
+                        $.ajax({
+                            url: '@Url.Action("RegisterSMT", "SMT")',
+                            type: 'POST',
+                            data: {
+                    DataValue: DataValue // ارسال مقدار DataValue
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    var grid = $("#guestentrygrid").data("kendoGrid");
+                                    var dataSource = grid.dataSource;
+                                    var newRecord = {
+
+                                DataValue: res.DataValue,
+                                        DateCreate: res.DateCreate
+                                    };
+                                    dataSource.insert(0, newRecord);
+                                                dataSource.read();
+
+
+                                } else {
+                                    showAlert(res.message, 'danger');
+                                }
+                            },
+                            error: function () {
+                                showAlert('ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.', 'danger');
+                            },
+                            complete: function () {
+                                $("#DataInput").val('').focus(); // تغییر از serialInput به DataInput
+                            }
+                        });
+                    }
+                });
+
+
+
+        </script>
+
+}

@@ -1,0 +1,40 @@
+﻿@media print {
+    /* مخفی کردن همه عناصر به جز جدول‌های قابل چاپ */
+    body * {
+        visibility: hidden;
+    }
+
+    .printable-table, .printable-table * {
+        visibility: visible;
+    }
+
+    /* تنظیم موقعیت و عرض جدول */
+    .printable-table {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        font-size: 12px;
+        border-collapse: collapse !important;
+    }
+
+    /* جلوگیری از شکستن ردیف‌ها و سلول‌ها در هنگام پرینت */
+    table, tr, thead, tbody, th, td {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important; /* برای مرورگرهای جدید */
+        -webkit-print-color-adjust: exact; /* رنگ دقیق‌تر در پرینت */
+    }
+
+    /* رفع محدودیت overflow جداول ریسپانسیو */
+    .table-responsive-md {
+        overflow: visible !important;
+        display: block !important;
+        max-height: none !important;
+    }
+
+    /* حذف overflow و محدودیت ارتفاع div‌های حاوی جدول */
+    .tile-body .row {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}

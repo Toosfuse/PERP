@@ -1,0 +1,100 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-file-text" style="margin-left:10px;color:red"></i>رزومه های ارسالی</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+<div id="chart2"></div>
+@section scripts {
+    <script src="~/Highcharts-9.0.1/highcharts.js"></script>
+    <script type="text/javascript">
+        $.ajax({
+            url: '/Reports/Data_EmploymentCount',
+            type: 'GET',
+            async: true,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                visitorData(response);
+            }
+        });
+        function visitorData(a) {
+            Highcharts.chart('chart2', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'گزارش تعداد رزومه های ارسالی'
+                },
+                xAxis: {
+                    type: 'category',
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '13px',
+                        }
+                    },
+                    reversed: true
+                },
+                credits: {
+                    enabled: false
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'تعداد'
+                    },
+                    allowDecimals: false,
+                },
+                legend: {
+                    enabled: false
+                },
+                tooltip: {
+                    pointFormat: '<b>{point.y:.f}</b>'
+                },
+                plotOptions: {
+                    column: {
+                        // pointPadding: 10,
+                        // borderWidth: 0
+                         cursor: 'pointer',
+                         point: {
+                   		events: {
+                        	click: function () {
+                            	 window.location = '/Home/Index/'+ this.name +'';
+                        			   }
+                    			}
+                		}
+                    },
+                },
+                series: [{
+                    name: 'Population',
+                    data: a,
+                    // colors: [
+                    //     '#9b20d9', '#9215ac', '#861ec9', '#7a17e6', '#7010f9', '#691af3',
+                    //     '#6225ed', '#5b30e7', '#533be1', '#4c46db', '#4551d5', '#3e5ccf',
+                    //     '#3667c9', '#2f72c3', '#277dbd', '#1f88b7', '#1693b1', '#0a9eaa',
+                    //     '#03c69b', '#00f194'
+                    // ],
+                    colorByPoint: true,
+                    groupPadding: 0,
+                    dataLabels: {
+                        enabled: true,
+                        rotation: 0,
+                        color: '#FFFFFF',
+                        align: 'top',
+                        format: '{point.y:.f}', // one decimal
+                        y: 0, // 10 pixels down from the top
+                        style: {
+                            fontSize: '13px',
+                            fontFamily: 'shabnam'
+                        }
+                    }
+                }]
+            });
+        }
+    </script>
+}

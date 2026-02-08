@@ -1,0 +1,282 @@
+﻿@using Kendo.Mvc.UI
+@model ERP.Models.WorkReport
+
+@section styles
+{
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/tagsinput/bootstrap-tagsinput.css" rel="stylesheet" />
+}
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-book" style="margin-left:10px;color:red"></i>ویرایش گزارش  کار</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+<style>
+    .asd {
+        margin-right: 10px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile" style="margin-top:10px">
+            <div class="tile-body">
+                @using (Html.BeginForm("Edit", "WorkReports", FormMethod.Post, new { enctype = "multipart/form-data", id = "form" }))
+                {
+                    <input type="hidden" value="@Model.GuidFile" name="GuidFile" />
+                    <input type="hidden" value="@Model.GuidFile" name="guid" id="guid" />
+
+                    @Html.HiddenFor(m => m.UserID)
+                    @Html.HiddenFor(m => m.CreateON)
+                    @Html.HiddenFor(m => m.WorkReportID)
+
+                    <div class="tile-body">
+                        <div class="row" style="margin-right:0 !important;">
+                            <div class="form-group col-md-2">
+                                <label class="control-label">تاریخ:</label>
+                                <input name="DateWorkReport" required="" autocomplete="off" value="@Model.DateWorkReport" data-parsley-required-message="لطفا تاریخ را وارد نمایید." data-jdp class="form-control" />
+                                <span asp-validation-for="DateWorkReport" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">ساعت شروع:</label>
+                                <input name="StartTime" autocomplete="off" value="@Model.StartTime" data-jdp data-jdp-only-time class="form-control" />
+                                <span asp-validation-for="StartTime" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">ساعت پایان:</label>
+                                <input name="FinishTime" autocomplete="off" value="@Model.FinishTime" data-jdp data-jdp-only-time class="form-control" />
+                                <span asp-validation-for="FinishTime" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label class="control-label">تایم صرف شده (ساعت , دقیقه)</label>
+                                <input name="TimeHours" autocomplete="off" value="@Model.TimeHours" class="form-control" />
+                                <span asp-validation-for="TimeHours" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tile-body">
+                        <div class="row" style="margin-right:0 !important;">
+                            <div class="form-group col-md-3">
+                                <label class="control-label">افراد</label>
+                                <input name="Member" autocomplete="off" value="@Model.Member" id="tags" class="form-control" />
+                                <span style="color:red">افراد را با =  از یکدیگر جدا نمایید</span>
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label class="control-label">افزودن فایل پیوست</label>
+                                <div class="k-rtl" style="margin-right:5px">
+                                    <div class="demo-section">
+                                        @(
+                                            Html.Kendo().Upload()
+                                            .Name("files")
+                                            .HtmlAttributes(new { aria_label = "files" })
+                                            .Multiple(true)
+                                            .Async(a => a
+                                            .Save("Async_Save", "FileUpload")
+                                            .Remove("Async_Remove", "FileUpload")
+                                            .AutoUpload(true)
+                                            )
+                                            .Validation(validation =>
+                                            {
+                                                validation.MaxFileSize(10000000);//10 Mg
+                                                validation.AllowedExtensions(new string[] { ".jpg", ".png", ".pdf", ".rar", ".zip", ".docx", ".doc", ".xlsx", ".xls" });
+                                            })
+                                            .Events(events => events
+                                            .Upload("onUpload")
+                                            .Remove("onRemove")
+                                            )
+                                            )
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-md-5">
+                                <table class="table table-bordered HideTable" id="ali">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">نام فایل ها </th>
+                                            <th scope="col">عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableFile">
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="tile-body">
+                        <div class="row" style="margin-right:0 !important;">
+                            <div class="form-group col-md-12">
+                                <textarea class="form-control cke_rtl" id="Description" data-parsley-errors-container="#text-errors" name="Description" required="" data-parsley-required-message="لطفا متن را وارد نمایید.">@Model.Description</textarea>
+                                <div id="text-errors"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="submit" value="ثبت" class="btn btn-primary" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <a href="javascript:void(0)" onclick="goBackAndRefresh()" class="btn btn-outline-primary btn-lg">
+        <i class="fa fa-arrow-right "></i> بازگشت
+    </a>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/wordifyfa/wordifyfa.js"></script>
+    <script src="~/sweetalert2/sweetalert2.js"></script>
+    <script src="~/ckeditor/ckeditor.js"></script>
+    <script src="~/ckeditor/adapters/jquery.js"></script>
+    <script src="~/tagsinput/bootstrap-tagsinput.js"></script>
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>
+    <script>
+        function D(id) {
+            var i = id;
+            swal({
+                title: "هشدار",
+                text: "آیا از حذف مطمین هستید؟",
+                type: "error",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "بله",
+                cancelButtonText: "خیر"
+            }
+            ).then(
+                function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/FileUpload/Async_RemovebyID",
+                            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                            data: { id: i },
+                            success: function (r) {
+                                if (r.status === 'OK') {
+                                    swal({
+                                        title: "",
+                                        text: "با موفقیت انجام شد",
+                                        type: "success",
+                                        confirmButtonText: "اوکی",
+                                    }).then(function () {
+                                        setTimeout(function () {
+                                            location.reload();
+                                        }, 500);
+                                    });
+                                }
+                            },
+                            failure: function (response) {
+                                alert(response.responseText);
+                            },
+                            error: function (response) {
+                                alert(response.responseText);
+                            }
+                        });
+                    }
+                },
+                function () {
+                }
+            );
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            var i = @Model.WorkReportID
+            $.ajax({
+                type: "POST",
+                url: "/WorkReports/DownloadFile",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { id: i },
+                success: function (r) {
+                    if (r.status === 'OK') {
+                        $('#tableFile').empty();
+                        for (var i = 0; i < r.data.length; i++) {
+                                var markup = "<tr><td scope='col'>" + r.data[i].Name + "" + r.data[i].Extension + "</td><td scope='col'><a class='fa fa-download asd' href='/FileUpload/DownloadFileDatabase/" + r.data[i].FileID + "'></a><a class='fa fa-trash-o asd' onclick='D(" + r.data[i].FileID + ")'></a></td></tr></tbody>";
+                            $("#tableFile").append(markup);
+                        }
+                        var myDomElement = document.getElementById("ali");
+                        $("#ali").removeClass("HideTable").addClass("ShowTable");
+                    }
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            })
+        });
+    </script>
+    <script>
+        function onUpload(e) {
+            e.data = {
+                guid: $("#guid").val()
+            };
+        }
+        function onRemove(e) {
+            e.data = {
+                guid: $("#guid").val()
+            };
+        }
+    </script>
+    <script>
+        CKEDITOR.replace('Description', {
+            contentsLangDirection: 'rtl'
+        });
+        CKEDITOR.on('instanceReady', function () {
+            $('#Description').attr('required', '');
+            $.each(CKEDITOR.instances, function (instance) {
+                CKEDITOR.instances[instance].on("change", function (e) {
+                    for (instance in CKEDITOR.instances) {
+                        CKEDITOR.instances[instance].updateElement();
+                        $('form').parsley().validate();
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $("#tags").tagsinput({
+            confirmKeys: [61],
+            cancelConfirmKeysOnEmpty: false
+        });
+
+        $('#tags input').on('keypress',
+            function (e) {
+                if (e.keyCode == 61) {
+                    e.preventDefault();
+                };
+            });
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            $('#form').parsley().on('field:validated', function () {
+                var ok = $('.parsley-error').length === 0;
+                $('.bs-callout-info').toggleClass('hidden', !ok);
+                $('.bs-callout-warning').toggleClass('hidden', ok);
+            })
+                .on('form:submit', function () {
+                    return true;
+                });
+        });
+    </script>
+
+}
+
+
+

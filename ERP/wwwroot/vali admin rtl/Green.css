@@ -1,0 +1,42 @@
+﻿/* Theme: Green Mint */
+:root {
+    --primary: #009688; /* نزدیک به حالت فعلی اما می‌تونی تغییر بدی */
+    --secondary: #4f6367;
+    --success: #2ecc71;
+    --dark: #1b2b2b;
+    --light: #f0fbfa;
+    --white: #ffffff;
+}
+
+/* هدر و سایدبار */
+.app-header {
+    background-color: var(--primary) !important;
+}
+
+.app-header__logo {
+    background-color: #00796b !important;
+}
+
+.app-sidebar {
+    background-color: #0e2a28 !important;
+    color: var(--white) !important;
+}
+
+/* المان‌ها */
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.messanger .messages .message.me .info {
+    background-color: var(--primary) !important;
+}
+
+/* input focus */
+.form-control:focus {
+    border-color: var(--primary) !important;
+    box-shadow: none !important;
+}
+::-webkit-scrollbar {
+    width: 8px;
+}

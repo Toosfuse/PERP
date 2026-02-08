@@ -1,0 +1,351 @@
+﻿@model ERP.ViewModels.AssestViewModel.AssetViewModel
+@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "ثبت و مدیریت اموال";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+    <link href="~/SweetAlert2 New/CSS.css" rel="stylesheet" />
+
+    <style>
+        body {
+            direction: rtl;
+            background: #f4f6f9;
+            font-family: Tahoma, sans-serif;
+        }
+
+        .card {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,.08);
+        }
+
+        .card-header {
+            font-weight: bold;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-content {
+            border-radius: 18px;
+            border: none;
+            box-shadow: 0 25px 60px rgba(0,0,0,.15);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg,#4e73df,#224abe);
+            color: #fff;
+            border-radius: 18px 18px 0 0;
+        }
+
+        .modal-title i {
+            background: rgba(255,255,255,.2);
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        .form-control, .select2-container--default .select2-selection--single {
+            border-radius: 12px;
+            height: 44px;
+        }
+
+        .property-inputs {
+            background: #f8f9fc;
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .table {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+            .table thead {
+                background: #edf2ff;
+            }
+
+        .btn {
+            border-radius: 12px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg,#1cc88a,#17a673);
+            color: #fff;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg,#4e73df,#224abe);
+            color: #fff;
+        }
+
+        .custom-switch .custom-control-label::before {
+            height: 22px;
+            width: 40px;
+            border-radius: 20px;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 44px;
+            border-radius: 12px;
+        }
+    </style>
+}
+
+<div class="container-fluid mt-4">
+    @Html.AntiForgeryToken()
+    <div class="card shadow">
+        <div class="card-header text-center py-3">
+            <h3>ثبت و مدیریت اموال</h3>
+        </div>
+        <div class="card-body bg-light p-4">
+            <div id="alertContainer" class="mb-4"></div>
+
+            @(Html.Kendo().Grid<ERP.ViewModels.AssestViewModel.AssetViewModel>()
+                        .Name("assetGrid")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(c => c.AssetName).Title("نام اموال");
+                            columns.Bound(c => c.AssetName).Title("مالک");
+                            columns.Bound(c => c.CategoryTitle).Title("دسته");
+                            columns.Bound(c => c.CreatedAt).Title("تاریخ ثبت").Format("{0:yyyy/MM/dd}").Width(140);
+                            columns.Command(cmd => cmd.Destroy().Text("حذف").HtmlAttributes(new { @class = "btn btn-sm btn-danger" })).Title("عملیات").Width(120);
+                        })
+                        .ToolBar(toolbar =>
+                        {
+                            toolbar.Custom().Text("➕ ثبت اموال جدید").Name("newAsset").HtmlAttributes(new { @class = "btn btn-success" });
+                            toolbar.Search();
+                        })
+                        .Sortable()
+                        .Filterable()
+                        .Pageable(p => p.PageSizes(new[] { 10, 20, 50 }))
+                        .Scrollable(s => s.Height(480))
+                        .DataSource(ds => ds
+                        .Ajax()
+                        .PageSize(20)
+                        .Read(r => r.Action("Assets_Read", "Assest"))
+                        .Create(c => c.Action("Assets_Create", "Assest").Data("antiForgery"))
+                        .Update(u => u.Action("Assets_Update", "Assest").Data("antiForgery"))
+                        .Destroy(d => d.Action("Assets_Destroy", "Assest").Data("antiForgery"))
+                        .Model(m => { m.Id(f => f.Id); m.Field(f => f.Id).Editable(false); })
+                        )
+                        )
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal fade" id="assetModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-box-open ml-2"></i> ثبت / ویرایش اموال
+                </h5>
+                <button class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="assetForm">
+                    <input type="hidden" id="assetId" name="Id" />
+
+                    <!-- اطلاعات اصلی -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">اطلاعات اصلی</div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>کد اموال</label>
+                                    <input type="text" class="form-control" id="assetCode" name="AssetCode" required />
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>نام اموال</label>
+                                    <input type="text" class="form-control" id="assetName" name="AssetName" required />
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>دسته‌بندی</label>
+                                    <select class="form-control select2" id="categoryId" name="CategoryId" required></select>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>مالک</label>
+                                    <select class="form-control select2" id="lastOwnerUserId" name="LastOwnerUserId"></select>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-center pt-4">
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="isActive" name="IsActive" checked>
+                                        <label class="custom-control-label" for="isActive">فعال</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- مشخصات فنی -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">مشخصات فنی</div>
+                        <div class="card-body">
+                            <div class="row property-inputs">
+                                <div class="col-md-6 mb-2"><input id="propertyName" class="form-control" placeholder="نام ویژگی"></div>
+                                <div class="col-md-6 mb-2"><input id="propertyValue" class="form-control" placeholder="مقدار"></div>
+                                <div class="col-md-4 mb-2"><input id="propertySerial" class="form-control" placeholder="سریال"></div>
+                                <div class="col-md-4 mb-2"><input id="propertyModel" class="form-control" placeholder="مدل"></div>
+                                <div class="col-md-4 mb-2"><input id="propertyBrand" class="form-control" placeholder="برند"></div>
+                            </div>
+                            <button type="button" id="addPropertyBtn" class="btn btn-add mb-3">➕ افزودن مشخصه</button>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center">
+                                    <thead>
+                                        <tr>
+                                            <th>ویژگی</th>
+                                            <th>مقدار</th>
+                                            <th>سریال</th>
+                                            <th>مدل</th>
+                                            <th>برند</th>
+                                            <th>عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="propertiesTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="propertiesData" name="Properties" />
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">انصراف</button>
+                <button id="saveAssetBtn" class="btn btn-save">💾 ذخیره</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/select 2/select 2.js"></script>
+    <script src="~/SweetAlert2 New/JS.js"></script>
+
+    <script>
+        function antiForgery() {
+            return { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() };
+        }
+
+        let grid;
+        let propertiesData = [];
+
+        $(document).ready(function(){
+
+            $('.select2').select2({dir:'rtl', width:'100%'});
+
+            grid = $("#assetGrid").data("kendoGrid");
+
+            // Load Categories
+            $.get("@Url.Action("GetCategories", "Assest")", function(data){
+                let options='<option value="">انتخاب کنید</option>';
+                data.forEach(i=>{ options+=`<option value="${i.id}">${i.name}</option>`; });
+                $('#categoryId').html(options);
+            });
+
+            // Load Users
+            $.get("@Url.Action("GetAssetUsers", "Assest")", function(data){
+                let options='<option value="">انتخاب کنید</option>';
+                data.forEach(i=>{ options+=`<option value="${i.id}">${i.name}</option>`; });
+                $('#lastOwnerUserId').html(options);
+            });
+
+            // Grid events
+            grid.dataSource.bind("requestEnd", function(e){
+                if(e.type==="create"||e.type==="update"){
+                    Swal.fire({icon:'success',title:'عملیات موفق',toast:true,position:'top-end',timer:2000,showConfirmButton:false});
+                    $("#assetModal").modal("hide");
+                }
+                if(e.type==="destroy"){
+                    Swal.fire({icon:'info',title:'حذف موفق',toast:true,position:'top-end',timer:2000,showConfirmButton:false});
+                }
+            });
+
+            // New Asset
+            $(document).on("click",".k-grid-newAsset",function(e){
+                e.preventDefault(); resetModal(); $("#modalTitle").text("ثبت اموال جدید");
+                $("#assetModal").modal("show");
+            });
+
+            // Add Property
+            $("#addPropertyBtn").click(function(){
+                const name=$("#propertyName").val().trim();
+                const value=$("#propertyValue").val().trim();
+                if(!name||!value){ Swal.fire({icon:'warning',title:'نام و مقدار الزامی'}); return; }
+
+                const prop={
+                    id:Date.now(),
+                    name:name,
+                    value:value,
+                    serial:$("#propertySerial").val().trim()||'-',
+                    model:$("#propertyModel").val().trim()||'-',
+                    brand:$("#propertyBrand").val().trim()||'-'
+                };
+                propertiesData.push(prop);
+                addPropertyRow(prop);
+                $("#propertyName,#propertyValue,#propertySerial,#propertyModel,#propertyBrand").val('');
+            });
+
+            function addPropertyRow(prop){
+                const row=`<tr data-id="${prop.id}">
+                    <td>${prop.name}</td>
+                    <td>${prop.value}</td>
+                    <td>${prop.serial}</td>
+                    <td>${prop.model}</td>
+                    <td>${prop.brand}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteProperty(${prop.id})">🗑</button></td>
+                </tr>`;
+                $("#propertiesTableBody").append(row);
+            }
+
+            window.deleteProperty=function(id){
+                Swal.fire({
+                    title:'مطمئن هستید؟',icon:'warning',showCancelButton:true,
+                    confirmButtonText:'بله',cancelButtonText:'خیر'
+                }).then((result)=>{
+                    if(result.isConfirmed){
+                        propertiesData = propertiesData.filter(p=>p.id!=id);
+                        $(`tr[data-id="${id}"]`).remove();
+                    }
+                });
+            };
+
+            // Save
+            $("#saveAssetBtn").click(function(){
+                if($("#assetForm")[0].checkValidity()){
+                    let formData=new FormData($("#assetForm")[0]);
+                    formData.append("Properties",JSON.stringify(propertiesData));
+                    let url = $("#assetId").val()? "@Url.Action("Assets_Update", "Assest")" : "@Url.Action("Assets_Create", "Assest")";
+                    $.ajax({
+                        url:url,type:"POST",data:formData,contentType:false,processData:false,
+                        success:function(res){
+                            if(res.success){ grid.dataSource.read(); }
+                            else{ Swal.fire({icon:'error',title:res.message}); }
+                        }
+                    });
+                }else{
+                    Swal.fire({icon:'warning',title:'فیلدهای الزامی را پر کنید'});
+                }
+            });
+
+        });
+
+        function resetModal(){
+            $("#assetForm")[0].reset();
+            propertiesData=[];
+            $("#propertiesTableBody").empty();
+        }
+    </script>
+}

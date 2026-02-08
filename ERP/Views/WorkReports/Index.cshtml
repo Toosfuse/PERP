@@ -1,0 +1,244 @@
+﻿@using ERP.ViewModels.WorkReport
+@using Kendo.Mvc.UI
+@using Moraba.Persian.Numbers
+
+<style>
+    .k-grid-toolbar {
+        direction: ltr;
+    }
+
+    .asd {
+        margin-right: 10px;
+    }
+</style>
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-book" style="margin-left:10px;color:red"></i>لیست گزارش  کار</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="k-rtl" style="overflow-x:auto;width:100%;">
+                @(
+                    Html.Kendo().Grid<IndexWorkReportVM>()
+                    .Name("WorkReportgrid")
+                    .Columns(col =>
+                    {
+                        col.Bound(c => c.Name).Title("فرد");
+                        col.Bound(c => c.CreateON).Title("تاریخ ایجاد");
+                        col.Bound(c => c.DateWorkReport).Title("تاریخ گزارش");
+                        col.Bound(c => c.Description)
+                        .Title("شرح")
+                        .ClientTemplate(
+                        "<a href='javascript:void(0);' onclick='showHtmlDescription(`#: kendo.htmlEncode(Description) #`, `#: Name #`,`#: DateWorkReport #`, this)' " +
+                        "class='btn btn-sm btn-outline-primary' title='نمایش شرح'>" +
+                        "<i class='fa fa-eye'></i> مشاهده</a>"
+                        );
+
+                        col.Bound("").Title("عملیات").ClientTemplate("<a class='fa fa-pencil-square-o asd' href='/WorkReports/Edit/#=WorkReportID#'></a><a class='fa fa-info-circle asd' href='/WorkReports/Details/#=WorkReportID#'></a><a class='fa fa-trash asd' id='delete' onclick='D(#=WorkReportID#)'></a><a class='fa fa-file-o asd' onclick='F(#=WorkReportID#)'></a>");
+                    })
+                    .ToolBar(toolbar =>
+                    {
+                        toolbar.Search();
+                    })
+                    .Sortable()
+                    .Filterable()
+                    .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new int[] { 5, 10, 20, 100}))
+                    .DataSource(b => b.Ajax()
+                    .Read("Data_WorkReport", "WorkReports"))
+                    )
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered HideTable" id="ali" ><thead><tr><th scope="col">نام فایل:</th><th scope="col">عملیات</th></tr></thead><tbody id="tableFile"></tbody></table>
+
+<div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="descriptionModalLabel">شرح گزارش</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="بستن">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="descriptionContent" style="white-space: pre-wrap;"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section styles
+{
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/tagsinput/bootstrap-tagsinput.css" rel="stylesheet" />
+    <style>
+        .HideTable {
+            display:none !important;
+        }
+        .ShowTable{
+            display: inline-table !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/wordifyfa/wordifyfa.js"></script>
+    <script src="~/sweetalert2/sweetalert2.js"></script>
+    <script src="~/ckeditor/ckeditor.js"></script>
+    <script src="~/ckeditor/adapters/jquery.js"></script>
+    <script src="~/tagsinput/bootstrap-tagsinput.js"></script>
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>        
+    <script>
+        function F(id) {
+            var i = id;
+            swal({
+                title: 'در حال بارگزاری',
+                allowEscapeKey: false,
+                allowOutsideClick: false,
+                timer: 2000,
+                onOpen: () => {
+                    swal.showLoading();
+                }
+            }).then(
+                $.ajax({
+                    type: "POST",
+                    url: "/WorkReports/DownloadFile",
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    data: { id: i },
+                    success: function (r) {
+                        if (r.status === 'OK') {
+                            $('#tableFile').empty();
+                            for (var i = 0; i < r.data.length; i++) {
+                                var markup = "<tr><td scope='col'>" + r.data[i].Name + "" + r.data[i].Extension + "</td><td scope='col'><a class='fa fa-download' href='/FileUpload/DownloadFileDatabase/" + r.data[i].FileID + "'></a></td></tr></tbody>";
+                                $("#tableFile").append(markup);
+                            }
+                            var myDomElement = document.getElementById("ali");
+                            $("#ali").removeClass("HideTable").addClass("ShowTable");
+                            swal({
+                                html: myDomElement
+                            })
+                        }
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        alert(response.responseText);
+                    }
+                })
+            )
+        }
+    </script>
+    <script>
+        function D(id) {
+            var i = id;
+            swal({
+                title: "هشدار",
+                text: "آیا از حذف مطمین هستید؟",
+                type: "error",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "بله",
+                cancelButtonText: "خیر"
+            }
+            ).then(
+                function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/WorkReports/Delete",
+                            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                            data: { id: i },
+                            success: function (r) {
+                                if (r.status === 'OK') {
+                                    swal({
+                                        title: "",
+                                        text: "با موفقیت انجام شد",
+                                        type: "success",
+                                        confirmButtonText: "اوکی",
+                                    }).then(function () {
+                                        setTimeout(function () {
+                                            location.reload();
+                                        }, 500);
+                                    });
+                                }
+                            },
+                            failure: function (response) {
+                                alert(response.responseText);
+                            },
+                            error: function (response) {
+                                alert(response.responseText);
+                            }
+                        });
+                    }
+                },
+                function () {
+                }
+            );
+        }
+    </script>
+    <script>
+        function showHtmlDescription(encodedHtml, name, date, el) {
+            var html = $("<div>").html(encodedHtml).text();
+            swal({
+                html: `
+                <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:10px;">
+                    شرح گزارش
+                    <span style="color:red;">${name}</span>
+                    در تاریخ
+                    <span style="color:red;">${date}</span>
+                </div>
+                <hr>
+                <div style="text-align:right; direction:rtl;">${html}</div>
+            `,
+                confirmButtonText: 'بستن',
+            })
+        }
+    </script>
+
+}
+<style>
+    .swal2-modal {
+        width: 700px !important;
+        max-width: 90%;
+        text-align: right;
+        direction: rtl;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+
+        .swal2-modal h2 {
+            font-size: 20px;
+            direction: rtl;
+        }
+
+        .swal2-modal p {
+            text-align: right;
+            direction: rtl;
+        }
+
+        .swal2-modal .swal2-confirm {
+            float: none !important;
+            margin: 20px auto 0 auto !important;
+            display: block !important;
+    }
+</style>

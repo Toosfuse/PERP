@@ -1,0 +1,46 @@
+﻿
+@using Kendo.Mvc.UI
+
+<style>
+    .k-grid-toolbar {
+        direction: ltr;
+    }
+</style>
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-paper-plane" style="margin-left:10px;color:red"></i>ارسال شده </h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="k-rtl" style="overflow-x:auto;width:100%;">
+
+                @(
+                    Html.Kendo().Grid<ViewProcess>()
+                    .Name("cartablegrid")
+                    .Columns(col =>
+                    {
+                        col.Bound(c => c.SenderID).Title("ارسال به");
+                        col.Bound(c => c.ReceiverID).Title("تاریخ ارسال");
+                        col.Bound(c => c.Type).Title("نوع");
+                        col.Bound(c => c.Title).Title("عنوان");
+                        col.Bound("").Title("عملیات").ClientTemplate("<button class='btn btn-primary btn-sm' type='button'><a href='/Home/VisitSendCartable/#=ViewProcessID#'>مشاهده</a></button>");
+                    })
+                    .ToolBar(toolbar =>
+                    {
+                        toolbar.Search();
+                    })
+                    .Sortable()
+                    .Filterable()
+                    .Pageable()
+                    .DataSource(b => b.Ajax().Read("Data_SendCartable", "Home"))
+                    )
+            </div>
+
+        </div>
+    </div>
+</div>

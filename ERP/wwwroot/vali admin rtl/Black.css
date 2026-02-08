@@ -1,0 +1,124 @@
+﻿/* Theme: Neon Purple */
+:root {
+    --primary: #7b2cbf; /* بنفش اصلی */
+    --secondary: #5a189a; /* بنفش تیره‌تر */
+    --accent: #00f5d4; /* آبی نئونی */
+    --dark: #1b1a2e;
+    --light: #2a2a40;
+    --white: #f8f9fa;
+}
+
+/* پس‌زمینه کلی */
+body {
+    background-color: var(--dark) !important;
+    color: var(--text) !important;
+}
+
+/* هدر و سایدبار */
+.app-header {
+    background: linear-gradient(90deg, var(--secondary), var(--primary)) !important;
+    color: var(--white) !important;
+}
+
+.app-header__logo {
+    background-color: var(--primary) !important;
+}
+
+.app-sidebar {
+    background: linear-gradient(180deg, #1d1b2a, #241e38) !important;
+    color: var(--white) !important;
+}
+
+/* لینک‌ها در سایدبار */
+.app-menu__item {
+    color: var(--white) !important;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+    .app-menu__item:hover {
+        background-color: var(--secondary) !important;
+        color: var(--accent) !important;
+    }
+
+    .app-menu__item.active {
+        background-color: var(--primary) !important;
+        color: #fff !important;
+    }
+
+/* کارت‌ها و محتوای داخلی */
+.app-content {
+    background-color: #211f30 !important;
+    border-top: 2px solid var(--primary);
+}
+
+.card {
+    background-color: var(--light) !important;
+    border: 1px solid #3a3a5a;
+    color: var(--white);
+}
+
+/* دکمه‌ها */
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #fff !important;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-primary:hover {
+        background-color: var(--accent) !important;
+        border-color: var(--accent) !important;
+        color: #000 !important;
+    }
+
+/* جداول */
+.table {
+    color: var(--text) !important;
+    background-color: var(--light) !important;
+    border-color: #3a3a5a !important;
+}
+
+    .table th {
+        background-color: var(--secondary) !important;
+        color: var(--white);
+    }
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #24243a !important;
+}
+
+/* فرم‌ها و ورودی‌ها */
+.form-control {
+    background-color: #2b2a3d !important;
+    border: 1px solid #423f60 !important;
+    color: var(--white) !important;
+}
+
+    .form-control:focus {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 5px var(--accent) !important;
+    }
+
+/* جزئیات نئونی */
+a {
+    color: var(--accent) !important;
+    text-decoration: none;
+}
+
+    a:hover {
+        color: var(--primary) !important;
+    }
+
+/* اسکرول‌بار زیبا */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary);
+    border-radius: 5px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+    }

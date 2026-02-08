@@ -1,0 +1,65 @@
+﻿@using ERP.Data
+@inject LookupService UsersLookup
+@inject ERPContext _Context
+
+@{
+    var users = UsersLookup.GetUsers();
+    var username = User.Identity.Name;
+    var userid = users.Where(p => p.UserName == username).Select(p => p.Id).SingleOrDefault();
+    string currentTheme = "Orange";
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP TFC</title>
+
+
+    <link href="~/vali empty/css/main.css" rel="stylesheet" />
+    <link href="~/vali admin rtl/@(currentTheme).css" rel="stylesheet" />
+    <link href="~/kendo/css/kendo.rtl.min.css" rel="stylesheet" />
+    @*     <link href="~/kendo/css/kendo.common-material.min.css" rel="stylesheet" /> *@
+    <link href="~/kendo/css/kendo.default-ocean-blue.min.css" rel="stylesheet" />
+    <link href="~/fonts/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+
+
+    @RenderSection("styles", required: false)
+
+</head>
+<body class="app sidebar-mini rtl">
+    <header class="app-header">
+        <a class="app-header__logo" href="/">Toos Fuse</a>
+    </header>
+    <script src="~/vali admin rtl/js/jquery-3.2.1.min.js"></script>
+    <script src="~/vali admin rtl/js/popper.min.js"></script>
+    <script src="~/vali admin rtl/js/bootstrap.min.js"></script>
+    <script src="~/kendo/js/kendo.all.min.js"></script>
+    <script src="~/kendo/js/kendo.aspnetmvc.min.js"></script>
+    <script src="~/kendo/js/kendo.web.min.js"></script>
+    <script src="~/kendo/js/kendo.messages.fa-ir.min.js"></script>
+    <script src="~/kendo/js/kendo.culture.fa-ir.min.js"></script>
+    <script>
+        function goBackAndRefresh() {
+            if (document.referrer) {
+                window.location.href = document.referrer;
+            } else {
+                window.history.back();
+            }
+        }
+    </script>
+    <main class="app-content">
+        @RenderBody()
+    </main>
+
+
+    @RenderSection("Cropper", false)
+
+    @RenderSection("Scripts", false)
+
+</body>
+</html>
+

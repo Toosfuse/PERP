@@ -1,0 +1,54 @@
+﻿@media print {
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    body {
+        background: white !important;
+        direction: rtl;
+        font-family: "Yekan", sans-serif;
+        margin: 0;
+    }
+
+    button, a {
+        display: none !important;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    th, td {
+        border: 1px solid #000;
+        padding: 6px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #F4B084 !important;
+        color: #000 !important;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .fw-bold {
+        font-weight: bold;
+        background-color: #fbe5d6 !important;
+        text-align: center;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    tfoot {
+        display: table-footer-group;
+    }
+
+    tr {
+        page-break-inside: avoid;
+    }
+}

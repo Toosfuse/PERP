@@ -1,0 +1,350 @@
+﻿@using Kendo.Mvc.UI
+@model ERP.Models.GuaranteeLetter
+
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-shopping-cart" style="margin-left:10px;color:red"></i> ضمانت نامه</h1>
+        @if (Model.GuaranteeLetterId == 0)
+        {
+            <span>جدید</span>
+        }
+        else
+        {
+            <span>ویرایش</span>
+        }
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+<style>
+    .asd {
+        margin-right: 10px;
+    }
+
+    .margintable {
+        margin-top: 28px;
+    }
+
+    .parsley-errors-list {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="tile-body">
+                <div class="container-fluid mt-12" dir="rtl">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-success text-white fw-bold text-center">
+                            ضمانت نامه‌ها
+                        </div>
+                        <div class="card-body">
+                            <form id="guaranteeForm" data-parsley-validate>
+                                @if (Model.GuaranteeLetterId != 0)
+                                {
+                                    <input type="hidden" asp-for="GuaranteeLetterId" />
+                                }
+                                <!-- ردیف اول -->
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label asp-for="DistributionCompanyName" class="form-label">نام شرکت توزیع</label>
+                                        <select class="form-control select2" asp-for="DistributionCompanyName" id="DistributionCompanyName" style="width: 100%;" required data-parsley-error-message="لطفاً نام شرکت توزیع را انتخاب کنید">
+                                            <option></option>
+                                            <option value="توزيع برق یزد">توزيع برق یزد</option>
+                                            <option value="توزيع برق کردستان">توزيع برق کردستان</option>
+                                            <option value="توزیع برق خوزستان">توزیع برق خوزستان</option>
+                                            <option value="توزيع برق مازندران">توزيع برق مازندران</option>
+                                            <option value="توزيع برق قم">توزيع برق قم</option>
+                                            <option value="توزيع برق شهرستان اصفهان">توزيع برق شهرستان اصفهان</option>
+                                            <option value="توزیع برق مرکزی">توزیع برق مرکزی</option>
+                                            <option value="توزيع برق شهرستان مشهد">توزيع برق شهرستان مشهد</option>
+                                            <option value="توزيع برق خراسان شمالی">توزيع برق خراسان شمالی</option>
+                                            <option value="توزيع برق خراسان جنوبی">توزيع برق خراسان جنوبی</option>
+                                            <option value="توزيع برق گیلان">توزيع برق گیلان</option>
+                                            <option value="توزیع برق فارس">توزیع برق فارس</option>
+                                            <option value="توزيع برق اصفهان">توزيع برق اصفهان</option>
+                                            <option value="توزيع برق آذربایجان شرقی">توزيع برق آذربایجان شرقی</option>
+                                            <option value="توزيع برق غرب مازندران">توزيع برق غرب مازندران</option>
+                                            <option value="توزیع برق همدان">توزیع برق همدان</option>
+                                            <option value="توزيع برق لرستان">توزيع برق لرستان</option>
+                                            <option value="توزيع برق بوشهر">توزيع برق بوشهر</option>
+                                            <option value="توزيع برق جنوب کرمان">توزيع برق جنوب کرمان</option>
+                                            <option value="توزیع برق کرمانشاه">توزیع برق کرمانشاه</option>
+                                            <option value="توزیع برق تبریز">توزیع برق تبریز</option>
+                                            <option value="توزيع برق تهران">توزيع برق تهران</option>
+                                            <option value="توزيع برق چهار محال و بختیاری">توزيع برق چهار محال و بختیاری</option>
+                                            <option value="توزيع برق شهرستان اهواز">توزيع برق شهرستان اهواز</option>
+                                            <option value="توزيع برق قزوین">توزيع برق قزوین</option>
+                                            <option value="توزيع برق کهکیلویه و بویر احمد">توزيع برق کهکیلویه و بویر احمد</option>
+                                            <option value="توزیع برق ایلام">توزیع برق ایلام</option>
+                                            <option value="توزیع برق سمنان">توزیع برق سمنان</option>
+                                            <option value="توزيع برق شیراز">توزيع برق شیراز</option>
+                                            <option value="توزيع برق خراسان رضوی">توزيع برق خراسان رضوی</option>
+                                            <option value="توزیع برق شمال کرمان">توزیع برق شمال کرمان</option>
+                                            <option value="توزيع برق زنجان">توزيع برق زنجان</option>
+                                            <option value="توزيع برق گلستان">توزيع برق گلستان</option>
+                                            <option value="توزيع برق هرمزگان">توزيع برق هرمزگان</option>
+                                            <option value="توزیع برق سیستان و بلوچستان">توزیع برق سیستان و بلوچستان</option>
+                                            <option value="توزيع برق آذربایجان غربی">توزيع برق آذربایجان غربی</option>
+                                            <option value="توزيع برق تهران بزرگ">توزيع برق تهران بزرگ</option>
+                                            <option value="توزيع برق اردبیل">توزيع برق اردبیل</option>
+                                            <option value="توزيع برق البرز">توزيع برق البرز</option>
+                                            <option value="فراب">فراب</option>
+                                            <option value="بورس کالا">بورس کالا</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="GuaranteeNumber">شماره ضمانت نامه:</label>
+                                        <input type="text" asp-for="GuaranteeNumber" id="GuaranteeNumber" class="form-control" placeholder="شماره ضمانت نامه" required data-parsley-error-message="لطفاً شماره ضمانت نامه را وارد کنید">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label asp-for="GuaranteeType" class="form-label">نوع ضمانتنامه</label>
+                                        <select class="form-control" asp-for="GuaranteeType" id="GuaranteeType" required data-parsley-error-message="لطفاً نوع ضمانت‌نامه را انتخاب کنید">
+                                            <option selected disabled>انتخاب کنید...</option>
+                                            <option value="شرکت در مناقصه">شرکت در مناقصه</option>
+                                            <option value="حسن انجام تعهدات">حسن انجام تعهدات</option>
+                                            <option value="پیش پرداخت">پیش پرداخت</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="Amount">مبلغ ضمانت نامه (ریال):</label>
+                                        <input type="text" asp-for="Amount" id="Amount" class="form-control divide" placeholder="مبلغ ضمانت نامه" required data-parsley-type="number" data-parsley-error-message="لطفاً مبلغ ضمانت‌نامه را وارد کنید">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label asp-for="IssueDate">تاریخ صدور:</label>
+                                        <input type="text" asp-for="IssueDate" data-jdp id="IssueDate" class="form-control" autocomplete="off" required data-parsley-error-message="لطفاً تاریخ صدور را وارد کنید">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="ExpirationDate">تاریخ سررسید/ تمدید:</label>
+                                        <input type="text" asp-for="ExpirationDate" data-jdp id="ExpirationDate" class="form-control" autocomplete="off" required data-parsley-error-message="لطفاً تاریخ انقضاء را وارد کنید">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="BankName" class="form-label">نام بانک عامل</label>
+                                        <select class="form-control" asp-for="BankName" id="BankName" required data-parsley-error-message="لطفاً نام  را انتخاب کنید">
+                                            <option selected disabled>انتخاب کنید...</option>
+                                            <option value="ملی">ملی</option>
+                                            <option value="سپه">سپه</option>
+                                            <option value="صنعت و معدن">صنعت و معدن</option>
+                                            <option value="صادرات">صادرات</option>
+                                            <option value="توسعه تعاون">توسعه تعاون</option>
+                                            <option value="پاسارگاد">پاسارگاد</option>
+                                            <option value="ملت">ملت</option>
+                                            <option value="رفاه">رفاه</option>
+                                            <option value="شهر">شهر</option>
+                                            <option value="اقتصاد نوین">اقتصاد نوین</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="ContractNumber">شماره قرارداد / مناقصه:</label>
+                                        <input type="text" asp-for="ContractNumber" id="ContractNumber" class="form-control" placeholder="شماره قرارداد / مناقصه" required data-parsley-error-message="لطفاً شماره قرارداد یا مناقصه را وارد کنید">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label asp-for="ContractStatus" class="form-label">وضعیت قرارداد / مناقصه</label>
+                                        <select class="form-control" asp-for="ContractStatus" id="ContractStatus" required data-parsley-error-message="لطفاً وضعیت قرارداد را انتخاب کنید">
+                                            <option selected disabled>انتخاب کنید...</option>
+                                            <option value="در انتظاراعلام برنده">در انتظاراعلام برنده</option>
+                                            <option value="با توافق طرفین خاتمه یافت">با توافق طرفین خاتمه یافت</option>
+                                            <option value="مناقصه تجدید شد">مناقصه تجدید شد</option>
+                                            <option value="مناقصه لغو شد">مناقصه لغو شد</option>
+                                            <option value="بازنده">بازنده</option>
+                                            <option value="برنده">برنده</option>
+                                            <option value="ناتمام">ناتمام</option>
+                                            <option value="ناتمام - ضمانتنامه ضبط شد">ناتمام - ضمانتنامه ضبط شد</option>
+                                            <option value="ناتمام -فسخ قرارداد">ناتمام -فسخ قرارداد</option>
+                                            <option value="خاتمه">خاتمه</option>
+                                            <option value="مناقصه لغو شد">مناقصه لغو شد</option>
+                                            <option value="در حال اجرای قرارداد">در حال اجرای قرارداد</option>
+                                            <option value="در حال پیگیری جهت ابطال">در حال پیگیری جهت ابطال</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="GuaranteeStatus" class="form-label">وضعیت ضمانت نامه</label>
+                                        <select class="form-control" asp-for="GuaranteeStatus" id="GuaranteeStatus" required data-parsley-error-message="لطفاً وضعیت ضمانت‌نامه را انتخاب کنید">
+                                            <option selected disabled>انتخاب کنید...</option>
+                                            <option value="ابطال شد">ابطال شد</option> 
+                                            <option value="تا پایان دوره تضمین باید تمدید شود">تا پایان دوره تضمین باید تمدید شود</option>
+                                            <option value="در حال اجرای قرارداد">در حال اجرای قرارداد</option>
+                                            <option value="در انتظاراعلام برنده">در انتظاراعلام برنده</option>
+                                            <option value="در حال پیگیری جهت ابطال">در حال پیگیری جهت ابطال</option>
+                                            <option value="ضمانتنامه ضبط شد">ضمانتنامه ضبط شد</option>
+                                            <option value="تجدید شد">تجدید شد</option>
+                                            <option value="بایدابطال شود">بایدابطال شود</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="OverdueProgressPercentage">درصد پیشرفت قراردادهای معوق:</label>
+                                        <input type="text" asp-for="OverdueProgressPercentage" id="OverdueProgressPercentage" class="form-control" placeholder="درصد پیشرفت" data-parsley-type="number" >
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label asp-for="FollowUpResult">نتیجه پیگیری ضمانت نامه‌ها:</label>
+                                        <input type="text" asp-for="FollowUpResult" id="FollowUpResult" class="form-control" placeholder="نتیجه پیگیری">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tile-footer">
+                <button class="btn btn-success w-100 mt-4" id="SubmitForm">ارسال فرم</button>
+            </div>
+        </div>
+    </div>
+</div>
+<a href="javascript:void(0)" onclick="goBackAndRefresh()" class="btn btn-outline-primary btn-lg">
+    <i class="fa fa-arrow-right"></i> بازگشت
+</a>
+
+@section styles
+{
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/sweetalert2 new/CSS.css" />
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: calc(2.375rem + 2px);
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                line-height: 1.5;
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 100%;
+                right: 0.75rem;
+            }
+    </style>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/wordifyfa/wordifyfa.js"></script>
+    <script src="~/sweetalert2 new/js.js"></script>
+    <script src="~/number-divider/number-divider.min.js"></script>
+    <script src="~/select 2/select 2.js"></script>
+    <script src="~/number-divider/number-divider.min.js"></script>
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('#DistributionCompanyName').select2({
+                placeholder: "نام شرکت توزیع را انتخاب کنید",
+                allowClear: true,
+                dir: "rtl"
+            });
+            $('.divide').divide();
+          // تنظیم مقدار اولیه برای حالت ویرایش
+            var distributionCompanyName = '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(Model.DistributionCompanyName ?? ""))';
+            console.log('DistributionCompanyName:', distributionCompanyName); // برای دیباگ
+            if (distributionCompanyName) {
+                $('#DistributionCompanyName').val(distributionCompanyName).trigger('change');
+            } else {
+                $('#DistributionCompanyName').val('').trigger('change'); // تنظیم به حالت خالی
+            }
+
+            // تنظیمات Parsley.js
+            $('#guaranteeForm').parsley({
+                errorClass: 'is-invalid',
+                successClass: 'is-valid',
+                errorsWrapper: '<ul class="parsley-errors-list"></ul>',
+                errorTemplate: '<li></li>'
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#SubmitForm").click(function (e) {
+                e.preventDefault(); // جلوگیری از رفتار پیش‌فرض دکمه
+                var form = $('#guaranteeForm');
+
+                // اعتبارسنجی فرم با Parsley
+                form.parsley().validate();
+
+                if (form.parsley().isValid()) {
+                    var GuaranteeLetterId = $("#GuaranteeLetterId").val();
+                    var DistributionCompanyName = $("#DistributionCompanyName").val();
+                    var GuaranteeNumber = $("#GuaranteeNumber").val();
+                    var GuaranteeType = $("#GuaranteeType").val();
+                    var Amount = $("#Amount").val();
+                    var IssueDate = $("#IssueDate").val();
+                    var ExpirationDate = $("#ExpirationDate").val();
+                    var BankName = $("#BankName").val();
+                    var ContractNumber = $("#ContractNumber").val();
+                    var ContractStatus = $("#ContractStatus").val();
+                    var GuaranteeStatus = $("#GuaranteeStatus").val();
+                    var OverdueProgressPercentage = $("#OverdueProgressPercentage").val();
+                    var FollowUpResult = $("#FollowUpResult").val();
+
+                    $.ajax({
+                        url: '/CompanyGuarantee/SubmitGuarantee',
+                        method: 'POST',
+                        data: {
+                            GuaranteeLetterId: GuaranteeLetterId,
+                            DistributionCompanyName: DistributionCompanyName,
+                            GuaranteeNumber: GuaranteeNumber,
+                            GuaranteeType: GuaranteeType,
+                            Amount: Amount,
+                            IssueDate: IssueDate,
+                            ExpirationDate: ExpirationDate,
+                            BankName: BankName,
+                            ContractNumber: ContractNumber,
+                            ContractStatus: ContractStatus,
+                            GuaranteeStatus: GuaranteeStatus,
+                            OverdueProgressPercentage: OverdueProgressPercentage,
+                            FollowUpResult: FollowUpResult
+                        },
+                        success: function (response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'موفقیت',
+                                text: 'فرم ضمانت‌نامه با موفقیت ارسال شد.',
+                                confirmButtonText: 'تأیید'
+                            }).then(() => {
+                                window.location.href = '/CompanyGuarantee/IndexGuarantee';
+                            });
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'خطا',
+                                text: 'خطا در ارسال فرم ضمانت‌نامه.',
+                                confirmButtonText: 'تأیید'
+                            });
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'خطا',
+                        text: 'لطفاً تمام فیلدهای اجباری را پر کنید.',
+                        confirmButtonText: 'تأیید'
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+
+
+
+

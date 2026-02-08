@@ -1,0 +1,1372 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@model ERP.Models.MissionReport
+@{
+    var guid = ViewBag.Guid;
+    var workflowInstance = ViewBag.WorkflowInstance as ERP.Models.WorkflowInstance;
+    var currentState = Model?.State ?? "start0";
+
+    var canEdit = ViewBag.CanEdit ?? false;
+    var isObserver = ViewBag.IsObserver ?? false;
+
+
+    var completedSections = new List<string>();
+    if (workflowInstance != null)
+    {
+        var history = ViewBag.WorkflowHistory as List<ERP.Models.WorkflowInstance>;
+        if (history != null)
+        {
+            completedSections = history
+                .Where(w => w.IsCompleted) // فقط بخش‌های تکمیل‌شده
+                .OrderBy(w => w.AssignedDate)
+                .Select(w => w.Section)
+                .ToList();
+        }
+    }
+    else if (currentState == "start0")
+    {
+        completedSections.Add("start0");
+    }
+}
+@* <div class="debug-info">
+    <p>CanEdit: @ViewBag.CanEdit</p>
+    <p>IsObserver: @ViewBag.IsObserver</p>
+    <p>CompletedSections: @string.Join(", ", ViewBag.CompletedSections ?? new List<string>())</p>
+    <p>CurrentState: @Model.State</p>
+</div> *@
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-inbox" style="margin-left:10px;color:red"></i><span>گزارش ماموریت</span><span class="id-card">@Model.MissionReportID</span> </h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb"></ul>
+</div>
+
+<input type="hidden" asp-for="MissionReportID" />
+<input type="hidden" value="@guid" name="Guid" id="Guid" />
+
+<div class="row justify-content-center align-items-center">
+    <div class="col-md-9">
+        <div class="tile">
+            <!-- بخش 1: اطلاعات اولیه ماموریت -->
+            @if ((completedSections.Contains("start0") && (canEdit || isObserver)) || (currentState == "start0" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section1" @(currentState != "start0" ? "style='pointer-events: none; opacity: 0.7;'" : "")>
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4 class="mb-0">تکمیل فرم گزارش ماموریت</h4>
+                    </div>
+                    <form id="form1" novalidate>
+
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">تاریخ درخواست</label>
+                                    <input asp-for="S_persiandate" class="form-control" disabled autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">شماره حکم</label>
+                                    <input asp-for="Number_Hokm" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" placeholder="دریافت شماره حکم از pw kara" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">از طرف</label>
+                                    <input asp-for="AzTaraf" class="form-control" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">ماموریت</label>
+                                    <select asp-for="DropdownVar002" class="form-control" disabled="@(currentState != "start0" || !canEdit)">
+                                        <option value="1">داخلی</option>
+                                        <option value="2">خارجی</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">ماهیت ماموریت</label>
+                                    <select asp-for="DropdownVar001" class="form-control" disabled="@(currentState != "start0" || !canEdit)">
+                                        <option value="1">فعالیت های اجرایی، عملیاتی و پیگیری امور</option>
+                                        <option value="2">بازدید و مطالعاتی</option>
+                                        <option value="3">تلفیقی</option>
+                                        <option value="4">آموزشی</option>
+                                        <option value="5">سایر موارد</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">نام و نام خانوادگی</label>
+                                    <input asp-for="Req_name" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">شماره پرسنلی</label>
+                                    <input asp-for="Number_Personeli" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">واحد</label>
+                                    <select asp-for="DropdownVar003" class="form-control" disabled="@(currentState != "start0" || !canEdit)">
+                                        <option value="1">تولید</option>
+                                        <option value="2">تحقیق و توسعه</option>
+                                        <option value="3">بازرگانی</option>
+                                        <option value="4">کنترل کیفیت</option>
+                                        <option value="5">مالی</option>
+                                        <option value="6">فناوری اطلاعات</option>
+                                        <option value="7">تضمین کیفیت</option>
+                                        <option value="8">برنامه‌ریزی</option>
+                                        <option value="9">اداری و منابع انسانی</option>
+                                        <option value="10">آزمایشگاه</option>
+                                        <option value="11">فنی مهندسی</option>
+                                        <option value="12">نرم‌افزار</option>
+                                        <option value="13">مدیریت</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">ماموریت به اداره/سازمان/شرکت</label>
+                                    <input asp-for="Mamuriat_Sazman" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="font-weight-bold">شهر ماموریت</label>
+                                    <input asp-for="Shahr_Mamuriat" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="font-weight-bold">مدت</label>
+                                    <input asp-for="Modat_mamuriat" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="font-weight-bold">نوع ماموریت</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" checked type="radio" asp-for="Noe_Mamuriat" value="1" disabled="@(currentState != "start0" || !canEdit)">
+                                        <label class="form-check-label sq">روزانه</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="Noe_Mamuriat" value="2" disabled="@(currentState != "start0" || !canEdit)">
+                                        <label class="form-check-label sq">ساعت</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row" id="dateFields">
+                                <div class="form-group col-md-3" id="start_persiandate">
+                                    <label class="font-weight-bold">تاریخ شروع</label>
+                                    <input asp-for="Start_persiandate_var" data-jdp class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3" id="fromhour">
+                                    <label class="font-weight-bold">ساعت شروع</label>
+                                    <input asp-for="Start_Hour" data-jdp="" data-jdp-only-time="" type="text" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" class="form-control" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3" id="end_persiandate">
+                                    <label class="font-weight-bold">تاریخ اتمام</label>
+                                    <input asp-for="End_persiandate_var" data-jdp class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3" id="tohour">
+                                    <label class="font-weight-bold">ساعت اتمام</label>
+                                    <input asp-for="End_Hour" data-jdp="" data-jdp-only-time="" type="text" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" class="form-control" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">شخص جانشین</label>
+                                    <input asp-for="Janeshin" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-8">
+                                    <label class="font-weight-bold">شرح ماموریت</label>
+                                    <textarea asp-for="Sharh_Mamuriat" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" class="form-control" rows="5" disabled="@(currentState != "start0" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "start0" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message1" class="mt-3 text-center"></div>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="display: none;" id="section1"></div>
+            }
+
+            <!-- بخش 2: تایید مدیر واحد -->
+            @if ((completedSections.Contains("TayidModirVahed1") && (canEdit || isObserver)) || (currentState == "TayidModirVahed1" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section2" @(currentState != "TayidModirVahed1" ? "style='pointer-events: none; opacity: 0.7;'" : "")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی ماموریت</h5>
+                    </div>
+                    <form id="form2" novalidate>
+
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">تایید کننده</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" checked asp-for="Radio_Tayid1" value="1" disabled="@(currentState != "TayidModirVahed1" || !canEdit)">
+                                        <label class="form-check-label sq">تایید</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="Radio_Tayid1" value="2" disabled="@(currentState != "TayidModirVahed1" || !canEdit)">
+                                        <label class="form-check-label sq">عدم تایید</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-8">
+                                    <label asp-for="Tozihat_Tayid1" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_Tayid1" class="form-control" rows="5" disabled="@(currentState != "TayidModirVahed1" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "TayidModirVahed1" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message2" class="mt-3 text-center"></div>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="display: none;" id="section2"></div>
+            }
+
+            <!-- بخش 3: تکمیل فرم گزارش ماموریت -->
+            @if ((completedSections.Contains("TakmilGozaresh2") && (canEdit || isObserver)) || (currentState == "TakmilGozaresh2" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section3" @(currentState != "TakmilGozaresh2" ? "style='pointer-events: none; opacity: 0.7;'" : "")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">تکمیل فرم گزارش ماموریت</h5>
+                    </div>
+                    <form id="form3" novalidate>
+
+                        <div class="card-body">
+                            <h2 id="title0000000003" style="text-align: center; margin-bottom: 35px; color: red;">همکار محترم لطفا گزارش ماموریت خود را از طریق اتوماسیون برای مدیر خود ارسال نمایید</h2>
+                            <script>
+                                function blink(selector) {
+                                    $(selector).fadeOut(2000, function() {  
+                                        $(this).fadeIn(2000, function() {   
+                                            blink(this);
+                                        });
+                                    });
+                                }
+                                $(document).ready(function() {
+                                    blink("#title0000000003");
+                                });
+                            </script>
+                            <div class="form-row">
+                                <div class="col-md-4">
+                                    <label class="font-weight-bold">مامور / ماموران اعزامی</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover" id="dispatchedPersonnelTable">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>نام و نام خانوادگی</th>
+                                                    @if (currentState == "TakmilGozaresh2" && canEdit)
+                                                    {
+                                                        <th>عملیات</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.DispatchedPersonnel != null && Model.DispatchedPersonnel.Any() && currentState != "TakmilGozaresh2")
+                                                {
+                                                    foreach (var personnel in Model.DispatchedPersonnel)
+                                                    {
+                                                        <tr>
+                                                            <td>@personnel.FullName</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (currentState == "TakmilGozaresh2" && canEdit)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success mt-2" onclick="addDispatchedPersonnel()">افزودن مامور</button>
+                                    }
+                                </div>
+
+                                <!-- Grid: Met Personnel -->
+                                <div class="col-md-4">
+                                    <label class="font-weight-bold">ملاقات شوندگان در ماموریت</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover" id="metPersonnelTable">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>نام و نام خانوادگی</th>
+                                                    @if (currentState == "TakmilGozaresh2" && canEdit)
+                                                    {
+                                                        <th>عملیات</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.MetPersonnel != null && Model.MetPersonnel.Any() && currentState != "TakmilGozaresh2")
+                                                {
+                                                    foreach (var personnel in Model.MetPersonnel)
+                                                    {
+                                                        <tr>
+                                                            <td>@personnel.FullName</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (currentState == "TakmilGozaresh2" && canEdit)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success mt-2" onclick="addMetPersonnel()">افزودن ملاقات شونده</button>
+                                    }
+                                </div>
+
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">لیست پیوستها و مدارک ها</label>
+                                    @if (currentState == "TakmilGozaresh2" && canEdit)
+                                    {
+                                        <div class="k-rtl" style="margin-right:5px">
+                                            <div class="demo-section">
+                                                @(
+                                                                                        Html.Kendo().Upload()
+                                                                                        .Name("files")
+                                                                                        .HtmlAttributes(new { aria_label = "files" })
+                                                                                        .Multiple(true)
+                                                                                        .Async(a => a
+                                                                                        .Save("Async_Save", "FileUpload")
+                                                                                        .Remove("Async_Remove", "FileUpload")
+                                                                                        .AutoUpload(true)
+                                                                                        )
+                                                                                        .Validation(validation =>
+                                                                                        {
+                                                                                            validation.MaxFileSize(10000000); // 10 MB
+                                                                                            validation.AllowedExtensions(new string[] { ".jpg", ".png", ".pdf", ".rar", ".zip", ".docx", ".doc", ".xlsx", ".xls" });
+                                                                                        })
+                                                                                        .Events(events => events
+                                                                                        .Upload("onUpload")
+                                                                                        .Remove("onRemove")
+                                                                                        )
+                                                                                        )
+                                        </div>
+                                    </div>
+                                                                }
+                                    else if (Model?.MissionReportID > 0)
+                                    {
+
+                                        <table class="table table-bordered HideTable" id="ali">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">نام فایل‌ها</th>
+                                                    <th scope="col">عملیات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tableFile">
+                                            </tbody>
+                                        </table>
+
+                                        <script>
+                                            $(document).ready(function () {
+                                                var MissionReportID = $('#MissionReportID').val();
+                                                $.ajax({
+                                                    type: "POST",
+                                                    url: "/MissionReport/DownloadFile",
+                                                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                                                    data: { id: MissionReportID },
+                                                    success: function (r) {
+                                                        if (r.status === 'OK' && r.data.length > 0) { // بررسی وجود فایل
+                                                                for (var i = 0; i < r.data.length; i++) {
+                                                                    var markup = "<tr><td scope='col'>" + r.data[i].Name + r.data[i].Extension + "</td><td scope='col'><a class='fa fa-download asd' href='/FileUpload/DownloadFileDatabase/" + r.data[i].FileID + "'></a></td></tr>";
+                                                                    $("#tableFile").append(markup);
+                                                                }
+                                                                $("#ali").removeClass("HideTable").addClass("ShowTable"); // نمایش جدول
+                                                         }
+                                                            else
+                                                            {
+                                                                $("#ali").removeClass("ShowTable").addClass("HideTable"); // مخفی نگه داشتن جدول
+                                                            }
+                                                    },
+                                                    failure: function (response) {
+                                                        alert(response.responseText);
+                                                    },
+                                                    error: function (response) {
+                                                        alert(response.responseText);
+                                                    }
+                                                });
+                                            });
+                                        </script>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="col-md-12">
+                                    <label class="font-weight-bold">هزینه‌های ماموریت</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover" id="missionExpensesTable">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>بابت</th>
+                                                    <th>مبلغ / ریال</th>
+                                                    @if (currentState == "TakmilGozaresh2" && canEdit)
+                                                    {
+                                                        <th>عملیات</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.MissionExpenses != null && Model.MissionExpenses.Any() && currentState != "TakmilGozaresh2")
+                                                {
+                                                    foreach (var expense in Model.MissionExpenses)
+                                                    {
+                                                        <tr>
+                                                            <td>@expense.Description</td>
+                                                            <td>@expense.Amount</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (currentState == "TakmilGozaresh2" && canEdit)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success mt-2" onclick="addMissionExpense()">افزودن هزینه</button>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">
+                                        شماره رهگیری گزارش در مسیر اتوماسیون
+                                    </label>
+                                    <input asp-for="Rahgiri" class="form-control" disabled="@(currentState != "TakmilGozaresh2" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-8">
+                                    <label class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="TozihatGozaresh" class="form-control" rows="5" disabled="@(currentState != "TakmilGozaresh2" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "TakmilGozaresh2" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message3" class="mt-3 text-center"></div>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="display: none;" id="section3"></div>
+            }
+
+            <!-- بخش 4: تایید مدیر واحد -->
+            @if ((completedSections.Contains("TayidModirVahed3") && (canEdit || isObserver)) || (currentState == "TayidModirVahed3" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section4" @(currentState != "TayidModirVahed3" ? "style='pointer-events: none; opacity: 0.7;'" : "")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی ماموریت</h5>
+                    </div>
+                    <form id="form4" novalidate>
+
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">تایید کننده</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" checked asp-for="Radio_Tayid2" checked value="1" disabled="@(currentState != "TayidModirVahed3" || !canEdit)">
+                                        <label class="form-check-label sq">تایید</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="Radio_Tayid2" value="2" disabled="@(currentState != "TayidModirVahed3" || !canEdit)">
+                                        <label class="form-check-label sq">عدم تایید</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-8">
+                                    <label asp-for="Tozihat_Tayid2" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_Tayid2" class="form-control" rows="5" disabled="@(currentState != "TayidModirVahed3" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "TayidModirVahed3" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message4" class="mt-3 text-center"></div>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="display: none;" id="section4"></div>
+            }
+
+            <!-- بخش 5: بررسی گزارش ماموریت توسط سرپرست اداری -->
+            @if ((completedSections.Contains("BarrasiEdari4") && (canEdit || isObserver)) || (currentState == "BarrasiEdari4" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section5" @(currentState != "BarrasiEdari4" ? "style='pointer-events: none; opacity: 0.7;'" : "")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی گزارش ماموریت توسط سرپرست اداری</h5>
+                    </div>
+                    <form id="form5" novalidate>
+
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label asp-for="TozihatSarparastedari" class="font-weight-bold">توضیحات سرپرست اداری</label>
+                                    <textarea asp-for="TozihatSarparastedari" class="form-control" rows="5" disabled="@(currentState != "BarrasiEdari4" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "BarrasiEdari4" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message5" class="mt-3 text-center"></div>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="display: none;" id="section5"></div>
+            }
+
+            <!-- بخش 6: تایید لوکیشن -->
+            @if ((completedSections.Contains("Location5") && (canEdit || isObserver)) || (currentState == "Location5" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section6" @(currentState != "Location5" ? "style='pointer-events: none; opacity: 0.7;'" : "")>
+                    <div class="card-header bg-warning text-white text-center">
+                        <h5 class="mb-0">تایید لوکیشن</h5>
+                    </div>
+                    <form id="form6" novalidate>
+
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">آیا لوکیشن ارسال شده است؟</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="Location" checked value="1" disabled="@(currentState != "Location5" || !canEdit)">
+                                        <label class="form-check-label sq">بله</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="Location" value="2" disabled="@(currentState != "Location5" || !canEdit)">
+                                        <label class="form-check-label sq">خیر</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Desclocation" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Desclocation" class="form-control" rows="5" disabled="@(currentState != "Location5" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "Location5" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message6" class="mt-3 text-center"></div>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="display: none;" id="section6"></div>
+            }
+
+            <!-- بخش 7: ثبت ساعت و تاریخ ماموریت توسط کارگزینی -->
+            @if (currentState.StartsWith("Kargozini6") || currentState.StartsWith("End7"))
+            {
+                <div class="card shadow-sm" id="section7" @(currentState != "Kargozini6" ? "style='pointer-events: none; opacity: 0.7;'" : "")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">ثبت ساعت و تاریخ ماموریت توسط کارگزینی</h5>
+                    </div>
+                    <form id="form7" novalidate>
+
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    <label asp-for="Start_persiandate_var2" class="font-weight-bold">تاریخ شروع</label>
+                                    <input asp-for="Start_persiandate_var2" data-jdp data-parsley-required="true" data-parsley-required-message="فیلد خالی است" class="form-control" disabled="@(currentState != "Kargozini6" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="Start_Hour2" class="font-weight-bold">ساعت شروع</label>
+                                    <input asp-for="Start_Hour2" data-jdp="" data-jdp-only-time="" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" type="text" class="form-control" disabled="@(currentState != "Kargozini6" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="End_persiandate_var3" class="font-weight-bold">تاریخ پایان</label>
+                                    <input asp-for="End_persiandate_var3" data-jdp data-parsley-required="true" data-parsley-required-message="فیلد خالی است" class="form-control" disabled="@(currentState != "Kargozini6" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="End_Hour2" class="font-weight-bold">ساعت پایان</label>
+                                    <input asp-for="End_Hour2" data-jdp="" data-jdp-only-time="" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" type="text" class="form-control" disabled="@(currentState != "Kargozini6" || !canEdit)" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label asp-for="TozihatKargozini" class="font-weight-bold">توضیحات کارگزینی</label>
+                                    <textarea asp-for="TozihatKargozini" class="form-control" rows="5" disabled="@(currentState != "Kargozini6" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "Kargozini6" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message7" class="mt-3 text-center"></div>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="display: none;" id="section7"></div>
+            }
+
+        </div>
+    </div>
+</div>
+
+
+
+<a onclick='openHistoryModal()'
+   class="floating-help-left2">
+    سوابق <i class="icon-spaced"></i>
+</a>
+<a href="javascript:void(0)" onclick="goBackAndRefresh()"
+   class="floating-help-left">
+    بازگشت <i class="fa fa-arrow-left icon-spaced"></i>
+</a>
+
+<div class="modal fade" id="AttachModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">سوابق</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="historyTable">
+                        <thead class="table-danger">
+                            <tr>
+                                <th scope="col">فرستنده</th>
+                                <th scope="col">گیرنده</th>
+                                <th scope="col">عنوان</th>
+                                <th scope="col">تاریخ ارسال</th>
+                                <th scope="col">تاریخ مشاهده</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableFile2"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/Parsley/parsley.min.js"></script>
+
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>
+    <script>
+        function onUpload(e) {
+            e.data = {
+                guid: $("#Guid").val()
+            };
+        }
+        function onRemove(e) {
+            e.data = {
+                guid: $("#Guid").val()
+            };
+        }
+    </script>
+    <script>
+        let dispatchedPersonnelIndex = 0;
+        let metPersonnelIndex = 0;
+        let missionExpenseIndex = 0;
+
+        function addDispatchedPersonnel() {
+            const table = document.getElementById('dispatchedPersonnelTable').getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            cell1.innerHTML = `<input type="text" name="DispatchedPersonnel[${dispatchedPersonnelIndex}].FullName" class="form-control" />`;
+            cell2.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">حذف</button>`;
+            dispatchedPersonnelIndex++;
+        }
+
+        function addMetPersonnel() {
+            const table = document.getElementById('metPersonnelTable').getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            cell1.innerHTML = `<input type="text" name="MetPersonnel[${metPersonnelIndex}].FullName" class="form-control" />`;
+            cell2.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">حذف</button>`;
+            metPersonnelIndex++;
+        }
+
+        function addMissionExpense() {
+            const table = document.getElementById('missionExpensesTable').getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            const cell3 = row.insertCell(2);
+            cell1.innerHTML = `<input type="text" name="MissionExpenses[${missionExpenseIndex}].Description" class="form-control" />`;
+            cell2.innerHTML = `<input type="number" name="MissionExpenses[${missionExpenseIndex}].Amount" class="form-control" />`;
+            cell3.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">حذف</button>`;
+            missionExpenseIndex++;
+        }
+
+
+
+
+    </script>
+    <script>
+
+        $(document).ready(function () {
+            // Initialize Parsley for form validation
+            //Add initial rows for grids
+            if ('@currentState' === 'TakmilGozaresh2') {
+                addDispatchedPersonnel();
+                addMetPersonnel();
+                addMissionExpense();
+            }
+
+            $('input[name="Noe_Mamuriat"]').change(function () {
+            var value = $(this).val();
+
+            if (value == '2') { // ساعت
+                $('#start_persiandate').show();
+                $('#end_persiandate').hide();
+                $('#fromhour').show();
+                $('#tohour').show();
+
+                // اعتبارسنجی
+                $('#start_persiandate input').attr('data-parsley-required', 'true').attr('data-parsley-required-message', 'فیلد خالی است');
+                $('#fromhour input').attr('data-parsley-required', 'true').attr('data-parsley-required-message', 'فیلد خالی است');
+                $('#tohour input').attr('data-parsley-required', 'true').attr('data-parsley-required-message', 'فیلد خالی است');
+
+                // حذف اعتبارسنجی از تاریخ پایان
+                $('#end_persiandate input').removeAttr('data-parsley-required').removeAttr('data-parsley-required-message');
+            }
+            else if (value == '1') { // روز
+                $('#start_persiandate').show();
+                $('#end_persiandate').show();
+                $('#fromhour').hide();
+                $('#tohour').hide();
+
+                // اعتبارسنجی
+                $('#start_persiandate input').attr('data-parsley-required', 'true').attr('data-parsley-required-message', 'فیلد خالی است');
+                $('#end_persiandate input').attr('data-parsley-required', 'true').attr('data-parsley-required-message', 'فیلد خالی است');
+
+                // حذف اعتبارسنجی از ساعت شروع و پایان
+                $('#fromhour input').removeAttr('data-parsley-required').removeAttr('data-parsley-required-message');
+                $('#tohour input').removeAttr('data-parsley-required').removeAttr('data-parsley-required-message');
+            }
+        });
+
+            // Trigger change on page load to set initial state
+            $('input[name="Noe_Mamuriat"]:checked').trigger('change');
+
+        });
+    </script>
+    <script>
+        // Form 1 submission
+        $('#form1').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                 let $btn = $(this).find('[type=submit]');
+                 $btn.prop('disabled', true).text('در حال ارسال...');
+                const formData = {
+                    MissionReportID: $('#MissionReportID').val(),
+                    S_persiandate: $('#S_persiandate').val(),
+                    Number_Hokm: $('#Number_Hokm').val(),
+                    AzTaraf: $('#AzTaraf').val(),
+                    DropdownVar002: $('#DropdownVar002').val(),
+                    DropdownVar001: $('#DropdownVar001').val(),
+                    Req_name: $('#Req_name').val(),
+                    Number_Personeli: $('#Number_Personeli').val(),
+                    DropdownVar003: $('#DropdownVar003').val(),
+                    Mamuriat_Sazman: $('#Mamuriat_Sazman').val(),
+                    Shahr_Mamuriat: $('#Shahr_Mamuriat').val(),
+                    Modat_mamuriat: $('#Modat_mamuriat').val(),
+                    Noe_Mamuriat: $('input[name="Noe_Mamuriat"]:checked').val(),
+                    Start_persiandate_var: $('#Start_persiandate_var').val(),
+                    Start_Hour: $('#Start_Hour').val(),
+                    End_persiandate_var: $('#End_persiandate_var').val(),
+                    End_Hour: $('#End_Hour').val(),
+                    Janeshin: $('#Janeshin').val(),
+                    Sharh_Mamuriat: $('#Sharh_Mamuriat').val(),
+                    Guid: $('#Guid').val(),
+                };
+
+                $.ajax({
+                    url: '@Url.Action("SaveForm1", "MissionReport")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                       if (response.success === false) {
+                         $('#message1').text(response.message).removeClass().addClass('text-danger');
+                         $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                         return;
+                     }
+                        window.location.href = '@Url.Action("Index", "MissionReport")';
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message1').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                        $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        // Form 2 submission
+            $('#form2').on('submit', function (e) {
+                e.preventDefault();
+                if ($(this).parsley().validate()) {
+                                let $btn = $(this).find('[type=submit]');
+                                $btn.prop('disabled', true).text('در حال ارسال...');
+                    const formData = {
+                        MissionReportID: $('#MissionReportID').val(),
+                        Radio_Tayid1: $('input[name="Radio_Tayid1"]:checked').val(),
+                        Tozihat_Tayid1: $('#Tozihat_Tayid1').val(),
+                        Guid: $('#Guid').val(),
+                    };
+
+                    $.ajax({
+                        url: '@Url.Action("SaveForm2", "MissionReport")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function (response) {
+                           if (response.success === false) {
+                               $('#message2').text(response.message).removeClass().addClass('text-danger');
+                               $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                                   return;
+                           }
+                                  window.location.href = '@Url.Action("Index", "MissionReport")';
+                         },
+                        error: function () {
+                            $('#message2').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                            $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                        }
+                    });
+                }
+            });
+    </script>
+    <script>
+        // Form 3 submission
+                    $('#form3').on('submit', function (e) {
+                        e.preventDefault();
+                        if ($(this).parsley().validate()) {
+                                           let $btn = $(this).find('[type=submit]');
+                                                       $btn.prop('disabled', true).text('در حال ارسال...');
+                                var dispatchedPersonnel = [];
+                        $('#dispatchedPersonnelTable tbody tr').each(function () {
+                            const fullName = $(this).find('input[name$=".FullName"]').val();
+                            if (fullName) {
+                                dispatchedPersonnel.push({ FullName: fullName });
+                            }
+                        });
+
+                        var metPersonnel = [];
+                        $('#metPersonnelTable tbody tr').each(function () {
+                            const fullName = $(this).find('input[name$=".FullName"]').val();
+                            if (fullName) {
+                                metPersonnel.push({ FullName: fullName });
+                            }
+                        });
+
+                        var missionExpenses = [];
+                        $('#missionExpensesTable tbody tr').each(function () {
+                            const description = $(this).find('input[name$=".Description"]').val();
+                            const amount = parseInt($(this).find('input[name$=".Amount"]').val()) || 0;
+                            if (description || amount) {
+                                missionExpenses.push({ Description: description, Amount: amount });
+                            }
+                        });
+
+
+
+                            const formData = {
+                            MissionReportID: $('#MissionReportID').val(),
+                            Rahgiri: $('#Rahgiri').val(),
+                            TozihatGozaresh: $('#TozihatGozaresh').val(),
+                            DispatchedPersonnel: dispatchedPersonnel,
+                            MetPersonnel: metPersonnel,
+                            MissionExpenses: missionExpenses,
+                            Guid: $('#Guid').val(),
+                            };
+
+                            $.ajax({
+                                url: '@Url.Action("SaveForm3", "MissionReport")',
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify(formData),
+                                success: function (response) {
+                                           if (response.success === false) {
+                                                   $('#message3').text(response.message).removeClass().addClass('text-danger');
+                                                   $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                                                   return;
+                                            }
+                                  window.location.href = '@Url.Action("Index", "MissionReport")';
+                                },
+                                error: function () {
+                                    $('#message3').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                                    $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                                }
+                            });
+                        }
+                    });
+    </script>
+    <script>
+        // Form 2 submission
+            $('#form4').on('submit', function (e) {
+                e.preventDefault();
+                if ($(this).parsley().validate()) {
+                     let $btn = $(this).find('[type=submit]');
+                     $btn.prop('disabled', true).text('در حال ارسال...');
+                    const formData = {
+                        MissionReportID: $('#MissionReportID').val(),
+                        Radio_Tayid2: $('input[name="Radio_Tayid2"]:checked').val(),
+                        Tozihat_Tayid2: $('#Tozihat_Tayid2').val(),
+                        Guid: $('#Guid').val(),
+                    };
+
+                    $.ajax({
+                        url: '@Url.Action("SaveForm4", "MissionReport")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                         success: function (response) {
+                                           if (response.success === false) {
+                                                   $('#message4').text(response.message).removeClass().addClass('text-danger');
+                                                   $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                                                   return;
+                                            }
+                                  window.location.href = '@Url.Action("Index", "MissionReport")';
+                                },
+                        error: function () {
+                            $('#message4').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                            $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                        }
+                    });
+                }
+            });
+    </script>
+    <script>
+        // Form 5 submission
+            $('#form5').on('submit', function (e) {
+                e.preventDefault();
+                if ($(this).parsley().validate()) {
+                    let $btn = $(this).find('[type=submit]');
+                 $btn.prop('disabled', true).text('در حال ارسال...');
+                    const formData = {
+                        MissionReportID: $('#MissionReportID').val(),
+                        TozihatSarparastedari: $('#TozihatSarparastedari').val(),
+                        Guid: $('#Guid').val(),
+                    };
+
+                    $.ajax({
+                        url: '@Url.Action("SaveForm5", "MissionReport")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function (response) {
+                                           if (response.success === false) {
+                                                   $('#message5').text(response.message).removeClass().addClass('text-danger');
+                                                   $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                                                   return;
+                                            }
+                                  window.location.href = '@Url.Action("Index", "MissionReport")';
+                                },
+                        error: function () {
+                            $('#message5').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                            $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                        }
+                    });
+                }
+            });
+    </script>
+    <script>
+        // Form 6 submission
+            $('#form6').on('submit', function (e) {
+                e.preventDefault();
+                if ($(this).parsley().validate()) {
+                    let $btn = $(this).find('[type=submit]');
+                 $btn.prop('disabled', true).text('در حال ارسال...');
+                    const formData = {
+                        MissionReportID: $('#MissionReportID').val(),
+                        Location: $('input[name="Location"]:checked').val(),
+                        Desclocation: $('#Desclocation').val(),
+                        Guid: $('#Guid').val(),
+                    };
+
+                    $.ajax({
+                        url: '@Url.Action("SaveForm6", "MissionReport")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function (response) {
+                                           if (response.success === false) {
+                                                   $('#message6').text(response.message).removeClass().addClass('text-danger');
+                                                   $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                                                   return;
+                                            }
+                                  window.location.href = '@Url.Action("Index", "MissionReport")';
+                                },
+                        error: function () {
+                            $('#message6').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                             $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                        }
+                    });
+                }
+            });
+    </script>
+    <script>
+        // Form 7 submission
+            $('#form7').on('submit', function (e) {
+                e.preventDefault();
+                if ($(this).parsley().validate()) {
+                    let $btn = $(this).find('[type=submit]');
+                 $btn.prop('disabled', true).text('در حال ارسال...');
+                    const formData = {
+                        MissionReportID: $('#MissionReportID').val(),
+                        Start_persiandate_var2: $('#Start_persiandate_var2').val(),
+                        Start_Hour2: $('#Start_Hour2').val(),
+                        End_persiandate_var3: $('#End_persiandate_var3').val(),
+                        End_Hour2: $('#End_Hour2').val(),
+                        TozihatKargozini: $('#TozihatKargozini').val(),
+                        Guid: $('#Guid').val(),
+                    };
+
+                    $.ajax({
+                        url: '@Url.Action("SaveForm7", "MissionReport")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function (response) {
+                                           if (response.success === false) {
+                                                   $('#message7').text(response.message).removeClass().addClass('text-danger');
+                                                   $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                                                   return;
+                                            }
+                                  window.location.href = '@Url.Action("Index", "MissionReport")';
+                                },
+                        error: function () {
+                            $('#message7').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                             $btn.prop('disabled', false).text('ارسال'); // دوباره فعال کردن
+                        }
+                    });
+                }
+            });
+    </script>
+    <script>
+            function History() {
+            var Guid = $("#Guid").val();
+            $.ajax({
+                type: "POST",
+                url: "/GuestEntry/History",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { Guid: Guid },
+                success: function (response) {
+                    if (response.status === 'OK') {
+                        $('#tableFile2').empty();
+                        if (response.data.length > 0) {
+                            $.each(response.data, function (i, item) {
+                                var markup = `<tr>
+                                    <td>${item.SenderID}</td>
+                                    <td>${item.ReceiverID}</td>
+                                    <td>${item.Title}</td>
+                                   <td>${item.SendDateTime}</td>
+                                   <td>${item.ViewDateTime}</td>
+                                </tr>`;
+                                $("#tableFile2").append(markup);
+                            });
+                            $("#historyTable").show();
+                        } else {
+                            $("#tableFile2").append('<tr><td colspan="6" class="text-center">هیچ رکوردی یافت نشد</td></tr>');
+                            $("#historyTable").show();
+                        }
+                    } else {
+                        alert('خطایی رخ داده است. لطفاً دوباره تلاش کنید.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('خطا در ارتباط با سرور: ' + error);
+                }
+            });
+                $("#AttachModal").modal('show');
+        }
+
+        // تابع برای باز کردن مودال
+        function openHistoryModal(guid) {
+
+            History(guid);
+        }
+    </script>
+}
+
+@section styles {
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .panel-header {
+            background-color: lightgreen;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+            .panel-header.blue {
+                background-color: lightblue;
+            }
+
+        .form-check-inline {
+            margin-left: 10px;
+        }
+
+        table.grid-table {
+            width: 100%;
+        }
+
+            table.grid-table th, table.grid-table td {
+                border: 1px solid #ccc;
+                padding: 5px;
+            }
+
+        .form-control {
+            border: 2px solid black;
+        }
+
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #dee2e6;
+        }
+
+        input.sq[type="radio"][disabled] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+            input.sq[type="radio"][disabled] + label.sq {
+                position: relative;
+                padding-left: 25px;
+                cursor: not-allowed;
+                user-select: none;
+                line-height: 20px;
+                display: inline-block;
+                color: black;
+            }
+
+                input.sq[type="radio"][disabled] + label.sq::before {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 18px;
+                    height: 18px;
+                    border: 2px solid #aaa;
+                    border-radius: 3px;
+                    background: #f5f5f5;
+                    box-sizing: border-box;
+                }
+
+            input.sq[type="radio"][disabled]:checked + label.sq::before {
+                background-color: white;
+                border-color: black;
+                content: "✓";
+                color: black;
+                font-weight: bold;
+                font-size: 15px;
+                text-align: center;
+                line-height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        input.sq[type="checkbox"][disabled] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+            input.sq[type="checkbox"][disabled] + label.sq {
+                position: relative;
+                padding-left: 25px;
+                cursor: not-allowed;
+                user-select: none;
+                line-height: 20px;
+                display: inline-block;
+                color: black;
+            }
+
+                input.sq[type="checkbox"][disabled] + label.sq::before {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 18px;
+                    height: 18px;
+                    border: 2px solid #aaa;
+                    border-radius: 3px;
+                    background: #f5f5f5;
+                    box-sizing: border-box;
+                }
+
+            input.sq[type="checkbox"][disabled]:checked + label.sq::before {
+                background-color: white;
+                border-color: black;
+                content: "✓";
+                color: black;
+                font-weight: bold;
+                font-size: 15px;
+                text-align: center;
+                line-height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            line-height: 40px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+        }
+
+        .floating-help-left {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(45deg, #d32f2f, #b71c1c);
+            color: #fff;
+            padding: 10px 16px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+            .floating-help-left:hover {
+                background: linear-gradient(45deg, #c62828, #8e0000);
+                text-decoration: none;
+                padding-left: 20px;
+            }
+
+        .floating-help-left2 {
+            position: fixed;
+            top: 40%; /* کمی بالاتر از وسط */
+            left: 0;
+            background: linear-gradient(45deg, #1976d2, #0d47a1);
+            color: #fff !important;
+            padding: 10px 16px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-bottom: 10px; /* فاصله از دکمه بعدی */
+            cursor: pointer;
+        }
+
+            .floating-help-left2:hover {
+                background: linear-gradient(45deg, #1565c0, #002171) text-decoration: none;
+                padding-left: 20px;
+            }
+
+        .icon-spaced {
+            margin-right: 10px;
+        }
+
+        .modal-xl {
+            max-width: 70%;
+        }
+
+        .HideTable {
+            display: none !important;
+        }
+
+        .ShowTable {
+            display: inline-table !important;
+        }
+
+        .id-card {
+            padding: 6px 14px;
+            background: #ffffff;
+            border: 2px solid #dc3545;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc3545;
+            margin-right: 10px;
+            box-shadow: 0 0 6px rgba(220,53,69,0.3);
+        }
+    </style>
+}
+
+
+
+
+
+
+

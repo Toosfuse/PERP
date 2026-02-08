@@ -1,0 +1,60 @@
+﻿@using Kendo.Mvc.UI
+@model dynamic
+
+<div class="modal fade" id="AttachModal" tabindex="-1" role="dialog" aria-labelledby="AttachModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="AttachModalLabel">پیوست</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="k-d-flex k-justify-content-center">
+                    <div class="form-group col-md-12">
+                        <label class="control-label">افزودن فایل پیوست</label>
+                        <div class="k-rtl" style="margin-right:5px">
+                            <div class="demo-section">
+                                @(Html.Kendo().Upload()
+                                    .Name("files")
+                                    .HtmlAttributes(new { aria_label = "files" })
+                                    .Multiple(true)
+                                    .Async(a => a
+                                        .Save("Async_Save", "FileUpload")
+                                        .Remove("Async_Remove", "FileUpload")
+                                        .AutoUpload(true)
+                                    )
+                                    .Validation(validation => {
+                                        validation.MaxFileSize(10000000);  // 10 MB
+                                        validation.AllowedExtensions(new string[] { ".jpg", ".png", ".pdf", ".rar", ".zip", ".docx", ".doc", ".xlsx", ".xls" });
+                                    })
+                                    .Events(events => events
+                                        .Upload("onUpload")
+                                        .Remove("onRemove")
+                                    )
+                                )
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-md-12">
+                    <table class="table table-bordered HideTable" id="ali">
+                        <thead>
+                            <tr>
+                                <th scope="col">نام فایل</th>
+                                <th scope="col">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableFile"></tbody>
+                    </table>
+                </div>
+                <span style="color:red;text-align:center;display: block;">برای ارسال فایل ها به سرور حتما کلید ثبت را بزنید.</span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">بستن</button>
+                <button type="button" id="uploadBtn" class="btn btn-primary">ثبت</button>  <!-- Changed onclick to id for JS -->
+            </div>
+        </div>
+    </div>
+</div>

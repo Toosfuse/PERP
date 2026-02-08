@@ -1,0 +1,117 @@
+﻿@using Kendo.Mvc.UI
+
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-address-card-o" style="margin-left:10px;color:red"></i>لیست کاربران</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+
+<style>
+    .k-grid-toolbar {
+        direction: ltr;
+    }
+
+    .btn-icon {
+        border-radius: 0 !important;
+        padding: 0.1rem 0.3rem;
+        color: white !important;
+    }
+
+    .asd {
+        color: black !important;
+        margin-right: 10px;
+
+    }
+
+    .image-rounded {
+        width: 35px;
+        height: 35px;
+        margin-left: 5px;
+        border-radius: 50%
+    }
+</style>
+@section styles
+{
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="k-rtl" style="overflow-x:auto;width:100%;">
+
+                @(
+                    Html.Kendo().Grid<Users>()
+                    .Name("usergrid")
+                    .Columns(col =>
+                    {
+                        col.Bound(c => c.Image).Title("تصویر").ClientTemplate(
+                        "<img src='/../userimage/#= Image #' class='image-rounded'>"
+                        ).Width(250).Media("(min-width: 850px)").HtmlAttributes(new { style = "text-align: center" }).HeaderHtmlAttributes(new { style = "text-align: center; justify-content: center" });
+                        col.Bound(c => c.FirstName).Title("نام").Width(250).Media("(min-width: 850px)").HtmlAttributes(new { style = "text-align: center" }).HeaderHtmlAttributes(new { style = "text-align: center; justify-content: center" });
+                        col.Bound(c => c.LastName).Title("نام خانوادگی").Width(250).Media("(min-width: 850px)").HtmlAttributes(new { style = "text-align: center" }).HeaderHtmlAttributes(new { style = "text-align: center; justify-content: center" });
+                        col.Bound(c => c.UserName).Title("نام کاربری").Media("(min-width: 450px)").HtmlAttributes(new { style = "text-align: center" }).HeaderHtmlAttributes(new { style = "text-align: center; justify-content: center" });
+                        col.Bound(c => c.Email).Title("نقش ها").Width(250).Media("(min-width: 850px)").HtmlAttributes(new { style = "text-align: center" }).HeaderHtmlAttributes(new { style = "text-align: center; justify-content: center" });
+                        col.Bound(c => c.Post).Title("سمت").Width(250).Media("(min-width: 850px)").HtmlAttributes(new { style = "text-align: center" }).HeaderHtmlAttributes(new { style = "text-align: center; justify-content: center" });
+                        col.Bound("").Title("عملیات").ClientTemplate("<div class='btn-group mr-2' role='group' aria-label='First group'><a href='/ManageUser/AddUserToRole/#=Id#' type='button' class='btn btn-secondary btn-icon'>AddRole</a><a href='/ManageUser/RemoveUserFromRole/#=Id#' type='button' class='btn btn-Danger btn-icon'>RemoveRole</a><a title='ویرایش' class='fa fa-pencil-square-o btn btn-primary btn-icon' href='/ManageUser/EditUser/#=Id#' type='button'></a><a title='مشخصات' class='fa fa-info-circle btn btn-primary btn-icon' href='/ManageUser/EditUser/#=Id#' type='button'></a><a title='حذف' class='fa fa-trash btn btn-primary btn-icon' type='button'></a></div>").Width(250).Media("(min-width: 850px)");
+                    })
+                    .ToolBar(toolbar =>
+                    {
+                        toolbar.Search();
+                    })
+                    .Sortable()
+                    .Pageable()
+                    .DataSource(b => b.
+                    Ajax()
+                    .Read("Data_User", "ManageUser"))
+                    )
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@* @model List<ERP.ViewModels.ManageUser.IndexViewModel>
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+@if (!Model.Any())
+{
+    <h1>کاربری یافت نشد</h1>
+}
+else
+{
+    for (int i = 0; i < Model.Count; i++)
+    {
+        <div class="card mt-2">
+            <div class="card-header">
+                User Name : <b>@Model[i].UserName</b>
+            </div>
+            <div class="card-body">
+                User Email : <b>@Model[i].Email</b>
+            </div>
+            <div class="card-footer">
+                <form asp-controller="ManageUser" asp-action="DeleteUser" asp-route-id="@Model[i].Id" method="post">
+
+                    <a asp-controller="ManageUser" asp-action="EditUser" asp-route-id="@Model[i].Id"
+                       class="btn btn-primary">Edit Username</a>
+
+                    <a asp-controller="ManageUser" asp-action="AddUserToRole" asp-route-id="@Model[i].Id"
+                       class="btn btn-primary">Add to role</a>
+                    <a asp-controller="ManageUser" asp-action="RemoveUserFromRole" asp-route-id="@Model[i].Id"
+                       class="btn btn-danger">Remove From role</a>
+
+                    <button type="submit" class="btn btn-danger">Delete user</button>
+                </form>
+            </div>
+        </div>
+    }
+}
+
+ *@

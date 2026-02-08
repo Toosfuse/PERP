@@ -1,0 +1,31 @@
+﻿@model ERP.Models.WorkflowSection
+
+@{
+    ViewData["Title"] = "حذف بخش";
+}
+
+<h3>آیا مطمئن هستید که می‌خواهید این بخش را حذف کنید؟</h3>
+<div>
+    <h4>WorkflowSection</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.SectionCode)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.SectionCode)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.SectionName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.SectionName)
+        </dd>
+    </dl>
+
+    <form asp-action="DeleteSection">
+        <input type="hidden" asp-for="WorkflowSectionID" />
+        <input type="submit" value="حذف" class="btn btn-danger" /> |
+        <a asp-action="Sections">لغو</a>
+    </form>
+</div>

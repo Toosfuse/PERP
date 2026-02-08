@@ -1,0 +1,606 @@
+@using System.Security.Claims
+@model List<ERP.Models.ChatUser>
+@{
+    ViewData["Title"] = "چت مسنجر سازمانی";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>چت مسنجر سازمانی</title>
+    <link rel="stylesheet" href="~/Fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/css/chat.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            border-bottom: 1px solid #e5e5e5;
+            background: white;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .tab-btn:not(.active) {
+            background: #e5e5e5;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-sidebar">
+            <div class="chat-header" style="border-bottom:none;">
+            <h3 style="margin:0;justify-content:center">
+                <a style="color:white; text-decoration:none;" href="@Url.Action("Index", "Chat")">
+                    پیام نما
+                </a>
+            </h3>
+            <div style="display:flex; align-items:center; gap:12px; padding:8px 12px; background:rgba(255,255,255,0.1); border-radius:8px;">
+                <div style="position:relative;">
+                    <img id="currentUserImage" src="/UserImage/Male.png" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.3);">
+                    <span class="online-status online" style="width:10px; height:10px; bottom:0; right:0;"></span>
+                </div>
+                <div style="min-width:0;">
+                    <div id="currentUserDisplay" style="color:white; font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">کاربر</div>
+                    <div style="color:rgba(255,255,255,0.7); font-size:10px; margin-top:1px;">آنلاین</div>
+                </div>
+            </div>
+        </div>
+            <div style="display:flex;justify-content:center; gap:6px; border-top:none; padding:12px 15px; background:linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.95) 100%); border-bottom:1px solid rgba(255,255,255,0.1);">
+            <button type="button" id="newChatBtn" class="new-chat-btn" title="چت جدید">
+                <i class="fa fa-pencil"></i>
+            </button>
+            <button type="button" id="newGroupBtn" class="new-chat-btn" title="گروه جدید">
+                <i class="fa fa-users"></i>
+            </button>
+            <button type="button" id="notificationToggleBtn" class="notification-toggle-btn active" title="اطلاعات فعال">
+                <i class="fa fa-bell"></i>
+            </button>
+            <button type="button" id="darkModeBtn" class="dark-mode-btn" title="حالت تاریک">
+                <i class="fa fa-moon-o"></i>
+            </button>
+            <button type="button" id="logoutBtn" class="logout-btn" title="خروج">
+                <i class="fa fa-sign-out"></i>
+            </button>
+            <button type="button" id="closeModalBtn" class="close-modal-btn" style="display:none;" title="بستن">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <div class="all-users-modal" id="allUsersModal" style="display:none;">
+            <div class="modal-body" id="allUsersList"></div>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchUser" placeholder="جستجو کاربر" />
+            <div class="search-results" id="searchResults"></div>
+        </div>
+        <div class="tab-buttons">
+            <button type="button" id="tabUsers" class="tab-btn active">کاربران</button>
+            <button type="button" id="tabGroups" class="tab-btn">گروهها</button>
+        </div>
+        <div class="users-list" id="usersList">
+            @foreach (var user in Model)
+            {
+                <div class="user-item" data-user-id="@user.Id" data-user-name="@user.Name">
+                    <div class="user-avatar">
+                        <img src="@user.Image" alt="@user.Name" />
+                        <span class="online-status @(user.IsOnline ? "online" : "")"></span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">@user.Name</div>
+                        <div class="last-message">@(user.LastMessage ?? "پیامی وجود ندارد")</div>
+                    </div>
+                    @if (user.UnreadCount > 0)
+                    {
+                        <div class="unread-count">@user.UnreadCount</div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="groups-list" id="groupsList" style="display:none;"></div>
+    </div>
+    
+    <div class="chat-main">
+        <div class="chat-header-main" id="chatHeader" style="display:none;">
+            <div class="user-avatar">
+                <img id="selectedUserAvatar" src="" alt="" />
+            </div>
+            <div class="user-name-tilte" id="selectedUserName"></div>
+            <div style="flex:1; margin:0 15px;">
+                <input type="text" id="searchMessages" placeholder="جستجو در پیام ها..." style="width:100%; padding:8px 12px; border:1px solid rgba(255,255,255,0.3); border-radius:20px; background:rgba(255,255,255,0.1); color:white; font-size:12px;" />
+            </div>
+            <div class="chat-actions" style="justify-content: flex-start;">
+                <button type="button" id="groupMembersBtn" class="restore-chat-btn" title="اعضای گروه" style="display:none;">
+                    <i class="fa fa-users"></i>
+                </button>
+                <button type="button" id="restoreChatBtn" class="restore-chat-btn" title="بازیابی چت" style="display:none;">
+                    <i class="fa fa-undo"></i>
+                </button>
+                <button type="button" id="deleteGroupBtn" class="delete-chat-btn" title="حذف گروه" style="display:none;">
+                    <i class="fa fa-trash"></i>
+                </button>
+                <button type="button" id="deleteChatBtn" class="delete-chat-btn" title="پاک کردن چت">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="no-chat-selected">
+                <div class="chat-logo-background">
+                    <div class="logo-container">
+                        <i class="fa fa-comments-o"></i>
+                        <h3>پیام</h3>
+                        <p style="color:rgba(102, 126, 234, 0.9)">یک مکالمه انتخاب کنید تا شروع کنید</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input" id="chatInput" style="display:none;">
+            <button type="button" id="sendBtn" class="send-btn">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+            <input type="text" id="messageInput" placeholder="پیام خود را بنویسید..." />
+            <button type="button" id="attachBtn" class="attach-btn">
+                <i class="fa fa-paperclip"></i>
+            </button>
+            <button type="button" id="emojiBtn" class="emoji-btn">
+                <i class="fa fa-smile-o"></i>
+            </button>
+            <input type="file" id="fileInput" style="display:none;" />
+            <div class="emoji-picker" id="emojiPicker" style="display:none;">
+                <div class="emoji-list">
+                    <span class="emoji-item">😀</span>
+                    <span class="emoji-item">😂</span>
+                    <span class="emoji-item">😍</span>
+                    <span class="emoji-item">😊</span>
+                    <span class="emoji-item">😉</span>
+                    <span class="emoji-item">😎</span>
+                    <span class="emoji-item">😢</span>
+                    <span class="emoji-item">😭</span>
+                    <span class="emoji-item">😡</span>
+                    <span class="emoji-item">😏</span>
+                    <span class="emoji-item">👍</span>
+                    <span class="emoji-item">👎</span>
+                    <span class="emoji-item">❤️</span>
+                    <span class="emoji-item">💔</span>
+                    <span class="emoji-item">🔥</span>
+                    <span class="emoji-item">⭐</span>
+                    <span class="emoji-item">🎉</span>
+                    <span class="emoji-item">🎁</span>
+                    <span class="emoji-item">👏</span>
+                    <span class="emoji-item">✌️</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="forward-modal" id="forwardModal">
+    <div class="forward-modal-content">
+        <h3>انتقال پیام به</h3>
+        <input type="text" id="forwardSearch" placeholder="جستجو کاربر..." class="forward-search-input" />
+        <div id="forwardUsersList"></div>
+    </div>
+</div>
+
+<div id="createGroupModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:20px; border-radius:12px; width:95%; max-width:700px; max-height:90vh; overflow-y:auto;">
+        <h3 style="margin-bottom:15px; font-size:18px;">گروه جدید</h3>
+        <input type="text" id="groupNameInput" placeholder="نام گروه" style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+        <input type="text" id="groupMemberSearch" placeholder="جستجو کاربر..." style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+        <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:200px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:13px;">انتخاب اعضا:</label>
+                <div id="groupMembersList" style="max-height:250px; overflow-y:auto; border:1px solid #ddd; border-radius:4px; padding:8px;"></div>
+            </div>
+            <div style="flex:1; min-width:200px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:13px;">اعضای انتخاب شده:</label>
+                <div id="selectedMembersList" style="max-height:250px; overflow-y:auto; border:1px solid #ddd; border-radius:4px; padding:8px; background:#f9f9f9;"></div>
+            </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button type="button" id="createGroupBtn" style="flex:1; padding:10px; background:#667eea; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">ایجاد</button>
+            <button type="button" id="cancelGroupBtn" style="flex:1; padding:10px; background:#ccc; color:#333; border:none; border-radius:4px; cursor:pointer; font-size:14px;">لغو</button>
+        </div>
+    </div>
+    <style>
+    @@media (max-width: 768px) {
+        #createGroupModal > div {
+            width: 98% !important;
+            padding: 15px !important;
+            max-height: 95vh !important;
+        }
+        #groupMembersList, #selectedMembersList {
+            max-height: 200px !important;
+        }
+        #createGroupModal div[style*="flex:1"] {
+            min-width: 100% !important;
+        }
+    }
+    </style>
+</div>
+
+<div id="groupMembersModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:20px; border-radius:12px; width:90%; max-width:700px; max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">اعضای گروه</h3>
+            <button type="button" id="closeGroupMembersBtn" style="padding:8px 12px; background:#667eea; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">بستن</button>
+        </div>
+        <input type="text" id="groupMembersSearch" placeholder="جستجو اعضا..." style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #ddd; border-radius:4px;">
+        <div style="display:flex; gap:15px; margin-bottom:12px;">
+            <div style="flex:1;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:13px;">اعضای گروه:</label>
+                <div id="groupMembersListModal" style="max-height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:4px; padding:10px;"></div>
+            </div>
+            <div style="flex:1;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:13px;">اعضای انتخاب شده:</label>
+                <div id="selectedGroupMembersList" style="max-height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:4px; padding:10px; background:#f9f9f9;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editGroupNameModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:12px; width:90%; max-width:400px;">
+        <h3 style="margin-bottom:20px;">ویرایش نام گروه</h3>
+        <input type="text" id="editGroupNameInput" placeholder="نام جدید گروه" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:4px;">
+        <div style="display:flex; gap:10px;">
+            <button type="button" id="saveGroupNameBtn" style="flex:1; padding:10px; background:#667eea; color:white; border:none; border-radius:4px; cursor:pointer;">ذخیره</button>
+            <button type="button" id="cancelEditGroupNameBtn" style="flex:1; padding:10px; background:#ccc; color:#333; border:none; border-radius:4px; cursor:pointer;">لغو</button>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<script src="~/JS/jquery-3.6.0.min.js"></script>
+<script src="~/SignalR/signalr.min.js"></script>
+<script>
+    window.myUserId = '@User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)';
+    window.currentUserName = '@(User.Identity?.Name ?? "کاربر")';
+    window.currentUserImage = '@(ViewBag.CurrentUserImage ?? "/UserImage/Male.png")';
+    
+    $.ajaxSetup({
+        headers: {
+            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+        }
+    });
+    
+    $.get('/Chat/GetCurrentUserName', function(data) {
+        document.getElementById('currentUserDisplay').textContent = data.name;
+        window.currentUserName = data.name;
+    });
+    
+    $.get('/Chat/GetUserInfo?userId=' + window.myUserId, function(data) {
+        document.getElementById('currentUserImage').src = data.image;
+    });
+
+    window.notificationsEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
+    updateNotificationButtonState();
+
+    $('#notificationToggleBtn').click(function() {
+        window.notificationsEnabled = !window.notificationsEnabled;
+        localStorage.setItem('notificationsEnabled', window.notificationsEnabled);
+        updateNotificationButtonState();
+    });
+
+    function updateNotificationButtonState() {
+        const btn = $('#notificationToggleBtn');
+        if (window.notificationsEnabled) {
+            btn.addClass('active').removeClass('inactive');
+            btn.find('i').removeClass('fa-bell-slash-o').addClass('fa-bell');
+        } else {
+            btn.addClass('inactive').removeClass('active');
+            btn.find('i').removeClass('fa-bell').addClass('fa-bell-slash-o');
+        }
+    }
+
+    $('#tabUsers').click(function() {
+        $('#usersList').show();
+        $('#groupsList').hide();
+        $(this).addClass('active');
+        $('#tabGroups').removeClass('active');
+    });
+
+    $('#tabGroups').click(function() {
+        $('#usersList').hide();
+        $('#groupsList').show();
+        $(this).addClass('active');
+        $('#tabUsers').removeClass('active');
+        loadGroups();
+    });
+
+    $('#newGroupBtn').click(function() {
+        $.get('/Chat/GetAllUsers', function(users) {
+            let html = '';
+            users.forEach(function(user) {
+                html += `<div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #eee;" class="group-member-item" data-user-id="${user.id}" data-user-name="${user.name}"><input type="checkbox" class="group-member-checkbox" data-user-id="${user.id}" style="margin-left:10px;"><img src="${user.image}" alt="${user.name}" style="width:30px; height:30px; border-radius:50%; margin-left:10px;"><span>${user.name}</span></div>`;
+            });
+            $('#groupMembersList').html(html);
+            updateSelectedMembersList();
+            $('#createGroupModal').css('display', 'flex');
+        });
+    });
+
+    function updateSelectedMembersList() {
+        let selectedHtml = '';
+        $('.group-member-checkbox:checked').each(function() {
+            const userId = $(this).data('user-id');
+            const item = $(this).closest('.group-member-item');
+            const userName = item.data('user-name');
+            const userImage = item.find('img').attr('src');
+            selectedHtml += `<div style="display:flex; align-items:center; padding:8px; background:#e3f2fd; border-radius:4px; margin-bottom:5px;" data-user-id="${userId}"><img src="${userImage}" style="width:25px; height:25px; border-radius:50%; margin-left:8px;"><span style="flex:1;">${userName}</span><button type="button" class="remove-selected-btn" data-user-id="${userId}" style="background:none; border:none; color:#f44336; cursor:pointer; font-size:16px;"><i class="fa fa-times"></i></button></div>`;
+        });
+        $('#selectedMembersList').html(selectedHtml || '<div style="color:#999; text-align:center; padding:10px;">هیچ کاربری انتخاب نشده</div>');
+    }
+
+    $(document).on('change', '.group-member-checkbox', function() {
+        updateSelectedMembersList();
+    });
+
+    $(document).on('click', '.remove-selected-btn', function() {
+        const userId = $(this).data('user-id');
+        $(`.group-member-checkbox[data-user-id="${userId}"]`).prop('checked', false);
+        updateSelectedMembersList();
+    });
+
+    $(document).on('input', '#groupMemberSearch', function() {
+        const searchText = $(this).val().toLowerCase();
+        $('#groupMembersList .group-member-item').each(function() {
+            const userName = $(this).data('user-name').toLowerCase();
+            if (userName.includes(searchText)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    $('#cancelGroupBtn').click(function() {
+        $('#createGroupModal').hide();
+        $('#groupNameInput').val('');
+        $('.group-member-checkbox').prop('checked', false);
+        updateSelectedMembersList();
+    });
+
+    $('#groupMembersBtn').click(function() {
+        loadGroupMembersModal();
+        $('#groupMembersModal').css('display', 'flex');
+    });
+
+    $('#closeGroupMembersBtn').click(function() {
+        $('#groupMembersModal').hide();
+    });
+
+    $(document).on('dblclick', '#selectedUserName', function() {
+        if (window.currentGroupId) {
+            $.get('/GroupChat/GetUserGroups', function(groups) {
+                const group = groups.find(g => g.id === window.currentGroupId);
+                if (group) {
+                    $('#editGroupNameInput').val(group.name);
+                    $('#editGroupNameModal').css('display', 'flex');
+                }
+            });
+        }
+    });
+
+    $('#saveGroupNameBtn').click(function() {
+        const newName = $('#editGroupNameInput').val().trim();
+        if (!newName) {
+            alert('نام گروه را وارد کنید');
+            return;
+        }
+        $.post('/GroupChat/UpdateGroupName', { groupId: window.currentGroupId, newName: newName }, function(result) {
+            if (result.success) {
+                $('#selectedUserName').text(newName);
+                $('#editGroupNameModal').hide();
+            } else {
+                alert(result.error || 'خطا در ویرایش');
+            }
+        });
+    });
+
+    $('#cancelEditGroupNameBtn').click(function() {
+        $('#editGroupNameModal').hide();
+    });
+
+    $(document).on('input', '#groupMembersSearch', function() {
+        const searchText = $(this).val().toLowerCase();
+        $('#groupMembersListModal > div').each(function() {
+            const memberName = $(this).find('span').eq(0).text().toLowerCase();
+            if (memberName.includes(searchText)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    function loadGroupMembersModal() {
+        $.get('/GroupChat/GetGroupMembers', { groupId: window.currentGroupId }, function(members) {
+            $.get('/Chat/GetAllUsers', function(users) {
+                window.groupMembers = members;
+                window.allUsers = users;
+                displayGroupMembers(members, users);
+            });
+        });
+    }
+
+    function displayGroupMembers(members, users) {
+        let html = '';
+        const memberIds = members.map(m => m.userId);
+        users.forEach(function(user) {
+            if (!memberIds.includes(user.id)) {
+                html += `
+                    <div class="group-member-item" style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; justify-content:space-between;" data-user-id="${user.id}">
+                        <div style="display:flex; align-items:center;">
+                            <img src="${user.image}" alt="${user.name}" style="width:35px; height:35px; border-radius:50%; margin-left:10px;">
+                            <div style="font-weight:600;">${user.name}</div>
+                        </div>
+                        <button class="add-member-btn" data-user-id="${user.id}" style="padding:5px 10px; background:#4caf50; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">اضافه</button>
+                    </div>
+                `;
+            } else {
+                const member = members.find(m => m.userId === user.id);
+                html += `
+                    <div class="group-member-item" style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; justify-content:space-between;" data-user-id="${user.id}">
+                        <div style="display:flex; align-items:center;">
+                            <img src="${user.image}" alt="${user.name}" style="width:35px; height:35px; border-radius:50%; margin-left:10px;">
+                            <div>
+                                <div style="font-weight:600;">${user.name}</div>
+                                <div style="font-size:12px; color:#666;">${member.isAdmin ? 'مدیر' : 'عضو'}</div>
+                            </div>
+                        </div>
+                        <button class="remove-member-btn" data-user-id="${user.id}" style="padding:5px 10px; background:#f44336; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">حذف</button>
+                    </div>
+                `;
+            }
+        });
+        $('#groupMembersListModal').html(html);
+        updateSelectedGroupMembersList();
+    }
+
+    function updateSelectedGroupMembersList() {
+        let selectedHtml = '';
+        window.groupMembers.forEach(function(member) {
+            const user = window.allUsers.find(u => u.id === member.userId);
+            if (user) {
+                selectedHtml += `<div style="display:flex; align-items:center; padding:8px; background:#e3f2fd; border-radius:4px; margin-bottom:5px;" data-user-id="${user.id}"><img src="${user.image}" style="width:25px; height:25px; border-radius:50%; margin-left:8px;"><span style="flex:1;">${user.name}</span><button type="button" class="remove-group-member-btn" data-user-id="${user.id}" style="background:none; border:none; color:#f44336; cursor:pointer; font-size:16px;"><i class="fa fa-times"></i></button></div>`;
+            }
+        });
+        $('#selectedGroupMembersList').html(selectedHtml || '<div style="color:#999; text-align:center; padding:10px;">هیچ کاربری انتخاب نشده</div>');
+    }
+
+    $('#groupMembersSearch').on('input', function() {
+        const searchText = $(this).val().toLowerCase();
+        if (searchText.length === 0) {
+            displayGroupMembers(window.groupMembers, window.allUsers);
+        } else {
+            const filtered = window.groupMembers.filter(function(member) {
+                const user = window.allUsers.find(u => u.id === member.userId);
+                return user && user.name.toLowerCase().includes(searchText);
+            });
+            displayGroupMembers(filtered, window.allUsers);
+        }
+    });
+
+    $(document).on('click', '.remove-member-btn', function() {
+        const userId = $(this).data('user-id');
+        if (confirm('آیا مطمئن هستید؟')) {
+            $.post('/GroupChat/RemoveMember', { groupId: window.currentGroupId, userId: userId }, function(result) {
+                if (result.success) {
+                    loadGroupMembersModal();
+                }
+            });
+        }
+    });
+
+    $(document).on('click', '.add-member-btn', function() {
+        const userId = $(this).data('user-id');
+        $.post('/GroupChat/AddMember', { groupId: window.currentGroupId, userId: userId }, function(result) {
+            if (result.success) {
+                loadGroupMembersModal();
+            } else {
+                alert(result.error || 'خطا در اضافه کردن');
+            }
+        });
+    });
+
+    $('#createGroupBtn').click(function() {
+        const groupName = $('#groupNameInput').val().trim();
+        if (!groupName) {
+            alert('نام گروه را وارد کنید');
+            return;
+        }
+        
+        const selectedMembers = [];
+        $('.group-member-checkbox:checked').each(function() {
+            selectedMembers.push($(this).data('user-id'));
+        });
+        
+        $.post('/GroupChat/CreateGroup', { name: groupName, memberIds: selectedMembers }, function(result) {
+            if (result.success) {
+                $('#createGroupModal').hide();
+                $('#groupNameInput').val('');
+                $('.group-member-checkbox').prop('checked', false);
+                updateSelectedMembersList();
+                loadGroups();
+            }
+        });
+    });
+
+    function loadGroups() {
+        $.get('/GroupChat/GetUserGroups', function(groups) {
+            let html = '';
+            groups.forEach(function(group) {
+                html += `
+                    <div class="user-item group-item" data-group-id="${group.id}">
+                        <div class="user-avatar">
+                            <img src="${group.image}" alt="${group.name}" />
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">${group.name}</div>
+                            <div class="last-message">${group.memberCount} عضو</div>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#groupsList').html(html);
+        });
+    }
+
+    $(document).on('click', '.group-item', function() {
+        const groupId = $(this).data('group-id');
+        selectGroup(groupId);
+    });
+
+    function loadGroupMessages(groupId) {
+        $.get('/GroupChat/GetGroupMessages', { groupId: groupId }, function(messages) {
+            messages.forEach(function(msg) {
+                addGroupMessageToChat(msg);
+            });
+        });
+    }
+
+    function addGroupMessageToChat(msg) {
+        const isMine = msg.senderId === window.myUserId;
+        const html = `
+            <div class="message ${isMine ? 'mine' : ''}">
+                <div class="message-content">
+                    <span class="message-text">${msg.message}</span>
+                    <div class="message-time">${msg.sentAt}</div>
+                </div>
+            </div>
+        `;
+        $('#chatMessages').append(html);
+    }
+</script>
+<script src="~/js/chat.js"></script>
+
+</body>
+</html>

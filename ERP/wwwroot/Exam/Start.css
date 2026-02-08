@@ -1,0 +1,112 @@
+﻿
+body {
+    font-family: 'Tahoma', Arial, sans-serif;
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+    margin: 0;
+    padding: 20px;
+    color: #2D3436;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    max-width: 400px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(255, 107, 107, 0.3);
+    padding: 40px 30px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    margin: 20px;
+}
+
+h2 {
+    color: #E17055;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.error-msg {
+    background: linear-gradient(45deg, #ffebee, #ffcdd2);
+    color: #c62828;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid #d32f2f;
+    font-weight: bold;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    text-align: right;
+    font-weight: bold;
+    color: #6C5CE7;
+    margin-bottom: 5px;
+}
+
+input[type="text"] {
+    padding: 12px 15px;
+    border: 2px solid #00B894;
+    border-radius: 10px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    text-align: right;
+}
+
+    input[type="text"]:focus {
+        border-color: #E17055;
+        outline: none;
+        box-shadow: 0 0 10px rgba(225, 112, 85, 0.3);
+    }
+
+button[type="submit"] {
+    background: linear-gradient(45deg, #FF6B6B, #FF3838);
+    color: white;
+    border: none;
+    padding: 15px;
+    font-size: 1.1em;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    font-family: 'Tahoma', sans-serif;
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+    button[type="submit"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+        background: linear-gradient(45deg, #FF3838, #D63031);
+    }
+
+.info-msg {
+    background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+    color: #1565c0;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 20px;
+    border-left: 4px solid #1976d2;
+    font-size: 0.9em;
+    line-height: 1.4;
+    text-align: right;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+}

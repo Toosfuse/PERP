@@ -1,0 +1,47 @@
+﻿@using Kendo.Mvc.UI
+@model string
+
+@(Html.Kendo().DropDownList()
+    .Name("")
+    .BindTo(new List<SelectListItem>
+    {
+        new SelectListItem { Text = "شکستگی درپوش کنتور و محفظه", Value = "شکستگی درپوش کنتور و محفظه" },
+        new SelectListItem { Text = "اعمال جریان بیش از حد", Value = "اعمال جریان بیش از حد" },
+        new SelectListItem { Text = "کنترلر تغذیه", Value = "کنترلر تغذیه" },
+        new SelectListItem { Text = "پیچ CT", Value = "پیچ CT" },
+        new SelectListItem { Text = "بدون ایراد", Value = "بدون ایراد" },
+        new SelectListItem { Text = "ایراد نمایشگر (کارکتر)", Value = "ایراد نمایشگر (کارکتر)" },
+        new SelectListItem { Text = "تغییر تعرفه", Value = "تغییر تعرفه" },
+        new SelectListItem { Text = "سوختگی ترانس جریان", Value = "سوختگی ترانس جریان" },
+        new SelectListItem { Text = "خرابی دکمه", Value = "خرابی دکمه" },
+        new SelectListItem { Text = "اتصال کوتاه VCC-Ground", Value = "اتصال کوتاه VCC-Ground" },
+        new SelectListItem { Text = "مشکل ارتباطی", Value = "مشکل ارتباطی" },
+        new SelectListItem { Text = "خطای فریمور", Value = "خطای فریمور" },
+        new SelectListItem { Text = "ایراد رله", Value = "ایراد رله" },
+        new SelectListItem { Text = "تاریخ و ساعت", Value = "تاریخ و ساعت" },
+        new SelectListItem { Text = "تغذیه ماژول", Value = "تغذیه ماژول" },
+        new SelectListItem { Text = "APN اشتباه", Value = "APN اشتباه" },
+        new SelectListItem { Text = "فعال‌سازی لیمیتر", Value = "فعال‌سازی لیمیتر" },
+        new SelectListItem { Text = "شکستگی نمایشگر", Value = "شکستگی نمایشگر" },
+        new SelectListItem { Text = "سوختگی ترمینال", Value = "سوختگی ترمینال" },
+        new SelectListItem { Text = "ایراد باتری", Value = "ایراد باتری" },
+        new SelectListItem { Text = "نفوذ آب", Value = "نفوذ آب" },
+        new SelectListItem { Text = "بروزرسانی", Value = "بروزرسانی" },
+        new SelectListItem { Text = "دستکاری", Value = "دستکاری" },
+        new SelectListItem { Text = "پیچ هرز", Value = "پیچ هرز" },
+        new SelectListItem { Text = "سوختگی بُرد اصلی", Value = "سوختگی بُرد اصلی" },
+        new SelectListItem { Text = "خرابی RS 485", Value = "خرابی RS 485" },
+        new SelectListItem { Text = "عدم نمایش فاز L1, L2, L3", Value = "عدم نمایش فاز L1, L2, L3" },
+        new SelectListItem { Text = "تغییر حالت رله", Value = "تغییر حالت رله" },
+        new SelectListItem { Text = "عدم برق", Value = "عدم برق" },
+        new SelectListItem { Text = "نیاز به تست دقت", Value = "نیاز به تست دقت" },
+        new SelectListItem { Text = "عدم برق برد اصلی", Value = "عدم برق برد اصلی" },
+        new SelectListItem { Text = "خرابی نمایشگر", Value = "خرابی نمایشگر" },
+        new SelectListItem { Text = "ناقصی نمایشگر", Value = "ناقصی نمایشگر" },
+        new SelectListItem { Text = "سوختگی محفظه", Value = "سوختگی محفظه" }
+    })
+    .Value(Model)
+    .OptionLabel("انتخاب ایراد...")
+    .Filter("contains")   // فعال‌سازی قابلیت جستجو
+    .IgnoreCase(true)
+)

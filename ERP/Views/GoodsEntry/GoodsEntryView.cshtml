@@ -1,0 +1,2044 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@model ERP.Models.GoodsEntry
+
+@{
+    var guid = ViewBag.Guid;
+    var workflowInstance = ViewBag.WorkflowInstance as ERP.Models.WorkflowInstance;
+    var currentState = Model?.State ?? "start0";
+    var canEdit = ViewBag.CanEdit ?? false;
+    var isObserver = ViewBag.IsObserver ?? false;
+    var workflowSteps = ViewBag.WorkflowSteps as List<ERP.Models.WorkflowStep>;
+    var workflowHistory = ViewBag.WorkflowHistory as List<ERP.Models.WorkflowInstance> ?? new List<ERP.Models.WorkflowInstance>();
+
+    // بخش‌های تکمیل شده
+    var completedSections = workflowHistory
+        .Where(w => w.IsCompleted)
+        .Select(w => w.Section)
+        .Distinct()
+        .ToList();
+
+    // برای موازی بودن: چک کنیم آیا این بخش فعال هست یا نه
+    bool IsSectionActive(string section) =>
+        workflowHistory.Any(w => w.Section == section && !w.IsCompleted);
+
+    bool IsSectionCompleted(string section) =>
+        workflowHistory.Any(w => w.Section == section && w.IsCompleted);
+
+    var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+}
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-inbox" style="margin-left:10px;color:red"></i><span>ورود کالا</span><span class="id-card">@Model.GoodsEntryID</span> </h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb"></ul>
+</div>
+
+<input type="hidden" asp-for="GoodsEntryID" />
+<input type="hidden" value="@guid" name="Guid" id="Guid" />
+
+<div class="row justify-content-center align-items-center">
+    <div class="col-md-12">
+        <div class="tile">
+            <!-- بخش 1: اعلام ورود کالا -->
+            @if ((completedSections.Contains("start0") && (canEdit || isObserver)) || (currentState == "start0" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section1" @(canEdit && currentState == "start0" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">ورود کالا</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form1" novalidate>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    <label asp-for="S_persiandate" class="font-weight-bold">تاریخ درخواست</label>
+                                    <input asp-for="S_persiandate" class="form-control" data-jdp disabled autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="Shomare_Serial" class="font-weight-bold">شماره سریال</label>
+                                    <input asp-for="Shomare_Serial" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="TahvilDahande" class="font-weight-bold">تحویل دهنده</label>
+                                    <input asp-for="TahvilDahande" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="SaateVorud" class="font-weight-bold">ساعت ورود</label>
+                                    <input asp-for="SaateVorud" data-jdp data-jdp-only-time class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label asp-for="SaateKhoruj" class="font-weight-bold">ساعت خروج</label>
+                                    <input asp-for="SaateKhoruj" data-jdp data-jdp-only-time class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label asp-for="Phone" class="font-weight-bold">تلفن همراه</label>
+                                    <input asp-for="Phone" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label asp-for="Khodro" class="font-weight-bold">خودرو</label>
+                                    <input asp-for="Khodro" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(currentState != "start0" || !canEdit)" autocomplete="off" />
+                                </div>
+
+                            </div>
+                            <div class="form-row">
+                                <div class="col-md-12">
+                                    <label class="font-weight-bold">اقلام کالا</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover" id="GoodsTablee">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>شرح کالا</th>
+                                                    <th>تعداد</th>
+                                                    <th>واحد</th>
+                                                    <th>توضیحات</th>
+                                                    @if (currentState == "start0" && canEdit)
+                                                    {
+                                                        <th>عملیات</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- اقلام از دیتابیس توسط JavaScript لود می‌شوند -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (currentState == "start0" && canEdit)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success mt-2" onclick="addGoods()">افزودن کالا</button>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "start0" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message1" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- بخش 2: بررسی کالای ورودی -->
+            @if ((completedSections.Contains("BarrasiKala1") && (canEdit || isObserver)) || (currentState == "BarrasiKala1" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section2" @(canEdit && currentState == "BarrasiKala1" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی کالای ورودی</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form2" novalidate>
+                            @* {"NoeKala == 0": "ControlKeyfiat", "NoeKala == 1": "TazminKeyfiat","NoeKala == 2": "Other","NoeKala == 3": "Other",} *@
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">نوع کالای ورودی :</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="NoeKala" value="0" disabled="@(currentState != "BarrasiKala1" || !canEdit)">
+                                        <label class="form-check-label sq">خرید</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="NoeKala" value="1" disabled="@(currentState != "BarrasiKala1" || !canEdit)">
+                                        <label class="form-check-label sq">برگشت از مشتری</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="NoeKala" value="2" disabled="@(currentState != "BarrasiKala1" || !canEdit)">
+                                        <label class="form-check-label sq">برگشت امانی</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="NoeKala" value="3" disabled="@(currentState != "BarrasiKala1" || !canEdit)">
+                                        <label class="form-check-label sq">سایر</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12 BarrasiQC">
+                                    <label class="font-weight-bold">خرید از چه نوعی است؟ </label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="BarrasiQC" value="0" disabled="@(currentState != "BarrasiKala1" || !canEdit)">
+                                        <label class="form-check-label sq">نیاز به بررسی کنترل کیفیت دارد</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="BarrasiQC" value="1" disabled="@(currentState != "BarrasiKala1" || !canEdit)">
+                                        <label class="form-check-label sq">نیاز به بررسی کنترل کیفیت ندارد</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6 Shomarekala">
+                                    <label class="font-weight-bold">شماره کالای برگشتی</label>
+                                    <input asp-for="Shomarekala" class="form-control" disabled="@(currentState != "BarrasiKala1" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-6 ShomareBargasht">
+                                    <label class="font-weight-bold">شماره برگشت به انبار از مشتری</label>
+                                    <input asp-for="ShomareBargasht" class="form-control" disabled="@(currentState != "BarrasiKala1" || !canEdit)" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-5 File">
+                                    <label class="font-weight-bold"> فایل پیوست</label>
+                                    @if (currentState == "BarrasiKala1" && canEdit)
+                                    {
+                                        <div class="k-rtl" style="margin-right:5px">
+                                            <div class="demo-section">
+                                                @(
+                                                                                        Html.Kendo().Upload()
+                                                                                        .Name("files")
+                                                                                        .HtmlAttributes(new { aria_label = "files" })
+                                                                                        .Multiple(true)
+                                                                                        .Async(a => a
+                                                                                        .Save("Async_Save", "FileUpload")
+                                                                                        .Remove("Async_Remove", "FileUpload")
+                                                                                        .AutoUpload(true)
+                                                                                        )
+                                                                                        .Validation(validation =>
+                                                                                        {
+                                                                                            validation.MaxFileSize(10000000); // 10 MB
+                                                                                            validation.AllowedExtensions(new string[] { ".jpg", ".png", ".pdf", ".rar", ".zip", ".docx", ".doc", ".xlsx", ".xls" });
+                                                                                        })
+                                                                                        .Events(events => events
+                                                                                        .Upload("onUpload")
+                                                                                        .Remove("onRemove")
+                                                                                        )
+                                                                                        )
+                                        </div>
+                                    </div>
+                                                                }
+                                    else if (Model?.GoodsEntryID > 0)
+                                    {
+
+                                        <table class="table table-bordered HideTable" id="ali">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">نام فایل‌ها</th>
+                                                    <th scope="col">عملیات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tableFile">
+                                            </tbody>
+                                        </table>
+
+                                        <script>
+                                            $(document).ready(function () {
+                                                var goodsEntryId = $('#GoodsEntryID').val();
+                                                $.ajax({
+                                                    type: "POST",
+                                                    url: "/GoodsEntry/DownloadFile",
+                                                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                                                    data: { id: goodsEntryId },
+                                                    success: function (r) {
+                                                       if (r.status === 'OK' && r.data.length > 0) { // بررسی وجود فایل
+                                                                for (var i = 0; i < r.data.length; i++) {
+                                                                    var markup = "<tr><td scope='col'>" + r.data[i].Name + r.data[i].Extension + "</td><td scope='col'><a class='fa fa-download asd' href='/FileUpload/DownloadFileDatabase/" + r.data[i].FileID + "'></a></td></tr>";
+                                                                    $("#tableFile").append(markup);
+                                                                }
+                                                                $("#ali").removeClass("HideTable").addClass("ShowTable"); // نمایش جدول
+                                                            } else {
+                                                                $("#ali").removeClass("ShowTable").addClass("HideTable"); // مخفی نگه داشتن جدول
+                                                            }
+                                                    },
+                                                    failure: function (response) {
+                                                        alert(response.responseText);
+                                                    },
+                                                    error: function (response) {
+                                                        alert(response.responseText);
+                                                    }
+                                                });
+                                            });
+                                        </script>
+                                    }
+                                </div>
+                                <div class="form-group col-md-7 TozihatAnbar">
+                                    <label asp-for="TozihatAnbar" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="TozihatAnbar" class="form-control" rows="6" disabled="@(currentState != "BarrasiKala1" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4 S_persiandatetoQC">
+                                    <label class="font-weight-bold">تاریخ تحویل</label>
+                                    <input asp-for="S_persiandatetoQC" data-jdp class="form-control" disabled="@(currentState != "BarrasiKala1" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-4 SerialAnbar">
+                                    <label class="font-weight-bold">سریال انبار</label>
+                                    <input asp-for="SerialAnbar" class="form-control" disabled="@(currentState != "BarrasiKala1" || !canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-4 ShomarePPAP">
+                                    <label class="font-weight-bold">شماره PPAP در صورت نمونه بودن</label>
+                                    <input asp-for="ShomarePPAP" class="form-control" disabled="@(currentState != "BarrasiKala1" || !canEdit)" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="form-row GoodsItems">
+                                <div class="form-group col-md-12">
+                                    <label class="font-weight-bold">لیست کالاها</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="goodsTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>نام کالا</th>
+                                                    <th>نام تأمین‌کننده</th>
+                                                    <th>شماره رسید</th>
+                                                    <th>تعداد</th>
+                                                    <th>واحد</th>
+                                                    @if (currentState == "BarrasiKala1" && canEdit)
+                                                    {
+                                                        <th>عملیات</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody id="goodsTableBody">
+                                                <!-- اقلام از دیتابیس توسط JavaScript لود می‌شوند -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (currentState == "BarrasiKala1" && canEdit)
+                                    {
+                                        <button type="button" class="btn btn-success btn-sm mt-2" id="addGoodsRow">افزودن کالا</button>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (currentState == "BarrasiKala1" && canEdit)
+                            {
+                                <div class="row justify-content-center UnitUserID">
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label">انتخاب واحد</label>
+                                        <select class="form-control select2" id="UnitUserID" name="UnitUserID">
+                                            <option value="">لطفاً واحد را انتخاب کنید</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "BarrasiKala1" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message2" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- بخش 3: کنترل کیفیت -->
+            @if ((completedSections.Contains("ControlKeyfiat2") && (canEdit || isObserver)) || (currentState == "ControlKeyfiat2" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section3" @(canEdit && currentState == "ControlKeyfiat2" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی کنترل کیفیت</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form3" novalidate>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label asp-for="TozihatKeyfiat" class="font-weight-bold">توضیحات</label>
+                                    <textarea id="TozihatKeyfiat" name="TozihatKeyfiat" class="form-control" rows="4" disabled="@(currentState != "ControlKeyfiat2" || !canEdit)">جهت تنظیم برنامه مونتاژ و ارائه  به واحد تولید</textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "ControlKeyfiat2" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message3" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- بخش 4: تضمین کیفیت -->
+            @if ((completedSections.Contains("TazminKeyfiat3") && (canEdit || isObserver)) || (currentState == "TazminKeyfiat3" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section4" @(canEdit && currentState == "TazminKeyfiat3" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">تضمین کیفیت</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form4" novalidate>
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "TazminKeyfiat3" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message4" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- بخش 5:سایر -->
+            @if ((completedSections.Contains("Other4") && (canEdit || isObserver)) || (currentState == "Other4" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section5" @(canEdit && currentState == "Other4" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">سایر</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form5" novalidate>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">از انبار تحویل گرفته شد:</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" checked="checked" asp-for="isTahvil" value="true" disabled="@(currentState != "Other4" || !canEdit)">
+                                        <label class="form-check-label sq">بله</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="isTahvil" value="false" disabled="@(currentState != "Other4" || !canEdit)">
+                                        <label class="form-check-label sq">خیر</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-8">
+                                    <label asp-for="TozihatOther" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="TozihatOther" class="form-control" rows="6" disabled="@(currentState != "Other4" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                @if (currentState == "Other4" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message5" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- بخش 6:بررسی صنایع -->
+            @if ((completedSections.Contains("BarrasiSanaye5") && (canEdit || isObserver)) || (currentState == "BarrasiSanaye5" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section6" @(canEdit && currentState == "BarrasiSanaye5" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی واحد صنایع</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form6" novalidate>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label asp-for="TozihatSanaye" class="font-weight-bold">توضیحات</label>
+                                    <textarea name="TozihatSanaye" id="TozihatSanaye" class="form-control" rows="4" disabled="@(currentState != "BarrasiSanaye5" || !canEdit)">اقدام جهت مونتاژ یک روز خط</textarea>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                @if (currentState == "BarrasiSanaye5" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message6" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- بخش 7:بررسی تولید -->
+            @if ((completedSections.Contains("BaarasiTolid6") && (canEdit || isObserver)) || (currentState == "BaarasiTolid6" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section7" @(canEdit && currentState == "BaarasiTolid6" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی واحد تولید</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form7" novalidate>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="font-weight-bold">مورد تایید است ؟</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="isTayedTolid" value="true" disabled="@(currentState != "BaarasiTolid6" || !canEdit)">
+                                        <label class="form-check-label sq">بله</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="isTayedTolid" value="false" disabled="@(currentState != "BaarasiTolid6" || !canEdit)">
+                                        <label class="form-check-label sq">خیر</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-8">
+                                    <label asp-for="TozihatTolid" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="TozihatTolid" class="form-control" rows="6" disabled="@(currentState != "BaarasiTolid6" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                @if (currentState == "BaarasiTolid6" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message7" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- بخش 8:بررسی کنترل کیفیت -->
+            @if ((completedSections.Contains("BaarasiKeyfiat7") && (canEdit || isObserver)) || (currentState == "BaarasiKeyfiat7" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section8" @(canEdit && currentState == "BaarasiKeyfiat7" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">بررسی کنترل کیفیت</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form8" novalidate>
+                            <div class="form-row">
+                                <div id="itemsBody" class="col-md-12"></div>
+
+                            </div>
+                            <div class="text-center mt-4">
+                                @if (currentState == "BaarasiKeyfiat7" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message8" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+
+            <!-- ==================== بخش فنی مهندسی (فقط اگر نیاز باشه) ==================== -->
+            @{
+                var engInstance = workflowHistory.FirstOrDefault(w => w.Section == "EngReview9");
+                var showEngSection = engInstance != null;
+                var isEngEditor = showEngSection && engInstance.AssignedUserID.ToString() == currentUserId;
+                var engPending = showEngSection && !engInstance.IsCompleted;
+            }
+            @if (showEngSection)
+            {
+                <div class="card shadow-sm border-danger mt-4">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h5><i class="fa fa-tools"></i> بررسی فنی مهندسی - کالای مردود در کنترل کیفیت</h5>
+                    </div>
+                    <div class="card-body" @(isEngEditor && engPending ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                        <form id="formEng" novalidate>
+                            <input type="hidden" name="GoodsEntryID" value="@Model.GoodsEntryID" />
+                            <input type="hidden" name="Guid" value="@guid" />
+
+                            <div class="alert alert-warning text-center">
+                                <strong>کالاهای مردود شده در کنترل کیفیت - نیاز به بررسی فنی</strong>
+                            </div>
+                            <div id="engItemsBody" class="mb-4"></div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold text-danger">نظر نهایی:</label><br />
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" asp-for="IsApprovedByEng" value="true" required disabled="@(engPending != true)">
+                                    <label class="form-check-label text-success font-weight-bold">تأیید (قابل استفاده با شرایط)</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" asp-for="IsApprovedByEng" value="false" required disabled="@(engPending != true)">
+                                    <label class="form-check-label text-danger font-weight-bold">عدم تأیید (مرجوع به تأمین‌کننده)</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold">توضیحات فنی مهندسی <span class="text-danger">(الزامی)</span></label>
+                                <textarea asp-for="TozihatEng" id="TozihatEng" class="form-control" rows="6" required disabled="@(engPending != true)"></textarea>
+                            </div>
+
+                            @if (isEngEditor && engPending)
+                            {
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-danger btn-lg px-5">
+                                        <i class="fa fa-paper-plane"></i> ثبت نظر نهایی
+                                    </button>
+                                </div>
+                            }
+
+                            <div id="messageEng" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+
+            <!-- بخش 10 جهت اطلاع کیفیت -->
+            @if ((completedSections.Contains("Tadarakat10") && (canEdit || isObserver)) || (currentState == "Tadarakat10" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section6" @(canEdit && currentState == "Tadarakat10" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">تدارکات</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning text-center">
+                            <strong class="text-danger">اقدام تدارکات - کالای مردود فنی</strong><br />
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+            <!-- بخش 6:جهت اطلاع تدارکات -->
+            @if ((completedSections.Contains("TazminKeyfiat11") && (canEdit || isObserver)) || (currentState == "TazminKeyfiat11" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section6" @(canEdit && currentState == "TazminKeyfiat11" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">کیفیت</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning text-center">
+                            <strong class="text-danger">جهت اطلاع کیفیت</strong><br />
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+            <!-- ==================== بخش انبار (همیشه آخرین مرحله) ==================== -->
+            @{
+                var anbarInstance = workflowHistory.FirstOrDefault(w => w.Section == "Anbar8");
+                var isAnbarEditor = anbarInstance != null && canEdit;
+                var canCloseForm = isAnbarEditor && !engPending;
+            }
+            @if (anbarInstance != null || completedSections.Contains("Anbar8"))
+            {
+                <div class="card shadow-sm border-success mt-4">
+                    <div class="card-header bg-success text-white text-center">
+                        <h5 class="mb-0"><i class="fa fa-warehouse fa-2x"></i> اقدام نهایی انبار</h5>
+                    </div>
+                    <div class="card-body" @(isAnbarEditor ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+
+                        @* اگر بررسی فنی وجود داشته باشه و هنوز تموم نشده باشه *@
+                        @if (engPending)
+                        {
+                            <div class="alert alert-warning text-center">
+                                <i class="fa fa-lock fa-2x mb-3"></i><br />
+                                <strong class="text-danger">در انتظار نظر واحد فنی مهندسی</strong><br />
+                                تا اعلام نظر نهایی، امکان بستن فرم توسط انبار وجود ندارد.
+                            </div>
+                        }
+                        @* اگر بررسی فنی وجود داشته و تموم شده *@
+                        else if (engInstance != null && engInstance.IsCompleted)
+                        {
+                            <h3 class="text-center text-danger mb-4 mt-4">اقلام بررسی شده توسط واحد فنی و مهندسی</h3>
+                            if (Model.IsApprovedByEng == true)
+                            {
+                                <div class="alert alert-success text-center">
+                                    <i class="fa fa-check-circle"></i> واحد فنی مهندسی تأیید کرد: @Model.TozihatEng
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-danger text-center">
+                                    <i class="fa fa-times-circle"></i> واحد فنی مهندسی عدم تأیید کرد: @Model.TozihatEng
+                                </div>
+                            }
+                            <div id="engItemsBody2" class="mb-4"></div>
+                            <script>
+                                  $(document).ready(function () {
+                                    const goodsEntryId = $("#GoodsEntryID").val();
+                                    $.get("/GoodsEntry/GetRejectedItemsForEng", { goodsEntryId: goodsEntryId }, function (items) {
+                                        if (!items || items.length === 0) {
+                                            $("#engItemsBody2").html("<div class='text-center text-muted'>هیچ کالایی برای بررسی فنی یافت نشد.</div>");
+                                            return;
+                                        }
+
+                                        let html = `
+                                            <table class="table table-bordered table-striped table-danger">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                                                <th>نام کالا</th>
+                                                                                <th>تأمین‌کننده</th>
+                                                                                <th>شماره رسید</th>
+                                                                                <th>مقدار</th>
+                                                                                <th>واحد</th>
+                                                                                <th>پارامترهای کنترلی</th>
+                                                                                <th>آزمون</th>
+                                                                                <th>تعداد نمونه برداری</th>
+                                                                                <th>نتیجه نهایی</th>
+                                                                                <th>توضیحات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                        `;
+
+                                        items.forEach(item => {
+                                            html += `
+                                                <tr>
+                                                                        <td>${item.NameKala ?? ''}</td>
+                                                                        <td>${item.NameTaminkonandeh ?? ''}</td>
+                                                                        <td>${item.ShonarehResid ?? ''}</td>
+                                                                        <td>${item.Tedad ?? ''}</td>
+                                                                        <td>${item.Vahed ?? ''}</td>
+                                                                        <td>${item.Parameter ?? ''}</td>
+                                                                        <td>${item.Azmoon ?? ''}</td>
+                                                                        <td>${item.TedadNemoneh ?? ''}</td>
+                                                                        <td>${item.Natigeh ?? ''}</td>
+                                                                        <td>${item.Tozihat ?? ''}</td>
+                                                </tr>
+                                            `;
+                                        });
+
+                                        html += `</tbody></table>`;
+                                        $("#engItemsBody2").html(html);
+                                    });
+                                });
+                            </script>
+                        }
+                        @* اگر اصلاً بررسی فنی وجود نداشته (یعنی همه چیز قبول بوده) *@
+                        else
+                        {
+                            <div class="alert alert-info text-center">
+                                <i class="fa fa-thumbs-up"></i> تمام کالاها تأیید شده و آماده ورود به انبار هستند.
+                            </div>
+                        }
+
+                        <h2 class="text-center text-danger mb-4 mt-4">اقلام تأیید شده برای انبار</h2>
+                        <div id="itemsBody2" class="mb-4"></div>
+                        <script>
+                            $(document).ready(function () {
+                                const goodsEntryId = $("#GoodsEntryID").val();
+
+                                $.ajax({
+                                    url: "/GoodsEntry/GetAcceptedItems",
+                                    type: "GET",
+                                    data: { goodsEntryId: goodsEntryId },
+                                    success: function (items) {
+                                        if (!items || items.length === 0) {
+                                            $("#itemsBody2").html("<div class='text-center text-muted'>کالای قبولی یافت نشد.</div>");
+                                            return;
+                                        }
+
+                                        let html = `
+                                            <table class="table table-bordered table-striped table-sm">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>نام کالا</th>
+                                                        <th>تأمین‌کننده</th>
+                                                        <th>شماره رسید</th>
+                                                        <th>مقدار</th>
+                                                        <th>واحد</th>
+                                                        <th>پارامترهای کنترلی</th>
+                                                        <th>آزمون</th>
+                                                        <th>تعداد نمونه برداری</th>
+                                                        <th>نتیجه نهایی</th>
+                                                        <th>توضیحات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                        `;
+
+                                        items.forEach(function (item) {
+                                            html += `
+                                                <tr>
+                                                <td>${item.NameKala ?? ''}</td>
+                                                <td>${item.NameTaminkonandeh ?? ''}</td>
+                                                <td>${item.ShonarehResid ?? ''}</td>
+                                                <td>${item.Tedad ?? ''}</td>
+                                                <td>${item.Vahed ?? ''}</td>
+                                                <td>${item.Parameter ?? ''}</td>
+                                                <td>${item.Azmoon ?? ''}</td>
+                                                <td>${item.TedadNemoneh ?? ''}</td>
+                                                <td>${item.Natigeh ?? ''}</td>
+                                                <td>${item.Tozihat ?? ''}</td>
+                                                </tr>
+                                            `;
+                                        });
+
+                                        html += "</tbody></table>";
+                                        $("#itemsBody2").html(html);
+                                    },
+                                    error: function () {
+                                        $("#itemsBody2").html("<div class='text-danger'>خطا در دریافت اطلاعات.</div>");
+                                    }
+                                });
+                            });
+                        </script>
+                        <form id="form9" novalidate>
+                            <div class="text-center mt-5">
+                                @if (canCloseForm)
+                                {
+                                    <button type="submit" class="btn btn-success btn-lg px-5 shadow">
+                                        <i class="fa fa-check-double"></i> تأیید نهایی و بستن فرم
+                                    </button>
+                                }
+                                else if (isAnbarEditor && engPending)
+                                {
+                                    <button type="button" class="btn btn-secondary btn-lg px-5" disabled>
+                                        <i class="fa fa-lock"></i> در انتظار نظر فنی مهندسی
+                                    </button>
+                                    <p class="text-muted mt-3">تا نظر واحد فنی مهندسی، امکان بستن فرم نیست.</p>
+                                }
+                            </div>
+                            <div id="message9" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+
+
+<a onclick='openHistoryModal()'
+   class="floating-help-left2">
+    سوابق <i class="icon-spaced"></i>
+</a>
+<a href="javascript:void(0)" onclick="goBackAndRefresh()"
+   class="floating-help-left">
+    بازگشت <i class="fa fa-arrow-left icon-spaced"></i>
+</a>
+<div class="modal fade" id="AttachModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">سوابق</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="historyTable">
+                        <thead class="table-danger">
+                            <tr>
+                                <th scope="col">فرستنده</th>
+                                <th scope="col">گیرنده</th>
+                                <th scope="col">عنوان</th>
+                                <th scope="col">تاریخ ارسال</th>
+                                <th scope="col">تاریخ مشاهده</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableFile2"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/select 2/select 2.js"></script>
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>
+    <script>
+        function onUpload(e) {
+            e.data = {
+                guid: $("#Guid").val()
+            };
+        }
+        function onRemove(e) {
+            e.data = {
+                guid: $("#Guid").val()
+            };
+        }
+    </script>
+    <script>
+        let goodIndexx = 0;
+
+        // تابع برای افزودن ردیف جدید به جدول (فقط در حالت start0 و canEdit)
+        function addGoods() {
+            const table = document.getElementById('GoodsTablee').getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            const cell3 = row.insertCell(2);
+            const cell4 = row.insertCell(3);
+            const cell5 = row.insertCell(4);
+
+            cell1.innerHTML = `<input type="text" name="GoodsGuard[${goodIndexx}].SharhKala" class="form-control" />`;
+            cell2.innerHTML = `<input type="text" name="GoodsGuard[${goodIndexx}].Tedad" class="form-control" />`;
+            cell3.innerHTML = `<input type="text" name="GoodsGuard[${goodIndexx}].Vahed" class="form-control" />`;
+            cell4.innerHTML = `<input type="text" name="GoodsGuard[${goodIndexx}].Description" class="form-control" />`;
+            cell5.innerHTML = `<button type="button" class="btn btn-danger" onclick="this.closest('tr').remove()">حذف</button>`;
+            goodIndexx++;
+        }
+
+        // لود اقلام از دیتابیس
+        $(document).ready(function () {
+            const goodsEntryId = $('#GoodsEntryID').val();
+            const guid = $('#Guid').val();
+
+            // لود اقلام برای نمایش
+            if (goodsEntryId > 0) {
+                $.ajax({
+                    url: '/GoodsEntry/GetGoodsItems',
+                    type: 'GET',
+                    data: { goodsEntryId: goodsEntryId, guid: guid },
+                    success: function (response) {
+                        if (response && response.length > 0) {
+                            const tableBody = $('#GoodsTablee tbody');
+                            tableBody.empty();
+
+                            response.forEach(function (item) {
+                                const row = `<tr>
+                                    <td>${item.SharhKala || ''}</td>
+                                    <td>${item.Tedad || ''}</td>
+                                    <td>${item.Vahed || ''}</td>
+                                    <td>${item.Description || ''}</td>
+                                    @if (currentState == "start0" && canEdit)
+                                    {
+                                                                    <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">حذف</button></td>
+                                    }
+                                </tr>`;
+                                tableBody.append(row);
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error loading goods:", status, error);
+                    }
+                });
+            }
+
+            // افزودن ردیف اولیه در حالت start0
+            if ('@currentState' === 'start0' && '@canEdit' === 'True' && $('#GoodsTable tbody tr').length === 0) {
+                addGoods();
+            }
+        });
+
+        // مدیریت ارسال فرم
+        $('#form1').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find('[type=submit]');
+                $btn.prop('disabled', true).text('در حال ارسال...');
+
+                // اعتبارسنجی کالاها
+                const goodsRows = $('#GoodsTablee tbody tr');
+                let hasValidGoods = false;
+                goodsRows.each(function () {
+                    const sharhKala = $(this).find('input[name^="GoodsGuard"][name$=".SharhKala"]').val();
+                    const tedad = $(this).find('input[name^="GoodsGuard"][name$=".Tedad"]').val();
+                    const vahed = $(this).find('input[name^="GoodsGuard"][name$=".Vahed"]').val();
+                    const description = $(this).find('input[name^="GoodsGuard"][name$=".Description"]').val();
+                    if (sharhKala && tedad && vahed && description) {
+                        hasValidGoods = true;
+                    }
+                });
+
+                if (!hasValidGoods) {
+                    $('#message1').text('لطفاً حداقل یک کالا وارد کنید.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ثبت');
+                    return;
+                } else {
+                    $('#message1').text('').removeClass('text-danger');
+                }
+
+                const formData = {
+                    GoodsEntryID: $('#GoodsEntryID').val(),
+                    S_persiandate: $('#S_persiandate').val(),
+                    Shomare_Serial: $('#Shomare_Serial').val(),
+                    TahvilDahande: $('#TahvilDahande').val(),
+                    SaateVorud: $('#SaateVorud').val(),
+                    SaateKhoruj: $('#SaateKhoruj').val(),
+                    Khodro: $('#Khodro').val(),
+                    Phone: $('#Phone').val(),
+                    Guid: $('#Guid').val(),
+                    GoodsGuard: []
+                };
+
+                $('#GoodsTablee tbody tr').each(function () {
+                    const sharhKala = $(this).find('input[name^="GoodsGuard"][name$=".SharhKala"]').val();
+                    const tedad = $(this).find('input[name^="GoodsGuard"][name$=".Tedad"]').val();
+                    const vahed = $(this).find('input[name^="GoodsGuard"][name$=".Vahed"]').val();
+                    const description = $(this).find('input[name^="GoodsGuard"][name$=".Description"]').val();
+                    if (sharhKala && tedad && vahed && description) {
+                        formData.GoodsGuard.push({
+                            SharhKala: sharhKala,
+                            Tedad: tedad,
+                            Vahed: vahed,
+                            Description: description,
+                            Guid: $('#Guid').val()
+                        });
+                    }
+                });
+
+                $.ajax({
+                    url: '/GoodsEntry/SaveForm1',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $('#message1').text(response.message).removeClass().addClass('text-danger');
+                            $btn.prop('disabled', false).text('ثبت');
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsEntry")';
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message1').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        let goodsIndex = 0;
+
+        // تابع برای افزودن ردیف جدید به جدول (فقط در حالت BarrasiKala1 و canEdit)
+        $('#addGoodsRow').on('click', function () {
+            const row = `<tr>
+                <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].NameKala" /></td>
+                <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].NameTaminkonandeh" /></td>
+                <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].ShonarehResid" /></td>
+                <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].Tedad" /></td>
+                <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].Vahed" /></td>
+                <td><button type="button" class="btn btn-danger btn-sm remove-row">حذف</button></td>
+            </tr>`;
+            $('#goodsTableBody').append(row);
+            goodsIndex++;
+        });
+
+        // حذف ردیف
+        $(document).on('click', '.remove-row', function () {
+            $(this).closest('tr').remove();
+        });
+
+        // لود اقلام از دیتابیس
+        $(document).ready(function () {
+            const goodsEntryId = $('#GoodsEntryID').val();
+            const guid = $('#Guid').val();
+
+            // لود اقلام برای نمایش
+            if (goodsEntryId > 0) {
+                $.ajax({
+                    url: '/GoodsEntry/GetItems',
+                    type: 'GET',
+                    data: { goodsEntryId: goodsEntryId, guid: guid },
+                    success: function (response) {
+                        if (response && response.length > 0) {
+                            const tableBody = $('#goodsTableBody');
+                            tableBody.empty();
+
+                            response.forEach(function (item) {
+                                let row;
+                                if ('@currentState' === 'BarrasiKala1' && '@canEdit' === 'True') {
+                                    // نمایش به صورت اینپوت در حالت ویرایش
+                                    row = `<tr>
+                                        <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].NameKala" value="${item.NameKala || ''}" /></td>
+                                        <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].NameTaminkonandeh" value="${item.NameTaminkonandeh || ''}" /></td>
+                                        <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].ShonarehResid" value="${item.ShonarehResid || ''}" /></td>
+                                        <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].Tedad" value="${item.Tedad || ''}" /></td>
+                                        <td><input type="text" class="form-control goods-input" name="Goods[${goodsIndex}].Vahed" value="${item.Vahed || ''}" /></td>
+                                        <td><button type="button" class="btn btn-danger btn-sm remove-row">حذف</button></td>
+                                    </tr>`;
+                                    goodsIndex++;
+                                } else {
+                                    // نمایش به صورت متن ساده در حالت غیر ویرایش
+                                    row = `<tr>
+                                        <td>${item.NameKala || ''}</td>
+                                        <td>${item.NameTaminkonandeh || ''}</td>
+                                        <td>${item.ShonarehResid || ''}</td>
+                                        <td>${item.Tedad || ''}</td>
+                                        <td>${item.Vahed || ''}</td>
+                                    </tr>`;
+                                }
+                                tableBody.append(row);
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error loading goods:", status, error);
+                    }
+                });
+            }
+
+            // افزودن ردیف اولیه در حالت BarrasiKala1 و canEdit
+            if ('@currentState' === 'BarrasiKala1' && '@canEdit' === 'True' && $('#goodsTableBody tr').length === 0) {
+                $('#addGoodsRow').click();
+            }
+        });
+
+        // مدیریت ارسال فرم
+        $('#form2').on('submit', function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const $btn = $form.find('[type=submit]');
+            $btn.prop('disabled', true).text('در حال ارسال...');
+
+            if (!$form.parsley().validate()) {
+                $btn.prop('disabled', false).text('ارسال');
+                return;
+            }
+
+            const selectedNoeKala = $('input[name="NoeKala"]:checked').val();
+            const barrasiQC = $('input[name="BarrasiQC"]:checked').val();
+
+            // شرط نمایش/اجباری بودن انتخاب واحد
+            const needUnitUser =
+                (selectedNoeKala === "0" && barrasiQC === "1") ||
+                selectedNoeKala === "2" ||
+                selectedNoeKala === "3";
+
+            if (needUnitUser && !$('#UnitUserID').val()) {
+                $('#message2').text('لطفاً واحد را انتخاب کنید.').addClass('text-danger');
+                $btn.prop('disabled', false).text('ارسال');
+                return;
+            }
+
+            // جمع‌آوری سایر مقادیر
+            const goodsEntryId = $('#GoodsEntryID').val();
+            const goodsList = [];
+            const shomarekala = $('#Shomarekala').val();
+            const shomareBargasht = $('#ShomareBargasht').val();
+            const s_persiandatetoQC = $('#S_persiandatetoQC').val();
+            const serialAnbar = $('#SerialAnbar').val();
+
+            // جمع‌آوری داده‌های جدول فقط در حالت ویرایش
+            if ('@currentState' === 'BarrasiKala1' && '@canEdit' === 'True') {
+                $('#goodsTableBody tr').each(function () {
+                    const $row = $(this);
+                    const item = {
+                        GoodsEntryID: goodsEntryId,
+                        NameKala: $row.find('input[name^="Goods"][name$=".NameKala"]').val(),
+                        NameTaminkonandeh: $row.find('input[name^="Goods"][name$=".NameTaminkonandeh"]').val(),
+                        ShonarehResid: $row.find('input[name^="Goods"][name$=".ShonarehResid"]').val(),
+                        Tedad: $row.find('input[name^="Goods"][name$=".Tedad"]').val(),
+                        Vahed: $row.find('input[name^="Goods"][name$=".Vahed"]').val(),
+                        Guid: $('#Guid').val()
+                    };
+                    if (item.NameKala || item.Tedad || item.Vahed || item.NameTaminkonandeh || item.ShonarehResid) {
+                        goodsList.push(item);
+                    }
+                });
+            }
+
+            // اعتبارسنجی بر اساس نوع انتخاب
+            if (selectedNoeKala === "0") {
+                let isValid = true;
+                if ('@currentState' === 'BarrasiKala1' && '@canEdit' === 'True') {
+                    $('#goodsTableBody tr').each(function () {
+                        const $row = $(this);
+                        if (
+                            !$row.find('input[name^="Goods"][name$=".NameKala"]').val() ||
+                            !$row.find('input[name^="Goods"][name$=".Tedad"]').val() ||
+                            !$row.find('input[name^="Goods"][name$=".Vahed"]').val() ||
+                            !$row.find('input[name^="Goods"][name$=".NameTaminkonandeh"]').val() ||
+                            !$row.find('input[name^="Goods"][name$=".ShonarehResid"]').val()
+                        ) {
+                            isValid = false;
+                            return false;
+                        }
+                    });
+                }
+
+                if (!isValid) {
+                    $('#message2').text('برای حالت خرید، تمام فیلدها الزامی هستند.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ارسال');
+                    return;
+                }
+                if (!barrasiQC) {
+                    $('#message2').text('برای حالت خرید، بررسی کنترل کیفیت الزامی است.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ارسال');
+                    return;
+                }
+                if (!s_persiandatetoQC) {
+                    $('#message2').text('برای حالت خرید، تاریخ تحویل به QC الزامی است.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ارسال');
+                    return;
+                }
+                if (!serialAnbar) {
+                    $('#message2').text('برای حالت خرید، سریال انبار الزامی است.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ارسال');
+                    return;
+                }
+            } else if (selectedNoeKala === "1") {
+                if (!shomarekala || !shomareBargasht) {
+                    $('#message2').text('برای برگشت از مشتری، شماره کالا و برگشت الزامی است.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ارسال');
+                    return;
+                }
+            }
+
+            // ارسال AJAX
+            const formData = {
+                GoodsEntryID: $('#GoodsEntryID').val(),
+                NoeKala: selectedNoeKala,
+                BarrasiQC: barrasiQC,
+                TozihatAnbar: $('#TozihatAnbar').val(),
+                ShomarePPAP: $('#ShomarePPAP').val(),
+                Shomarekala: shomarekala,
+                ShomareBargasht: shomareBargasht,
+                S_persiandatetoQC: s_persiandatetoQC,
+                SerialAnbar: serialAnbar,
+                Guid: $('#Guid').val(),
+                Goods: goodsList,
+                UnitUserID: $('#UnitUserID').val(),
+            };
+
+            $.ajax({
+                url: '/GoodsEntry/SaveForm2',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    if (response.success === false) {
+                        $('#message2').text(response.message).removeClass().addClass('text-danger');
+                    } else {
+                        window.location.href = '@Url.Action("Index", "GoodsEntry")';
+                    }
+                    $btn.prop('disabled', false).text('ارسال');
+                },
+                error: function () {
+                    $('#message2').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ارسال');
+                }
+            });
+        });
+    </script>
+    <script>
+        $("#form3").on("submit", function (e) {
+          e.preventDefault();
+          if ($(this).parsley().validate()) {
+            let $btn = $(this).find("[type=submit]");
+            $btn.prop("disabled", true).text("در حال ارسال...");
+
+            const formData = {
+              GoodsEntryID: $("#GoodsEntryID").val(),
+              TozihatKeyfiat: $("#TozihatKeyfiat").val(),
+              Guid: $("#Guid").val(),
+            };
+
+            $.ajax({
+              url: "/GoodsEntry/SaveForm3",
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(formData),
+              success: function (response) {
+                if (response.success === false) {
+                  $("#message3")
+                    .text(response.message)
+                    .removeClass()
+                    .addClass("text-danger");
+                  $btn.prop("disabled", false).text("ارسال");
+                  return;
+                }
+                window.location.href = '@Url.Action("Index", "GoodsEntry")';
+              },
+              error: function () {
+                $("#message3")
+                  .text("خطا در ارتباط با سرور.")
+                  .addClass("text-danger");
+                $btn.prop("disabled", false).text("ارسال");
+              },
+            });
+          }
+        });
+    </script>
+    <script>
+        $("#form4").on("submit", function (e) {
+          e.preventDefault();
+          if ($(this).parsley().validate()) {
+            let $btn = $(this).find("[type=submit]");
+            $btn.prop("disabled", true).text("در حال ارسال...");
+
+            const formData = {
+              GoodsEntryID: $("#GoodsEntryID").val(),
+              Guid: $("#Guid").val(),
+            };
+
+            $.ajax({
+              url: "/GoodsEntry/SaveForm4",
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(formData),
+              success: function (response) {
+                if (response.success === false) {
+                  $("#message4")
+                    .text(response.message)
+                    .removeClass()
+                    .addClass("text-danger");
+                  $btn.prop("disabled", false).text("ارسال");
+                  return;
+                }
+                window.location.href = '@Url.Action("Index", "GoodsEntry")';
+              },
+              error: function () {
+                $("#message4")
+                  .text("خطا در ارتباط با سرور.")
+                  .addClass("text-danger");
+                $btn.prop("disabled", false).text("ارسال");
+              },
+            });
+          }
+        });
+    </script>
+    <script>
+        $("#form5").on("submit", function (e) {
+          e.preventDefault();
+          if ($(this).parsley().validate()) {
+            let $btn = $(this).find("[type=submit]");
+            $btn.prop("disabled", true).text("در حال ارسال...");
+
+            const formData = {
+              GoodsEntryID: $("#GoodsEntryID").val(),
+              Guid: $("#Guid").val(),
+              TozihatOther: $("#TozihatOther").val(),
+              isTahvil: $("#isTahvil").val(),
+            };
+
+            $.ajax({
+              url: "/GoodsEntry/SaveForm5",
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(formData),
+              success: function (response) {
+                if (response.success === false) {
+                  $("#message5")
+                    .text(response.message)
+                    .removeClass()
+                    .addClass("text-danger");
+                  $btn.prop("disabled", false).text("ارسال");
+                  return;
+                }
+                window.location.href = '@Url.Action("Index", "GoodsEntry")';
+              },
+              error: function () {
+                $("#message5")
+                  .text("خطا در ارتباط با سرور.")
+                  .addClass("text-danger");
+                $btn.prop("disabled", false).text("ارسال");
+              },
+            });
+          }
+        });
+    </script>
+    <script>
+        $("#form6").on("submit", function (e) {
+          e.preventDefault();
+          if ($(this).parsley().validate()) {
+            let $btn = $(this).find("[type=submit]");
+            $btn.prop("disabled", true).text("در حال ارسال...");
+
+            const formData = {
+              GoodsEntryID: $("#GoodsEntryID").val(),
+              Guid: $("#Guid").val(),
+              TozihatSanaye: $("#TozihatSanaye").val(),
+            };
+
+            $.ajax({
+              url: "/GoodsEntry/SaveForm6",
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(formData),
+              success: function (response) {
+                if (response.success === false) {
+                  $("#message5")
+                    .text(response.message)
+                    .removeClass()
+                    .addClass("text-danger");
+                  $btn.prop("disabled", false).text("ارسال");
+                  return;
+                }
+                window.location.href = '@Url.Action("Index", "GoodsEntry")';
+              },
+              error: function () {
+                $("#message6")
+                  .text("خطا در ارتباط با سرور.")
+                  .addClass("text-danger");
+                $btn.prop("disabled", false).text("ارسال");
+              },
+            });
+          }
+        });
+    </script>
+    <script>
+        $("#form7").on("submit", function (e) {
+          e.preventDefault();
+          if ($(this).parsley().validate()) {
+            let $btn = $(this).find("[type=submit]");
+            $btn.prop("disabled", true).text("در حال ارسال...");
+
+            const formData = {
+              GoodsEntryID: $("#GoodsEntryID").val(),
+              Guid: $("#Guid").val(),
+              isTayedTolid: $('input[name="isTayedTolid"]:checked').val(),
+              TozihatTolid: $("#TozihatTolid").val(),
+            };
+
+            $.ajax({
+              url: "/GoodsEntry/SaveForm7",
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(formData),
+              success: function (response) {
+                if (response.success === false) {
+                  $("#message7")
+                    .text(response.message)
+                    .removeClass()
+                    .addClass("text-danger");
+                  $btn.prop("disabled", false).text("ارسال");
+                  return;
+                }
+                window.location.href = '@Url.Action("Index", "GoodsEntry")';
+              },
+              error: function () {
+                $("#message7")
+                  .text("خطا در ارتباط با سرور.")
+                  .addClass("text-danger");
+                $btn.prop("disabled", false).text("ارسال");
+              },
+            });
+          }
+        });
+    </script>
+    <script>
+        const goodsEntryId = $('#GoodsEntryID').val();
+        const guid = $('#Guid').val();
+
+        function loadItems() {
+            $.getJSON('/GoodsEntry/GetItems2', { goodsEntryId, guid }, function (data) {
+                const isEditable = '@currentState' === 'BaarasiKeyfiat7' && '@canEdit' === 'True';
+                const tables = data.map((x, index) => {
+                    const fixedHeader = `
+                        <tr>
+                            <th>نام کالا</th>
+                            <th>تأمین‌کننده</th>
+                            <th>شماره رسید</th>
+                            <th>تعداد</th>
+                            <th>واحد</th>
+                        </tr>
+                    `;
+                    const fixedRow = `
+                        <tr>
+                            <td>${x.NameKala ?? 'wef'}</td>
+                            <td>${x.NameTaminkonandeh ?? 'wef'}</td>
+                            <td>${x.ShonarehResid ?? 'wef'}</td>
+                            <td>${x.Tedad ?? 'wef'}</td>
+                            <td>${x.Vahed ?? 'wef'}</td>
+                        </tr>
+                    `;
+                    const inputHeader = `
+                        <tr>
+                            <th>پارامتر</th>
+                            <th>آزمون</th>
+                            <th>تعداد نمونه</th>
+                            <th>نتیجه</th>
+                            <th>توضیحات</th>
+                        </tr>
+                    `;
+
+                    let inputRow = '';
+                    if (isEditable) {
+                        const checkedAppear = (x.Parameter && x.Parameter.includes('ظاهری')) ? 'checked' : '';
+                        const checkedAssembly = (x.Parameter && x.Parameter.includes('مونتاژ')) ? 'checked' : '';
+                        const checkedDimensional = (x.Parameter && x.Parameter.includes('ابعادی')) ? 'checked' : '';
+                        const checkedAccept = (x.Natigeh === 'قبول') ? 'checked' : '';
+                        const checkedReject = (x.Natigeh === 'مردود') ? 'checked' : '';
+                        const checkedIsEngTrue = (x.iSENG === true) ? 'checked' : '';
+                        const checkedIsEngFalse = (x.iSENG === false) ? 'checked' : '';
+                        const isEngDisplay = (x.Natigeh === 'مردود') ? 'style="display: block;"' : 'style="display: none;"';
+
+                        inputRow = `
+                            <tr>
+                                <td>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="checkbox" data-id="${x.GoodsEntryItemID}" data-field="Parameter" value="ظاهری" ${checkedAppear}>
+                                        <label class="form-check-label sq">ظاهری</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="checkbox" data-id="${x.GoodsEntryItemID}" data-field="Parameter" value="مونتاژ" ${checkedAssembly}>
+                                        <label class="form-check-label sq">مونتاژ</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="checkbox" data-id="${x.GoodsEntryItemID}" data-field="Parameter" value="ابعادی" ${checkedDimensional}>
+                                        <label class="form-check-label sq">ابعادی</label>
+                                    </div>
+                                </td>
+                                <td><input class="form-control v" data-id="${x.GoodsEntryItemID}" data-field="Azmoon" value="${x.Azmoon ?? ''}"></td>
+                                <td><input class="form-control v" data-id="${x.GoodsEntryItemID}" data-field="TedadNemoneh" value="${x.TedadNemoneh ?? ''}"></td>
+                                <td>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq natigeh-radio" type="radio" name="Natigeh_${x.GoodsEntryItemID}" data-id="${x.GoodsEntryItemID}" data-field="Natigeh" value="قبول" ${checkedAccept}>
+                                        <label class="form-check-label sq">قبول</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq natigeh-radio" type="radio" name="Natigeh_${x.GoodsEntryItemID}" data-id="${x.GoodsEntryItemID}" data-field="Natigeh" value="مردود" ${checkedReject}>
+                                        <label class="form-check-label sq">مردود</label>
+                                    </div>
+                                    <div class="is-eng-container" ${isEngDisplay}>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input sq" type="radio" name="iSENG_${x.GoodsEntryItemID}" data-id="${x.GoodsEntryItemID}" data-field="iSENG" value="true" ${checkedIsEngTrue}>
+                                            <label class="form-check-label sq">نیاز به بررسی فنی دارد</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input sq" type="radio" name="iSENG_${x.GoodsEntryItemID}" data-id="${x.GoodsEntryItemID}" data-field="iSENG" value="false" ${checkedIsEngFalse}>
+                                            <label class="form-check-label sq">نیاز به بررسی فنی ندارد</label>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input class="form-control v" data-id="${x.GoodsEntryItemID}" data-field="Tozihat" value="${x.Tozihat ?? ''}"></td>
+                            </tr>
+                        `;
+                    } else {
+                        inputRow = `
+                            <tr>
+                                <td>${x.Parameter ?? ''}</td>
+                                <td>${x.Azmoon ?? ''}</td>
+                                <td>${x.TedadNemoneh ?? ''}</td>
+                                <td>
+                                    ${x.Natigeh ?? ''}
+                                    ${x.Natigeh === 'مردود' ? (x.iSENG === true ? '<br>نیاز به بررسی فنی: دارد' : x.iSENG === false ? '<br>نیاز به بررسی فنی: ندارد' : '') : ''}
+                                </td>
+                                <td>${x.Tozihat ?? ''}</td>
+                            </tr>
+                        `;
+                    }
+
+                    return `
+                        <table class="item-table">
+                            <thead>
+                                ${fixedHeader}
+                                ${fixedRow}
+                            </thead>
+                            <tbody>
+                                ${inputHeader}
+                                ${inputRow}
+                            </tbody>
+                        </table>
+                    `;
+                }).join('');
+
+                $('#itemsBody').html(tables);
+
+                // مدیریت نمایش/مخفی کردن iSENG بر اساس انتخاب Natigeh
+                if (isEditable) {
+                    $('.natigeh-radio').on('change', function () {
+                        const row = $(this).closest('tr');
+                        const isEngContainer = row.find('.is-eng-container');
+                        if ($(this).val() === 'مردود') {
+                            isEngContainer.show();
+                        } else {
+                            isEngContainer.hide();
+                            row.find('input[name^="iSENG_"]').prop('checked', false); // Reset iSENG radio buttons
+                        }
+                    });
+                }
+            });
+        }
+
+        $(document).ready(loadItems);
+
+        $("#form8").on("submit", function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find("[type=submit]");
+                $btn.prop("disabled", true).text("در حال ارسال...");
+
+                const formData = {
+                    GoodsEntryID: $("#GoodsEntryID").val(),
+                    Guid: $("#Guid").val(),
+                    Items: []
+                };
+
+                $('.item-table tbody tr').each(function () {
+                    const inputs = $(this).find('input');
+                    if (inputs.length > 0) {
+                        const id = inputs.eq(0).data('id');
+                        let item = formData.Items.find(x => x.GoodsEntryItemID === id);
+                        if (!item) {
+                            item = { GoodsEntryItemID: id };
+                            formData.Items.push(item);
+                        }
+                        const checkedParams = [];
+                        $(this).find('input[type="checkbox"][data-field="Parameter"]:checked').each(function () {
+                            checkedParams.push($(this).val());
+                        });
+                        item.Parameter = checkedParams.join(',');
+                        const selectedNatigeh = $(this).find('input[type="radio"][data-field="Natigeh"]:checked').val() || '';
+                        item.Natigeh = selectedNatigeh;
+                        item.Azmoon = inputs.filter('[data-field="Azmoon"]').val() || '';
+                        item.TedadNemoneh = inputs.filter('[data-field="TedadNemoneh"]').val() || '';
+                        item.Tozihat = inputs.filter('[data-field="Tozihat"]').val() || '';
+                        const selectedIsEng = $(this).find('input[type="radio"][data-field="iSENG"]:checked').val();
+                        item.iSENG = selectedNatigeh === 'مردود' ? (selectedIsEng ? selectedIsEng === 'true' : null) : null; // Set iSENG only if Natigeh is 'مردود'
+                    }
+                });
+
+                $.ajax({
+                    url: "/GoodsEntry/SaveForm8",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $("#message8")
+                                .text(response.message)
+                                .removeClass()
+                                .addClass("text-danger");
+                            $btn.prop("disabled", false).text("ثبت");
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsEntry")';
+                    },
+                    error: function () {
+                        $("#message8")
+                            .text("خطا در ارتباط با سرور.")
+                            .addClass("text-danger");
+                        $btn.prop("disabled", false).text("ثبت");
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        $("#form9").on("submit", function (e) {
+          e.preventDefault();
+          if ($(this).parsley().validate()) {
+            let $btn = $(this).find("[type=submit]");
+            $btn.prop("disabled", true).text("در حال ارسال...");
+
+            const formData = {
+              GoodsEntryID: $("#GoodsEntryID").val(),
+              Guid: $("#Guid").val(),
+            };
+
+            $.ajax({
+              url: "/GoodsEntry/SaveForm9",
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(formData),
+              success: function (response) {
+                if (response.success === false) {
+                  $("#message9")
+                    .text(response.message)
+                    .removeClass()
+                    .addClass("text-danger");
+                  $btn.prop("disabled", false).text("ارسال");
+                  return;
+                }
+                window.location.href = '@Url.Action("Index", "GoodsEntry")';
+              },
+              error: function () {
+                $("#message9")
+                  .text("خطا در ارتباط با سرور.")
+                  .addClass("text-danger");
+                $btn.prop("disabled", false).text("ارسال");
+              },
+            });
+          }
+        });
+    </script>
+    <script>
+        // لود کالاهای مردود که نیاز به بررسی فنی دارند
+        $(document).ready(function () {
+            const goodsEntryId = $("#GoodsEntryID").val();
+            $.get("/GoodsEntry/GetRejectedItemsForEng", { goodsEntryId: goodsEntryId }, function (items) {
+                if (!items || items.length === 0) {
+                    $("#engItemsBody").html("<div class='text-center text-muted'>هیچ کالایی برای بررسی فنی یافت نشد.</div>");
+                    return;
+                }
+
+                let html = `
+                    <table class="table table-bordered table-striped table-danger">
+                        <thead class="thead-dark">
+                            <tr>
+                                                        <th>نام کالا</th>
+                                                        <th>تأمین‌کننده</th>
+                                                        <th>شماره رسید</th>
+                                                        <th>مقدار</th>
+                                                        <th>واحد</th>
+                                                        <th>پارامترهای کنترلی</th>
+                                                        <th>آزمون</th>
+                                                        <th>تعداد نمونه برداری</th>
+                                                        <th>نتیجه نهایی</th>
+                                                        <th>توضیحات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                items.forEach(item => {
+                    html += `
+                        <tr>
+                                                <td>${item.NameKala ?? ''}</td>
+                                                <td>${item.NameTaminkonandeh ?? ''}</td>
+                                                <td>${item.ShonarehResid ?? ''}</td>
+                                                <td>${item.Tedad ?? ''}</td>
+                                                <td>${item.Vahed ?? ''}</td>
+                                                <td>${item.Parameter ?? ''}</td>
+                                                <td>${item.Azmoon ?? ''}</td>
+                                                <td>${item.TedadNemoneh ?? ''}</td>
+                                                <td>${item.Natigeh ?? ''}</td>
+                                                <td>${item.Tozihat ?? ''}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table>`;
+                $("#engItemsBody").html(html);
+            });
+        });
+
+        // ارسال فرم بررسی فنی
+        $("#formEng").on("submit", function (e) {
+            e.preventDefault();
+            if (!$(this).parsley().validate()) return;
+
+            const $btn = $(this).find("button[type=submit]");
+            $btn.prop("disabled", true).html("در حال ارسال...");
+
+            const formData = {
+                GoodsEntryID: $("#GoodsEntryID").val(),
+                Guid: $("#Guid").val(),
+                IsApprovedByEng: $("input[name='IsApprovedByEng']:checked").val() === "true",
+                TozihatEng: $("#TozihatEng").val()
+            };
+
+            $.ajax({
+                url: "/GoodsEntry/SaveFormEng",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(formData),
+                success: function (res) {
+                    if (res.success) {
+                        window.location.href = '@Url.Action("Index", "GoodsEntry")';
+                    } else {
+                        $("#messageEng").html(`<div class="alert alert-danger">${res.message}</div>`);
+                        $btn.prop("disabled", false).html(`<i class="fa fa-paper-plane"></i> ثبت نظر نهایی`);
+                    }
+                },
+                error: function () {
+                    $("#messageEng").html(`<div class="alert alert-danger">خطا در ارتباط با سرور.</div>`);
+                    $btn.prop("disabled", false).html(`<i class="fa fa-paper-plane"></i> ثبت نظر نهایی`);
+                }
+            });
+        });
+    </script>
+    <script>
+             $(document).ready(function () {
+            $.ajax({
+                url: '/GoodsEntry/GetUnitUser',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    var $dropdown = $('#UnitUserID');
+                    $dropdown.empty();
+                    $dropdown.append($('<option>', {
+                        value: '',
+                        text: 'یک شخص را انتخاب کنید'
+                    }));
+
+                    // افزودن کاربران
+                    $.each(data, function (index, user) {
+                        $dropdown.append($('<option>', {
+                            value: user.id,
+                            text: user.text
+                        }));
+                    });
+
+                    // راه‌اندازی Select2
+                    $dropdown.select2({
+                        placeholder: "انتخاب فرد ",
+                        allowClear: true,
+                        dir: "rtl",
+                        width: '100%'
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error:", status, error); // برای دیباگ
+                    console.log("Response:", xhr.responseText); // متن پاسخ سرور
+                    alert('خطا در دریافت لیست کاربران: ' + error);
+                }
+            });
+        });
+    </script>
+    <script>
+        $(function () {
+
+            function toggleFields() {
+                const selected = $('input[name="NoeKala"]:checked').val();
+                const barrasiQC = $('input[name="BarrasiQC"]:checked').val(); // مقدار رادیو کنترل کیفیت
+
+                // مخفی کردن همه
+                $('.BarrasiQC, .Shomarekala, .ShomareBargasht, .File, .TozihatAnbar, ' +
+                  '.GoodsItems, .S_persiandatetoQC, .SerialAnbar, .ShomarePPAP, .UnitUserID')
+                  .addClass('d-none');
+
+                if (selected === "0") { // خرید
+                    $('.BarrasiQC, .GoodsItems, .S_persiandatetoQC, .SerialAnbar, .ShomarePPAP')
+                        .removeClass('d-none');
+
+                    // ✨ نمایش انتخاب واحد فقط اگر نیاز به کنترل کیفیت ندارد
+                    if (barrasiQC === "1") {
+                        $('.UnitUserID').removeClass('d-none');
+                    }
+                }
+                else if (selected === "1") { // برگشت از مشتری
+                    $('.Shomarekala, .ShomareBargasht, .File, .TozihatAnbar')
+                        .removeClass('d-none');
+                }
+                else if (selected === "2" || selected === "3") { // برگشت امانی یا سایر
+                    $('.File, .TozihatAnbar, .UnitUserID').removeClass('d-none');
+                }
+            }
+
+            // اجرای اولیه
+            toggleFields();
+
+            // تغییر انتخاب نوع کالا
+            $('input[name="NoeKala"]').on('change', toggleFields);
+            // تغییر انتخاب کنترل کیفیت (فقط حالت خرید مهم است)
+            $('input[name="BarrasiQC"]').on('change', toggleFields);
+
+
+            // ===== اعتبارسنجی در ارسال =====
+            $('#form2').on('submit', function (e) {
+                const selected = $('input[name="NoeKala"]:checked').val();
+                const barrasiQC = $('input[name="BarrasiQC"]:checked').val();
+                const unitVal = $('#UnitUserID').val();
+
+                // اگر باید نمایش داده شود ولی کاربر انتخاب نکرده باشد
+                const mustHaveUnit =
+                    (selected === "0" && barrasiQC === "1") ||
+                    selected === "2" ||
+                    selected === "3";
+
+                if (mustHaveUnit && !unitVal) {
+                    e.preventDefault();
+                    $('#message2').text('لطفاً واحد را انتخاب کنید.').addClass('text-danger');
+                    return false;
+                }
+            });
+        });
+    </script>
+    <script>
+        function openHistoryModal() {
+                    var Guid = $("#Guid").val();
+                    $.ajax({
+                        type: "POST",
+                        url: "/GoodsEntry/History",
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        data: { Guid: Guid },
+                        success: function (response) {
+                            if (response.status === 'OK') {
+                                $('#tableFile2').empty();
+                                if (response.data.length > 0) {
+                                    $.each(response.data, function (i, item) {
+                                        var markup = `<tr>
+                                            <td>${item.SenderID}</td>
+                                            <td>${item.ReceiverID}</td>
+                                            <td>${item.Title}</td>
+                                            <td>${item.SendDateTime}</td>
+                                            <td>${item.ViewDateTime}</td>
+                                        </tr>`;
+                                        $("#tableFile2").append(markup);
+                                    });
+                                    $("#historyTable").show();
+                                } else {
+                                    $("#tableFile2").append('<tr><td colspan="6" class="text-center">هیچ رکوردی یافت نشد</td></tr>');
+                                    $("#historyTable").show();
+                                }
+                            }
+                            $("#AttachModal").modal('show');
+                        },
+                        error: function (xhr, status, error) {
+                            alert('خطا در ارتباط با سرور: ' + error);
+                        }
+                    });
+                }
+    </script>
+}
+
+
+@section styles {
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .form-control {
+            border: 2px solid black;
+        }
+
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #dee2e6;
+        }
+
+        input.sq[type="radio"][disabled] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+            input.sq[type="radio"][disabled] + label.sq {
+                position: relative;
+                padding-left: 25px;
+                cursor: not-allowed;
+                user-select: none;
+                line-height: 20px;
+                display: inline-block;
+                color: black;
+            }
+
+                input.sq[type="radio"][disabled] + label.sq::before {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 18px;
+                    height: 18px;
+                    border: 2px solid #aaa;
+                    border-radius: 3px;
+                    background: #f5f5f5;
+                    box-sizing: border-box;
+                }
+
+            input.sq[type="radio"][disabled]:checked + label.sq::before {
+                background-color: white;
+                border-color: black;
+                content: "✓";
+                color: black;
+                font-weight: bold;
+                font-size: 15px;
+                text-align: center;
+                line-height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            line-height: 40px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+        }
+
+        .HideTable {
+            display: none !important;
+        }
+
+        .ShowTable {
+            display: inline-table !important;
+        }
+
+        .floating-help-left {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(45deg, #d32f2f, #b71c1c);
+            color: #fff;
+            padding: 10px 16px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+            .floating-help-left:hover {
+                background: linear-gradient(45deg, #c62828, #8e0000);
+                text-decoration: none;
+                padding-left: 20px;
+            }
+
+        .floating-help-left2 {
+            position: fixed;
+            top: 40%; /* کمی بالاتر از وسط */
+            left: 0;
+            background: linear-gradient(45deg, #1976d2, #0d47a1);
+            color: #fff !important;
+            padding: 10px 16px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-bottom: 10px; /* فاصله از دکمه بعدی */
+            cursor: pointer;
+        }
+
+            .floating-help-left2:hover {
+                background: linear-gradient(45deg, #1565c0, #002171) text-decoration: none;
+                padding-left: 20px;
+            }
+
+        .icon-spaced {
+            margin-right: 10px;
+        }
+
+        .modal-xl {
+            max-width: 70%;
+        }
+    </style>
+    <style>
+        .id-card {
+            padding: 6px 14px;
+            background: #ffffff;
+            border: 2px solid #dc3545;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc3545;
+            margin-right: 10px;
+            box-shadow: 0 0 6px rgba(220,53,69,0.3);
+        }
+
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            border-radius: 50px !important;
+            border: solid #a4a3a3 !important;
+        }
+
+            .item-table th, .item-table td {
+                border: 1px solid #dee2e6;
+                padding: 8px;
+            }
+
+
+            .item-table th, .item-table td {
+                border: 1px solid #dee2e6;
+                padding: 8px;
+                text-align: center; /* وسط‌چین کردن محتوا */
+            }
+
+            .item-table th {
+                color: limegreen;
+            }
+
+        .v {
+            border: 1px solid #dee2e6;
+        }
+    </style>
+}

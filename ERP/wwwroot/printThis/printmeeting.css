@@ -1,0 +1,42 @@
+﻿/* برای صفحه نمایش عادی */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* تنظیمات مخصوص پرینت */
+@media print {
+    /* همه چیز را مخفی کن */
+    body * {
+        visibility: hidden;
+    }
+
+    /* فقط myForm1 را نمایش بده */
+    #myForm1, #myForm1 * {
+        visibility: visible;
+    }
+
+    /* myForm1 را در بالای صفحه قرار بده */
+    #myForm1 {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    /* تنظیم سایز A4 */
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+
+    /* جدول‌ها صفحه را نصفه نکنند */
+    table {
+        page-break-inside: avoid;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+    }
+}

@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "نمودار امتیازات سؤالات";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-file-text" style="margin-left:10px;color:red"></i>تحلیل داده های نظرسنجی</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+
+<div id="user-score-chart" style="min-height: 400px;"></div>
+
+<script src="~/Highcharts-9.0.1/highcharts.js"></script>
+<script>
+    fetch('/Reports/GetTopUserScore')
+        .then(res => res.json())
+        .then(data => {
+            const max = Math.max(...data.map(d => d.y));
+            const min = Math.min(...data.map(d => d.y));
+
+            Highcharts.chart('user-score-chart', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'مقایسه امتیاز افراد پرکننده فرم'
+                },
+                xAxis: {
+                    categories: data.map(d => d.name),
+                    title: { text: 'نام خانوادگی' },
+                    labels: {
+                        rotation: -45,
+                        style: { fontSize: '12px', fontFamily: 'Tahoma' }
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: { text: 'امتیاز کل (از 70)' }
+                },
+                series: [{
+                    name: 'امتیاز',
+                    data: data.map(d => ({
+                        name: d.name,
+                        y: d.y,
+                        color: d.totalScore === max ? 'green' :
+                               d.totalScore === min ? 'red' : '#7cb5ec'
+                    })),
+                    colorByPoint: true,
+                    groupPadding: 0,
+                    dataLabels: {
+                        enabled: true,
+                        rotation: 0,
+                        color: '#FFFFFF',
+                        align: 'center',
+                        format: '{point.y:.f}', // one decimal
+                        y: 0, // 10 pixels down from the top
+                        style: {
+                            fontSize: '13px',
+                            fontFamily: 'shabnam'
+                        }
+                    }
+                }],
+                tooltip: {
+                    pointFormat: '<b>{point.y}</b> امتیاز',
+                    style: { fontFamily: 'Tahoma' }
+                },
+                credits: { enabled: false }
+            });
+        });
+</script>

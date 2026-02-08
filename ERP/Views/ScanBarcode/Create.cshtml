@@ -1,0 +1,556 @@
+﻿@model ERP.ViewModels.ScanNamePlateViewModel
+@using Kendo.Mvc.UI
+@using ERP.ViewModels
+
+@{
+    ViewData["Title"] = "اسکن نیم‌پلیت";
+    Layout = "_EmptyLayout";
+}
+
+<div class="container-fluid mt-0 scan-page d-flex justify-content-center" dir="rtl">
+    <div class="scan-wrapper">
+    @Html.AntiForgeryToken()
+
+    <!-- Alert -->
+    <div id="alertContainer" class="mt-2"></div>
+
+    <div class="card scan-card shadow-lg border-0">
+
+        <!-- ================= Header ================= -->
+            <div class="card-header scan-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 fw-bold">
+                    <i class="fa fa-barcode ms-2"></i>
+                    شماره سفارش:@Model.OrderNumber  / کد محصول:@Model.CodeProduct
+                </h3>
+
+                <div class="d-flex" style="gap: 30px;">
+                    <button class="btn btn-warning btn-lg remaining-btn"
+                            data-toggle="modal"
+                            data-target="#remainingModal">
+                        <i class="fa fa-list ms-2"></i>
+                        نیم‌پلیت‌های باقی‌مانده
+                    </button>
+
+                    <button class="btn btn-danger btn-lg"
+                            onclick="history.back()">
+                        <i class="fa fa-arrow-right ms-2"></i>
+                        بازگشت
+                    </button>
+                </div>
+            </div>
+
+
+        <!-- ================= Body ================= -->
+        <div class="p-1">
+
+            <!-- Info -->
+            <div class="row g-4 mb-2">
+
+                    <div class="col-lg-4">
+                    <div class="info-box bg-info text-white d-flex justify-content-between align-items-center px-3">
+                        <div class="info-title mb-0">شهر</div>
+                            <div class="info-title mb-0 px-3">@Model.CityName</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="info-box bg-primary text-white d-flex justify-content-between align-items-center px-3">
+                        <div class="info-title mb-0">سریال اولیه</div>
+                            <div class="info-title ltr mb-0 px-3">@Model.StartSerial</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="info-box bg-primary text-white d-flex justify-content-between align-items-center px-3">
+                        <div class="info-title mb-0">سریال انتهایی</div>
+                            <div class="info-title ltr mb-0 px-3">@Model.EndSerial</div>
+                    </div>
+                </div>
+
+            </div>
+
+            @{
+                long total =
+                long.Parse(Model.EndSerial.Replace("-", "")) -
+                long.Parse(Model.StartSerial.Replace("-", "")) + 1;
+
+                long remaining = total - Model.ScannedCount;
+            }
+
+            <!-- Counters -->
+            <div class="row  text-center">
+
+                    <div class="col-md-6">
+                        <div class="stat-box danger d-flex justify-content-between align-items-center">
+                            <div class="stat-title mb-0">تعداد کل</div>
+                            <div class="stat-title mb-0">@total.ToString("N0")</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="stat-box @(remaining == 0 ? "success" : "warning") d-flex justify-content-between align-items-center">
+                            <div class="stat-title mb-0">تعداداسکن شده</div>
+                            <div class="stat-title mb-0" id="scannedCount">
+                                @(remaining == 0 ? "همه ثبت شده" : Model.ScannedCount.ToString("N0"))
+                            </div>
+                        </div>
+                    </div>
+
+            </div>
+
+            <!-- Scan Input -->
+            <div class="scan-input-wrapper mb-5 text-center">
+                <label class="scan-label">اسکن بارکد نیم‌پلیت</label>
+                <input type="text"
+                       id="serialInput"
+                       class="form-control scan-input"
+                       placeholder="بارکدرااسکن کنید..."
+                       autofocus autocomplete="off" />
+            </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="k-rtl p-3 bg-light rounded-3">
+
+                            @(Html.Kendo().Grid<MeterSerialInfo>()
+                                                        .Name("guestentrygrid")
+                                                        .Columns(columns =>
+                                                        {
+                                                            columns.Bound(c => c.Serial)
+                                                            .Title("شماره سریال")
+                                                            .Width(180)
+                                                            .HtmlAttributes(new { @class = "text-center" })
+                                                            .HeaderHtmlAttributes(new { @class = "text-center" });
+
+                                                            columns.Bound(c => c.DateInsert)
+                                                            .Title("تاریخ ثبت")
+                                                            .Format("{0:yyyy/MM/dd HH:mm}")
+                                                            .Width(180)
+                                                            .HtmlAttributes(new { @class = "text-center" })
+                                                            .HeaderHtmlAttributes(new { @class = "text-center" });
+
+                                                            columns.Bound(c => c.FullName)
+                                                            .Title("کاربر")
+                                                            .Width(160)
+                                                            .HtmlAttributes(new { @class = "text-center" })
+                                                            .HeaderHtmlAttributes(new { @class = "text-center" });
+                                                        })
+                                                        .Sortable()
+                                                        .Scrollable()
+                                                        .Pageable(p => p.PageSizes(new[] { 20 }))
+                                                        .DataSource(ds => ds
+                                                        .Ajax()
+                                                        .Read(r => r.Action("ListScanbarcode_Read", "ScanBarcode")
+                                                        .Data("kendoDataBinding"))
+                                                        )
+                                                        )
+
+                        </div>
+                    </div>
+                </div>
+
+</div>
+</div>
+</div>
+
+<input type="hidden" id="PackageId" value="@Model.PackageId" />
+<input type="hidden" id="OrderID" value="@Model.OrderID" />
+
+<!-- ================= Modal Remaining ================= -->
+    <!-- ================= Modal Remaining (Modern) ================= -->
+    <div class="modal fade" id="remainingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content remaining-modal shadow-lg border-0">
+
+                <!-- Header -->
+                <div class="modal-header remaining-header">
+                    <h5 class="modal-title fw-bold mb-0">
+                        <i class="fa fa-list ms-2"></i>
+                        نیم‌پلیت‌های باقی‌مانده
+                    </h5>
+                    <button class="btn-close btn-close-white" data-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body p-4">
+
+                    <!-- Loading -->
+                    <div id="remainingLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary"></div>
+                        <div class="mt-3 text-muted fw-bold">
+                            در حال بارگذاری اطلاعات...
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div id="remainingTableWrapper" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table remaining-table align-middle text-center">
+                                <thead>
+                                    <tr>
+                                        <th style="width:80px">ردیف</th>
+                                        <th>شماره سریال</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="remainingTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer justify-content-center">
+                    <button class="btn btn-outline-secondary px-4" data-dismiss="modal">
+                        بستن
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= Styles ================= -->
+<style>
+    body {
+        font-family: "Vazirmatn","IRANSans",sans-serif;
+        background: #f4f6f9;
+    }
+
+    .scan-wrapper {
+        width: 100%;
+        max-width: 1250px; /* سایز متوسط شیک */
+    }
+    .scan-card {
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .scan-header {
+        background: linear-gradient(135deg, #0d6efd, #4dabf7);
+        color: #fff;
+        padding: 20px 30px;
+    }
+
+    .info-box {
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 6px 10px rgba(0,0,0,.1);
+        font-size: 1.1rem;
+    }
+
+    .info-title {
+        font-size: 1.1rem;
+        opacity: .9;
+
+    }
+
+    .info-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .ltr {
+        direction: ltr
+    }
+
+    .stat-box {
+        border-radius: 16px;
+        padding: 8px;
+        box-shadow: 0 5px 8px rgba(0,0,0,.1);
+    }
+
+        .stat-box.danger {
+            background: #ffe3e3
+        }
+
+        .stat-box.success {
+            background: #d3f9d8
+        }
+
+        .stat-box.warning {
+            background: #fff3bf
+        }
+
+    .stat-title {
+        font-size: 1.5rem;
+        color: #555;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+        font-weight: 800;
+        margin-top: 10px;
+    }
+
+    .scan-label {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .scan-input {
+        font-size: 1.6rem;
+        padding: 18px;
+        text-align: center;
+        border-radius: 14px;
+        border: 2px dashed #0d6efd;
+    }
+
+    .k-grid {
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,.1);
+    }
+
+        .k-grid th {
+            text-align: center !important;
+            font-weight: 700;
+            background: #f1f3f5;
+        }
+
+        .k-grid td {
+            text-align: center;
+            font-size: 1rem;
+        }
+
+    /* RTL کامل گرید */
+    #guestentrygrid {
+        direction: rtl;
+    }
+
+        /* وسط‌چین سلول‌ها */
+        #guestentrygrid td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* وسط‌چین واقعی هدر ستون‌ها */
+        #guestentrygrid th {
+            text-align: center !important;
+            vertical-align: middle;
+        }
+
+            /* لینک داخل هدر (رفع مشکل RTL + Sort icon) */
+            #guestentrygrid th .k-link {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+            }
+
+        /* بولد و زیباتر شدن هدر */
+        #guestentrygrid thead th {
+            font-weight: 700;
+            background-color: #f1f3f5;
+        }
+
+        /* آیکن sort کمی کوچکتر و منظم */
+        #guestentrygrid .k-sort-icon {
+            margin: 0;
+        }
+    /* ===== Remaining Modal ===== */
+    .remaining-modal {
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .remaining-header {
+        background: linear-gradient(135deg, #f59f00, #fab005);
+        color: #212529;
+        padding: 18px 24px;
+    }
+
+        .remaining-header .modal-title {
+            font-size: 1.3rem;
+        }
+
+    .remaining-table {
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+
+        .remaining-table thead {
+            background: #fff3bf;
+            font-weight: 700;
+        }
+
+        .remaining-table th,
+        .remaining-table td {
+            padding: 14px;
+            border-color: #ffe066;
+        }
+
+        .remaining-table tbody tr:hover {
+            background-color: #fff9db;
+        }
+
+        .remaining-table td {
+            font-size: 1.05rem;
+        }
+
+            .remaining-table td[dir="ltr"] {
+                font-weight: 700;
+                letter-spacing: 1px;
+            }
+
+        /* Empty state */
+        .remaining-table .text-success {
+            font-size: 1.2rem;
+        }
+
+    /* Smooth modal animation */
+    .modal.fade .modal-dialog {
+        transform: translateY(20px);
+        transition: all .3s ease;
+    }
+
+    .modal.show .modal-dialog {
+        transform: translateY(0);
+    }
+
+</style>
+
+<!-- ================= Scripts ================= -->
+@section Scripts {
+    <script>
+        // ===== مقادیر ثابت از سرور =====
+        const packageId  = @Model.PackageId;
+        const orderId    = @Model.OrderID;
+        const totalCount =
+            @(
+                            long.Parse(Model.EndSerial.Replace("-", "")) -
+                            long.Parse(Model.StartSerial.Replace("-", "")) + 1
+                    );
+
+        const startNum = @long.Parse(Model.StartSerial.Replace("-", ""));
+        const endNum   = @long.Parse(Model.EndSerial.Replace("-", ""));
+
+        // ===== پارامتر گرید =====
+        function kendoDataBinding() {
+            return { PackageId: packageId };
+        }
+
+        // ===== پیام =====
+        function showAlert(msg, type = "danger") {
+            $("#alertContainer").html(`
+                <div class="alert alert-${type} alert-dismissible fade show">
+                    ${msg}
+                    <button class="btn-close" data-dismiss="alert"></button>
+                </div>
+            `);
+        }
+
+        // ===== فوکوس اولیه =====
+        $(document).ready(function () {
+            $("#serialInput").focus();
+        });
+
+        // ===== اسکن با Enter =====
+        $("#serialInput").on("keypress", function (e) {
+            if (e.which !== 13) return;
+
+            e.preventDefault();
+
+            const serial = this.value.trim();
+            if (!serial) return;
+
+            $.ajax({
+                url: '@Url.Action("RegisterSerial", "ScanBarcode")',
+                type: 'POST',
+                data: {
+                    OrderID: orderId,
+                    serial: serial,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (res) {
+
+                    if (!res.success) {
+                        showAlert(res.message);
+                        return;
+                    }
+
+                    // ===== آپدیت تعداد اسکن شده =====
+                    const scannedCount = res.newCount;
+                    const $countBox = $("#scannedCount").closest(".stat-box");
+
+                    if (scannedCount >= totalCount) {
+                        $("#scannedCount").text("همه ثبت شده");
+
+                        $countBox
+                            .removeClass("warning")
+                            .addClass("success");
+                    } else {
+                        $("#scannedCount").text(scannedCount.toLocaleString());
+
+                        $countBox
+                            .removeClass("success")
+                            .addClass("warning");
+                    }
+
+                    // ===== اضافه شدن به گرید =====
+                    const grid = $("#guestentrygrid").data("kendoGrid");
+                    grid.dataSource.insert(0, {
+                        Serial: res.serial,
+                        DateInsert: res.dateInsert,
+                        FullName: res.userName
+                    });
+
+                    // ===== ریست ورودی =====
+                    $("#serialInput").val("").focus();
+                },
+                error: function () {
+                    showAlert("خطا در ارتباط با سرور");
+                }
+            });
+        });
+
+        // ===== مودال نیم‌پلیت‌های باقی‌مانده =====
+        $('#remainingModal').on('show.bs.modal', function () {
+
+            $("#remainingLoading").show();
+            $("#remainingTableWrapper").addClass("d-none");
+            $("#remainingTableBody").empty();
+
+            $.get('@Url.Action("GetScannedSerials", "ScanBarcode")',
+                { packageId: packageId })
+                .done(list => {
+
+                    const scanned = new Set(
+                        list.map(x => parseInt(x.replace(/-/g, "")))
+                    );
+
+                    let html = "", index = 1;
+
+                    for (let n = startNum; n <= endNum; n++) {
+                        if (!scanned.has(n)) {
+                            html += `
+                                <tr>
+                                    <td>${index++}</td>
+                                    <td dir="ltr" class="fw-bold">${n}</td>
+                                </tr>`;
+                        }
+                    }
+
+                    if (!html) {
+                        html = `
+                            <tr>
+                                <td colspan="2" class="text-success fw-bold py-4">
+                                    ✅ همه نیم‌پلیت‌ها اسکن شده‌اند
+                                </td>
+                            </tr>`;
+                    }
+
+                    $("#remainingTableBody").html(html);
+                    $("#remainingLoading").hide();
+                    $("#remainingTableWrapper").removeClass("d-none");
+                });
+        });
+    </script>
+}
+

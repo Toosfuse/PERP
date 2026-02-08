@@ -1,0 +1,82 @@
+﻿body {
+    font-family: 'Tahoma', Arial, sans-serif;
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+    margin: 0;
+    padding: 20px;
+    color: #2D3436;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    max-width: 400px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(255, 107, 107, 0.3);
+    padding: 40px 30px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    margin: 20px;
+}
+
+h2 {
+    color: #E17055;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.name-info {
+    background: linear-gradient(45deg, #A8E6CF, #DcedC1);
+    color: #2D3436;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-left: 4px solid #00B894;
+}
+
+.message {
+    color: #6C5CE7;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+button {
+    background: linear-gradient(45deg, #FF6B6B, #FF3838);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    width: 100%;
+}
+
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+    }
+
+@media (max-width: 600px) {
+    .container {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+}

@@ -1,0 +1,395 @@
+﻿@model ERP.ViewModels.CoInqueryViewModel.InqueryIndexViewModel
+@using System.Globalization
+@using System.Linq
+@using ERP.ViewModels.CoInqueryViewModel
+@using Kendo.Mvc.UI
+
+@{
+    Layout = "_Layout";
+    int all = Model.AllCount;
+    var s1 = ViewBag.s1;
+    var s2 = ViewBag.s2;
+    var s3 = ViewBag.s3;
+
+    var s4 = ViewBag.s4;
+    var s5 = ViewBag.s5;
+    var s6 = ViewBag.s6;
+    var s7 = ViewBag.s7;
+
+    var listCompanys = Model.Companys ?? new List<string>();
+    var tabCompanys = listCompanys
+        .Where(c => !string.IsNullOrWhiteSpace(c))
+        .OrderBy(c => c.Trim(), StringComparer.Create(new CultureInfo("fa-IR"), false))
+        .ToList();
+}
+<style>
+    .k-grid-toolbar {
+        direction: ltr;
+    }
+
+    .k-grid .k-grid-header th {
+        text-align: center;
+    }
+
+    .btn-group .btn {
+        margin-right: 5px;
+    }
+
+    .k-grid .k-grid-toolbar {
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .k-grid-content {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+
+        .btn-info:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+        }
+
+    .tile {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #ffffff;
+    }
+
+    .success {
+        background-color: lawngreen !important;
+    }
+
+    .failed {
+        background-color: lightcoral !important;
+    }
+
+    .yellow {
+        background-color: #fbfb51 !important;
+    }
+</style>
+
+<div class="app-title">
+    <h1><i class="fa fa-book" style="margin-left:10px;color:red"></i> مناقصات</h1>
+</div>
+
+<p>
+    <a asp-action="CoTender" class="btn btn-primary shadow btn-sm">ایجاد مناقصات</a>
+    <a href="/tenders-excel" class="btn btn-success shadow btn-sm">دانلود اکسل همه مناقصات </a>
+</p>
+
+
+
+<!-- تب‌ها -->
+<div class="row" style="margin-bottom: 10px;">
+    <div class="col-lg-12">
+        <div class="tile" style="margin-bottom: 0; border-radius: 8px; overflow: hidden;">
+            <div class="bs-component">
+                <ul class="nav nav-tabs"  role="tablist">
+
+                    <li class="nav-item"><a class="nav-link " data-toggle="tab" href="#0" onclick="SelectTab('همه لیست')">همه لیست<span class="badge badge-pill badge-warning">@all</span></a></li>
+
+                    <!-- ComboBox برای انتخاب شرکت -->
+                    <div class="mb-3">
+                        <label for="companySelector" class="form-label fw-bold">انتخاب شرکت:</label>
+                        <select id="companySelector" class="form-select form-select-lg" onchange="SelectTab(this.value)">
+                            <option value="">همه شرکت‌ها</option>
+                            @foreach (var company in tabCompanys)
+                            {
+                                int companyCount = Model.CompanyCounts.ContainsKey(company.Trim()) && company != null
+                                ? Model.CompanyCounts[company.Trim()]
+                                : 0;
+
+                                <option value="@company">
+                                    @company <span class="text-muted">(@companyCount)</span>
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- تب همه -->
+                    <li class="nav-item"><a class="nav-link " data-toggle="tab" href="#1" onclick="SelectTab('در حال پیگیری')">در حال پیگیری<span class="badge badge-pill badge-warning">@s1</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#2" onclick="SelectTab('در حال ویرایش')">در حال ویرایش<span class="badge badge-pill badge-primary">@s2</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#3" onclick="SelectTab('اتمام کار')">اتمام کار<span class="badge badge-pill badge-success">@s3</span></a></li>
+
+                   
+                   
+                    <!-- تب همه -->
+
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#4" onclick="SelectTab('برنده')">برنده<span class="badge badge-pill badge-success">@s4</span></a></li>
+                    <li class="nav-item"><a class="nav-link " data-toggle="tab" href="#5" onclick="SelectTab('بازنده')">بازنده<span class="badge badge-pill badge-danger">@s5</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#6" onclick="SelectTab('تجدید شد')">تجدید شد<span class="badge badge-pill badge-warning">@s6</span></a></li>
+
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#7" onclick="SelectTab('عدم حضور')">عدم حضور<span class="badge badge-pill badge-primary">@s7</span></a></li>
+
+
+
+
+                </ul>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- گرید مناقصات -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="k-rtl" style="overflow-x:auto;width:100%; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+                <div id="coTenderGrid">
+                    @(
+                        Html.Kendo().Grid<dynamic>()
+                                                .Name("guestentrygrid")
+                                        .Columns(columns =>
+                                        {
+                                            columns.Bound("TenderNumber").Title("شماره مناقصه")
+                                        .Width(150).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+                                            columns.Bound("City").Title("شهر").Width(130).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+
+                                            columns.Bound("AllPocketDate").Title("تاریخ ارسال پاکت").Width(130).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+                                            columns.Bound("Winner").Title("برنده نهایی").Width(120).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+                                            columns.Bound("InqueryResult").Title("نتیجه").Width(120).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+                                            columns.Bound("CreateDate").Title("تاریخ ثبت فرم").Width(120).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+                                            columns.Bound("Status").Title("وضعیت").Width(150).HtmlAttributes(new { style = "white-space: normal !important; word-wrap: break-word;" }); ;
+                                            columns.Bound("").Title("عملیات").Width(100)
+                                            .ClientTemplate(
+                                            "<div class='btn-group' role='group' style='direction: rtl;'>" +
+                                            "<a class='btn btn-info btn-icon btn-sm' href='/CompanyInquery/CoTender/#=CompanyTenderID#'>" +
+                                            "<i class='fa fa-eye'></i> ویرایش" +
+                                            "</a>" +
+                                            "<button type='button' class='btn btn-warning btn-sm ml-2' onclick='openPursuitWindow(#=CompanyTenderID#, \"#=TenderNumber#\");'>" +
+                                            "<i class='fa fa-clock'></i> وضعیت " +
+                                            "</button>" +
+
+                                            "</div>"
+                                            );
+
+                                        })
+                                           // مهم → scrollable را یا ننویسید یا فقط vertical فعال کنید
+                                       
+                                        .ToolBar(toolbar =>
+                                        {
+                                            toolbar.Search();
+                                        })
+                                        .Sortable()
+                                        .Scrollable()
+                                        .Filterable()
+                                        
+                                        .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new int[] { 5, 10, 20, 100 }))
+                                        .DataSource(b => b.
+                                        Ajax()
+                                        .Read(read => read.Data("kendoDataBinding").Action("ListCoTender", "CompanyInquery"))
+                                        )
+                                        )
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال پیگیری -->
+@(Html.Kendo().Window()
+    .Name("pursuitWindow")
+    .Title("وضعیت پیگیری استعلام")
+    .Content(@<text>
+    <div style=" text-align: center;">
+        <div class="mb-5">
+            <span class="badge badge-primary" style="font-size: 20px; padding: 15px 35px; border-radius: 50px; background: linear-gradient(135deg, #007bff, #0056b3); box-shadow: 0 6px 20px rgba(0,123,255,0.4);">
+                <strong>شماره نیاز: <span id="inqueryNumberDisplay">---</span></strong>
+            </span>
+        </div>
+        <div dir="rtl" class="text-right mb-3" style="font-size: 18px;">
+            <div class="form-check mb-2 pl-6">
+                <input class="form-check-input" type="radio" name="pursuitStatus" id="radioInitial" value="در حال پیگیری">
+                <label class="form-check-label font-weight-medium" for="radioInitial" style="margin-right: 30px;">در حال پیگیری</label>
+            </div>
+            <div class="form-check mb-2 pl-6">
+                <input class="form-check-input" type="radio" name="pursuitStatus" id="radioPursuing" value="در حال ویرایش">
+                <label class="form-check-label font-weight-medium" for="radioPursuing" style="margin-right: 30px;">در حال ویرایش</label>
+            </div>
+            <div class="form-check mb-2 pl-6">
+                <input class="form-check-input" type="radio" name="pursuitStatus" id="radioCompleted" value="اتمام کار">
+                <label class="form-check-label font-weight-medium" for="radioCompleted" style="margin-right: 30px;">اتمام کار</label>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div dir="rtl" class=" mt-5 pt-4">
+                <button type="button" class="btn btn-success btn-md " style="border-radius: 18px; font-size: 12px; font-weight: bold;" onclick="savePursuitStatus()">
+                    ثبت وضعیت <i class="fa fa-save fa-lg ml-6"></i>
+                </button>
+                <button type="button" class="btn btn-secondary " style="border-radius: 18px; font-size: 12px; font-weight: bold;" onclick="$('#pursuitWindow').data('kendoWindow').close()">
+                    انصراف <i class="fa fa-times fa-lg ml-6"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</text>)
+    .Width(400)
+    .Height(400)
+    .Draggable()
+    .Resizable()
+    .Modal(true)
+    .Visible(false)
+    .Actions(actions => actions.Close())
+)
+<input type="hidden" id="SelectTab" />
+
+@section styles {
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/SweetAlert2 New/CSS.css">
+    <style>
+        .success {
+            background-color: lawngreen !important;
+        }
+
+        .failed {
+            background-color: lightcoral !important;
+        }
+
+        .yellow {
+            background-color: #fbfb51 !important;
+        }
+
+        #pursuitWindow .k-window-titlebar {
+            background: linear-gradient(135deg, #ffb347 0%, #ff8c1a 50%, #ff6b00 100%) !important;
+            color: white !important;
+            font-weight: bold !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(255,140,26,0.4);
+            padding: 12px 20px !important;
+        }
+
+            #pursuitWindow .k-window-titlebar .k-window-title {
+                font-size: 18px !important;
+            }
+
+        #pursuitWindow .k-window-content {
+            background: linear-gradient(to bottom, #f8fbff 0%, #f0f7ff 100%);
+            border-radius: 12px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/SweetAlert2 New/JS.js"></script>
+
+    <script>
+
+        function SelectTab(i) {
+            $("#SelectTab").val(i);
+            $("#guestentrygrid").data("kendoGrid").dataSource.read();
+        }
+        function kendoDataBinding() {
+            var SelectTab = $("#SelectTab").val();
+            return { SelectTab: SelectTab }
+        }
+
+
+
+          
+
+       
+
+        
+
+       
+
+        function onRowDataBound(e) {
+            const grid = $("#MyGrid").data("kendoGrid");
+            const rows = grid.tbody.find("tr");
+
+            rows.each(function () {
+                const dataItem = grid.dataItem(this);
+                const result = (dataItem?.TenderResult || "").trim();
+
+                if (result === "برنده") $(this).addClass("success");
+                else if (result === "بازنده") $(this).addClass("failed");
+                else if (result === "عدم حضور" || result === "تجدید شد") $(this).addClass("yellow");
+            });
+        }
+
+        function openPursuitWindow(id, number) {
+            currentTenderId = id;
+            currentTenderNumber = number || "---";
+
+            const win = $("#pursuitWindow").data("kendoWindow");
+            $("#inqueryNumberDisplay").text(currentTenderNumber);
+            $("input[name='pursuitStatus']").prop("checked", false);
+
+            $.ajax({
+                url: '/CompanyInquery/GetTenderStatus',
+                type: 'GET',
+                data: { CompanyTenderID: id },
+                success: function (response) {
+                    const status = response.status || "در حال پیگیری";
+                    if (status === "در حال پیگیری") $("#radioInitial").prop("checked", true);
+                    else if (status === "در حال ویرایش") $("#radioPursuing").prop("checked", true);
+                    else if (status === "اتمام کار") $("#radioCompleted").prop("checked", true);
+                    else $("#radioInitial").prop("checked", true);
+                },
+                error: function () {
+                    $("#radioInitial").prop("checked", true);
+                },
+                complete: function () {
+                    win.center().open();
+                }
+            });
+        }
+
+        function savePursuitStatus() {
+            const selectedStatus = $("input[name='pursuitStatus']:checked").val();
+
+            if (!selectedStatus) {
+                Swal.fire({ icon: 'warning', title: 'خطا', text: 'لطفاً یک گزینه را انتخاب کنید.' });
+                return;
+            }
+
+            $.ajax({
+                url: '/CompanyInquery/UpdateTenderStatus',
+                type: 'POST',
+
+                data: { CompanyTenderID: currentTenderId, TenderStatus: selectedStatus },
+                success: function (response) {
+                    if (response.success) {
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'ثبت شد',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        console.log("aa");
+                        $("#pursuitWindow").data("kendoWindow").close();
+                        $("#MyGrid").data("kendoGrid").dataSource.read();
+                        location.reload(); // اختیاری - اگر می‌خواهید کل صفحه رفرش شود
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'خطا', text: response.message || 'خطایی رخ داد.' });
+                    }
+                },
+                error: function () {
+                    Swal.fire({ icon: 'error', title: 'خطا', text: 'ارتباط با سرور برقرار نشد.' });
+                }
+            });
+        }
+
+        
+    </script>
+}

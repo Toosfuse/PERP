@@ -1,0 +1,737 @@
+﻿@using ERP.Data
+@using Microsoft.AspNetCore.Identity
+@inject LookupService UsersLookup
+@inject ERPContext _Context
+@inject UserManager<Users> UserManager
+
+@{
+    var users = UsersLookup.GetUsers();
+    var username = User.Identity.Name;
+    var userid = users.Where(p => p.UserName == username).Select(p => p.Id).SingleOrDefault();
+    string currentTheme = "Orange";
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+}
+<style>
+    .numnotifications {
+        background-color: orange;
+        padding: 3px;
+        border-radius: 3px;
+        margin-left: 2px;
+        line-height: 15px;
+        font-family: 'FontAwesome';
+    }
+
+
+
+    .treeview.open .treeview-menu {
+        display: block;
+    }
+
+    .treeview-item {
+        direction: rtl; /* راست به چپ بودن کل آیتم */
+        padding: 5px 10px;
+        position: relative; /* برای کنترل موقعیت بج */
+    }
+
+        .treeview-item.active {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .treeview-item i {
+            margin-left: 5px; /* فاصله آیکون از متن */
+        }
+
+    /* استایل برای بج‌ها */
+    .unread-count {
+        background-color: orange;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 50%;
+        font-size: 0.8em;
+        line-height: 1.2em;
+        min-width: 20px;
+        text-align: center;
+        position: absolute;
+        left: 10px; /* فاصله از سمت چپ */
+        top: 50%;
+        transform: translateY(-50%); /* مرکز عمودی */
+        font-family: 'IRANSans', sans-serif; /* فونت مناسب برای اعداد */
+    }
+
+    /* استایل برای متن آیتم‌ها */
+    .treeview-item a {
+        display: block;
+        text-align: right; /* متن کاملاً سمت راست */
+        padding-right: 30px; /* فضای کافی برای بج */
+    }
+
+    /* استایل برای بج جلوی کارتابل */
+    .total-unread-badge {
+        background-color: orange;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 50%;
+        font-size: 0.8em;
+        line-height: 1.2em;
+        min-width: 20px;
+        text-align: center;
+        font-family: 'IRANSans', sans-serif;
+        margin-left: 5px;
+    }
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP TFC</title>
+
+    <link href="~/vali admin rtl/main.css" rel="stylesheet" />
+    <link href="~/vali admin rtl/@(currentTheme).css" rel="stylesheet" />
+    <link href="~/fonts/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/kendo/css/kendo.rtl.min.css" rel="stylesheet" />
+    <link href="~/kendo/css/kendo.common-material.min.css" rel="stylesheet" />
+    <link href="~/kendo/css/kendo.default-nordic.min.css" rel="stylesheet" />
+
+
+
+    @RenderSection("styles", required: false)
+</head>
+
+<body class="app sidebar-mini rtl">
+    <header class="app-header">
+        <a class="app-header__logo" href="/"><img src="~/icon/logo.png" style="margin-top:3px;" /></a>
+        <a class="app-sidebar__toggle" href="#" data-toggle="sidebar" aria-label="Hide Sidebar"></a>
+        <ul class="app-nav">
+
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                var user = await UserManager.GetUserAsync(User);
+                if (user != null && user.InTFC == true)
+                {
+                    <li class="dropdown">
+                        <a class="app-nav__item special-nav-item" href="/UnitEmployee/Index">
+                            <i class="fa fa-address-book" style="margin-left:5px"></i>راه های ارتباطی با پرسنل توس فیوز
+                        </a>
+                    </li>
+                }
+            }
+
+            <li class="dropdown">
+                <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i class="fa fa-tasks fa-lg"></i></a>
+                <ul class="dropdown-menu settings-menu dropdown-menu-right">
+                    <li class="pull-right"><a class="dropdown-item" href="/GuestEntry/Index"><i class="fa fa-users fa-lg" style="margin-left:5px"></i>ورود مهمان</a></li>
+                    <li class="pull-right"><a class="dropdown-item" href="/MissionReport/Index"><i class="fa fa-users fa-lg" style="margin-left:5px"></i>ماموریت</a></li>
+                    <li class="pull-right"><a class="dropdown-item" href="/GoodsDeparture/Index"><i class="fa fa-users fa-lg" style="margin-left:5px"></i>خروج کالا</a></li>
+                    <li class="pull-right"><a class="dropdown-item" href="/GoodsEntry/Index"><i class="fa fa-users fa-lg" style="margin-left:5px"></i>ورود کالا</a></li>
+                    <li class="pull-right"><a class="dropdown-item" href="/GoodsConsigned/Index"><i class="fa fa-users fa-lg" style="margin-left:5px"></i>ارسال کالای امانی</a></li>
+                    <li class="pull-right"><a class="dropdown-item" href="/ServiceRequest/Index"><i class="fa fa-users fa-lg" style="margin-left:5px"></i>درخواست خدمت</a></li>
+                    <li class="pull-right"><a class="dropdown-item" href="/EmpClearance/Index"><i class="fa fa-users fa-lg" style="margin-left:5px"></i>تسویه کارکنان</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Show notifications" aria-expanded="false"><span id="numnotifications"></span><i class="fa fa-bell-o fa-lg"></i></a>
+                <ul class="app-notification dropdown-menu dropdown-menu-right" x-placement="bottom-end" style="position: absolute; transform: translate3d(-69px, 50px, 0px); top: 0px; left: 0px; will-change: transform;">
+                    <div class="app-notification__content" id="Notif">
+                    </div>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="app-nav__item" href="/Account/ResetPassword"><i class="fa fa-key fa-lg" style="margin-left:5px"></i></a>
+            </li>
+            <li class="dropdown">
+                <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i class="fa fa-user fa-lg"></i></a>
+                <ul class="dropdown-menu settings-menu dropdown-menu-right">
+                    <li class="pull-right"><a class="dropdown-item" href=""><i class="fa fa-user fa-lg" style="margin-left:5px"></i>پروفایل کاربری</a></li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="pull-right dropdown-submenu">
+                            <a class="dropdown-item" href="#" data-toggle="dropdown" style="cursor:pointer;"><i class="fa fa-paint-brush fa-lg" style="margin-left:5px"></i>تغییر قالب</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="setTheme('Black')"><i class="fa fa-circle" style="color:#00f5d4;"></i>نئون</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setTheme('Orange')"><i class="fa fa-circle" style="color:orange;"></i> نارنجی</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setTheme('Blue')"><i class="fa fa-circle" style="color:blue;"></i> آبی</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setTheme('Green')"><i class="fa fa-circle" style="color:green;"></i> سبز</a></li>
+                            </ul>
+                        </li>
+                        <li class="pull-right"><a class="dropdown-item" onclick="submitPostLink()"><i class="fa fa-sign-out fa-lg" style="margin-left:5px"></i>خروج</a></li>
+                    }
+                    else
+                    {
+                        <li class="pull-right"><a class="dropdown-item" href="/Account/login"><i class="fa fa-sign-out fa-lg" style="margin-left:5px"></i>ورود</a></li>
+                    }
+                </ul>
+            </li>
+        </ul>
+    </header>
+    <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
+    <aside class="app-sidebar">
+        <div class="user-image">
+            @if (User.Identity.IsAuthenticated)
+            {
+                var firstname = users.Where(p => p.UserName == username).Select(p => p.FirstName).Single();
+                var lastname = users.Where(p => p.UserName == username).Select(p => p.LastName).Single();
+                var image = users.Where(p => p.UserName == username).Select(p => p.Image).Single();
+                <img class="app-sidebar__user-avatar" src="~/userimage/@image" alt="User Image" width="50" height="50">
+                if (firstname != null && lastname != null)
+                {
+                    <p class="app-sidebar__user-name">@firstname @lastname</p>
+                }
+            }
+        </div>
+
+        <div class="app-sidebar__user">
+        </div>
+        <ul class="app-menu">
+            <li><a class="app-menu__item active" href="/Home/Index"><i class="app-menu__icon fa fa-dashboard"></i><span class="app-menu__label">داشبورد</span></a></li>
+            @if (User.IsInRole("SuperAdmin"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-Gear"></i><span class="app-menu__label">زیرساخت</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/Account/Register"><i class="icon fa fa-pencil-square-o"></i>افزودن کاربر</a></li>
+                        <li><a class="treeview-item" href="/ManageRole"><i class="icon fa fa-list-ol"></i>نقش ها </a></li>
+                        <li><a class="treeview-item" href="/ManageUser"><i class="icon fa fa-list-ol"></i>کاربران</a></li>
+                        <li><a class="treeview-item" href="/Group"><i class="icon fa fa-users"></i>گروه کاربران</a></li>
+                        <li><a class="treeview-item" href="/ChooseUsers"><i class="icon fa fa-users"></i>تایید کاربران</a></li>
+                        <li><a class="treeview-item" href="/Workflow/Access"><i class="icon fa fa-users"></i>مجوز فرایند</a></li>
+                        <li><a class="treeview-item" href="/Workflow/Sections"><i class="icon fa fa-users"></i>بخش فرآیند</a></li>
+                        <li><a class="treeview-item" href="/Home/UpdateSalesSetting"><i class="icon fa fa-users"></i>مجوز فروش</a></li>
+                        <li><a class="treeview-item" href="/UnitEmployee/UnitIndex"><i class="icon fa fa-users"></i>راه های ارتباطی</a></li>
+                        <li><a class="treeview-item" href="/GetDataPouya/Index"><i class="icon fa fa-users"></i>دریافت داده از پویا</a></li>
+                    </ul>
+                </li>
+            }
+
+            @if (User.IsInRole("SuperAdmin"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview">
+                        <i class="app-menu__icon fa fa-gear"></i>
+                        <span class="app-menu__label">SMT</span>
+                        <i class="treeview-indicator fa fa-angle-left"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("Create", "SMT")">
+                                <i class="icon fa fa-plus-circle"></i> تعریف اتومات SMT
+                            </a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("Index", "SMT")">
+                                <i class="icon fa fa-list-alt"></i> لیست SMT
+                            </a>
+                        </li>
+
+                      
+                    </ul>
+                </li>
+            }
+            @if (User.IsInRole("SuperAdmin"))
+            {
+
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview">
+                        <i class="app-menu__icon fa fa-gear"></i>
+                        <span class="app-menu__label">اموال</span>
+                        <i class="treeview-indicator fa fa-angle-left"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("RegisterUser", "Assest")">
+                                <i class="icon fa fa-plus-circle"></i> تعریف مالک اموال
+                            </a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("RegisterCategory", "Assest")">
+                                <i class="icon fa fa-plus-circle"></i> تعریف دسته بندی 
+                            </a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("RegisterAssest", "Assest")">
+                                <i class="icon fa fa-plus-circle"></i> تعریف اموال
+                            </a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("RegisterAssetProperty", "Assest")">
+                                <i class="icon fa fa-cogs"></i> مشخصات اموال
+                            </a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("RegisterAssetHistory", "Assest")">
+                                <i class="icon fa fa-exchange-alt"></i> گردش اموال
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+         
+            }
+            @if (User.IsInRole("SuperAdmin"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview">
+                        <i class="app-menu__icon fa fa-gear"></i>
+                        <span class="app-menu__label">MTFsoft</span>
+                        <i class="treeview-indicator fa fa-angle-left"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("Create", "PackagOrders")">
+                                <i class="icon fa fa-plus-circle"></i> ایجاد سفارش جدید
+                            </a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("Index", "PackagOrders")">
+                                <i class="icon fa fa-list-alt"></i> لیست سفارشات بسته‌بندی
+                            </a>
+                        </li>
+                      
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("Index", "ScanBarcode")">
+                                <i class="icon fa fa-plus-circle"></i> اسکن نیمپلیت 
+                            </a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="@Url.Action("Index", "PCBSerialNumber")">
+                                <i class="icon fa fa-plus-circle"></i>  اسکن سریال برد
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            }
+
+            @if (User.IsInRole("SuperAdmin"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="@Url.Action("Index", "Chat") ">
+                        <i class="app-menu__icon fa fa-gear"></i>
+                        <span class="app-menu__label">چت مسنجر سازمانی</span>
+                      
+                    </a>
+                   
+                </li>
+            }
+
+
+             @if (User.IsInRole("SuperAdmin"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-Gear"></i><span class="app-menu__label">سبدمحصول</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                      
+                        <li><a class="treeview-item" href="/Basket/Index"><i class="icon fa fa-users"></i> لیست سبد</a></li>
+        
+
+                    </ul>
+                </li>
+            }
+            <li class="treeview">
+                <a class="app-menu__item" href="#" data-toggle="treeview">
+                    <i class="app-menu__icon fa fa-inbox"></i>
+                    <span class="app-menu__label">کارتابل</span>
+                    <span id="total-unread-badge"></span>
+                </a>
+                <ul class="treeview-menu" id="cartable-treeview">
+                    <li><a class="treeview-item" href="/Home/Cartable?unread=1"><i class="icon fa fa-circle-o"></i>خوانده نشده‌ها <span class="treeview-indicator unread-count"></span></a></li>
+                    <li><a class="treeview-item" href="/Home/Cartable"><i class="icon fa fa-circle-o"></i>همه</a></li>
+                    <!-- آیتم‌های type دینامیک اینجا اضافه می‌شوند -->
+                </ul>
+            </li>
+
+            <li><a class="app-menu__item" href="/Home/SendCartable"><i class="app-menu__icon fa fa-paper-plane "></i><span class="app-menu__label">ارسال شده</span></a></li>
+
+
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                var user = await UserManager.GetUserAsync(User);
+                if (user != null && user.InTFC == true)
+                {
+                    <li class="treeview">
+                        <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-tasks"></i><span class="app-menu__label">جریان کار</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                            <li><a class="treeview-item" href="/GuestEntry/Index"><i class="icon fa fa-users"></i>ورود مهمان</a></li>
+                            <li><a class="treeview-item" href="/MissionReport/Index"><i class="icon fa fa-users"></i>ماموریت</a></li>
+                            <li><a class="treeview-item" href="/GoodsDeparture/Index"><i class="icon fa fa-users"></i>خروج کالا</a></li>
+                            <li><a class="treeview-item" href="/GoodsEntry/Index"><i class="icon fa fa-users"></i>ورود کالا</a></li>
+                            <li><a class="treeview-item" href="/GoodsConsigned/Index"><i class="icon fa fa-users"></i>ارسال کالای امانی</a></li>
+                            <li><a class="treeview-item" href="/ServiceRequest/Index"><i class="icon fa fa-users"></i>درخواست خدمت</a></li>
+                            <li><a class="treeview-item" href="/EmpClearance/Index"><i class="icon fa fa-users"></i>تسویه کارکنان</a></li>
+                            <li><a class="treeview-item" href="/OutsourcingProduction/Index"><i class="icon fa fa-users"></i>برونسپاری تولید</a></li>
+                        </ul>
+                    </li>
+                }
+            }
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("AfterSales") || User.IsInRole("QA") || User.IsInRole("Edari"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-file-text"></i><span class="app-menu__label">گزارش</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Edari"))
+                        {
+                            <li><a class="treeview-item" href="/Reports/EmploymentCount"><i class="icon fa fa-file-text"></i>گزارش استخدام</a></li>
+                        }
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management"))
+                        {
+                            <li><a class="treeview-item" href="/Reports/LoginReport"><i class="icon fa fa-file-text"></i>گزارش آخرین ورود</a></li>
+                        }
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("AfterSales") || User.IsInRole("QA"))
+                        {
+                            <li><a class="treeview-item" href="/Reports/QuestionScores"><i class="icon fa fa-file-text"></i>نظر سنجی بر اساس امتیاز</a></li>
+                            <li><a class="treeview-item" href="/Reports/TopUserScores"><i class="icon fa fa-file-text"></i>نظر سنجی بر اساس فرد</a></li>
+                        }
+                    </ul>
+                </li>
+            }
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Edari"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-address-card-o"></i><span class="app-menu__label">استخدام</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        @if (User.IsInRole("SuperAdmin"))
+                        {
+                            <li><a class="treeview-item" href="/Employments/Create"><i class="icon fa fa-pencil-square-o"></i>ثبت فرم استخدام</a></li>
+                        }
+                        <li><a class="treeview-item" href="/Employments"><i class="icon fa fa-list-ol"></i>لیست استخدامی ها</a></li>
+                    </ul>
+                </li>
+            }
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("AfterSales") || User.IsInRole("Management") || User.IsInRole("Delegacy") || User.IsInRole("Sales"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-address-card-o"></i><span class="app-menu__label">نظرسنجی / بازدید</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Delegacy"))
+                        {
+                            <li><a class="treeview-item" href="/CustomerSurveys/Create"><i class="icon fa fa-pencil-square-o"></i>ثبت فرم نظرسنجی مشتریان</a></li>
+                        }
+                        @if (User.IsInRole("SuperAdmin"))
+                        {
+                            <li><a class="treeview-item" href="/PersonVisits/Create"><i class="icon fa fa-pencil-square-o"></i>ثبت فرم بازدید </a></li>
+                        }
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("AfterSales") || User.IsInRole("Management") || User.IsInRole("Sales"))
+                        {
+                            <li><a class="treeview-item" href="/CustomerSurveys"><i class="icon fa fa-list-ol"></i>لیست نظرسنجی مشتریان</a></li>
+                            <li><a class="treeview-item" href="/PersonVisits"><i class="icon fa fa-list-ol"></i>لیست فرم بازدید </a></li>
+                        }
+                    </ul>
+                </li>
+            }
+            @if (User.Identity.IsAuthenticated && !User.IsInRole("Delegacy") && !User.IsInRole("ElectricityRepresentative"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-address-card-o"></i><span class="app-menu__label">صورت جلسات</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/Meetings"><i class="icon fa fa-list-ol"></i>لیست صورت جلسه</a></li>
+                    </ul>
+                </li>
+            }
+
+
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Delegacy") || User.IsInRole("Finance") || User.IsInRole("Sales") || User.IsInRole("AfterSales") || User.IsInRole("ElectricityRepresentative"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-ticket"></i><span class="app-menu__label">تیکت</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/Tickets"><i class="icon fa fa-list-ol"></i>تیکت پشتیبانی</a></li>
+                    </ul>
+                </li>
+            }
+            @if (User.Identity.IsAuthenticated && !User.IsInRole("Delegacy") && !User.IsInRole("ElectricityRepresentative"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fas fa fa-tasks"></i><span class="app-menu__label">پروژه ها</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/Gantt/IndexProject"><i class="icon fa fa-list-ol"></i>لیست پروژه</a></li>
+                    </ul>
+                </li>
+            }
+
+            @if (User.Identity.IsAuthenticated && !User.IsInRole("Delegacy") && !User.IsInRole("ElectricityRepresentative"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-book"></i><span class="app-menu__label">گزارش کار</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/WorkReports/Create"><i class="icon fa fa-pencil-square-o"></i>ثبت گزارش کار</a></li>
+                        <li><a class="treeview-item" href="/WorkReports"><i class="icon fa fa-list-ol"></i>لیست گزارش کار</a></li>
+                    </ul>
+                </li>
+            }
+            <li class="treeview">
+                <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-shopping-cart"></i><span class="app-menu__label">سفارش</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                <ul class="treeview-menu">
+                    @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Sales") || User.IsInRole("Delegacy"))
+                    {
+                        <li><a class="treeview-item" href="/Orders/Create"><i class="icon fa fa-pencil-square-o"></i>ثبت سفارش کلید</a></li>
+                        <li><a class="treeview-item" href="/Orders"><i class="icon fa fa-list-ol"></i>سفارشات کلید</a></li>
+                    }
+                    @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Sales") || User.IsInRole("AfterSales"))
+                    {
+                        <li><a class="treeview-item" href="/Orders/CreateMeter"><i class="icon fa fa-pencil-square-o"></i>ثبت سفارش کنتور</a></li>
+                    }
+                    <li><a class="treeview-item" href="/Orders/IndexAllOrders"><i class="icon fa fa-list-ol"></i>همه سفارشات</a></li>
+                </ul>
+            }
+
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Saba") || User.IsInRole("SupervisorProduction"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-info-circle"></i><span class="app-menu__label">گزارش تولید روزانه</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Saba"))
+                        {
+                            <li><a class="treeview-item" href="/ReportProductions/IndexFarayand"><i class="icon fa fa-list-ol"></i>فرآیندها</a></li>
+                            <li><a class="treeview-item" href="/ReportProductions/IndexKarkardReport"><i class="icon fa fa-tasks"></i>گزارش کارکرد</a></li>
+                        }
+                        <li><a class="treeview-item" href="/ReportProductions/Index"><i class="icon fa fa-tasks"></i>تولید روزانه</a></li>
+                    </ul>
+                </li>
+            }
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("AfterSales") || User.IsInRole("ElectricityRepresentative"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-info-circle"></i><span class="app-menu__label">پیکر بندی کنتور</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/ConfigurationForm/Index"><i class="icon fa fa-list-ol"></i>لیست درخواست پیکر بندی</a></li>
+                        <li><a class="treeview-item" href="/ConfigurationForm/GW120A2"><i class="icon fa fa-microchip"></i>مودم ریلی GW120A2</a></li>
+                        <li><a class="treeview-item" href="/ConfigurationForm/SM120B2"><i class="icon fa fa-microchip"></i>کنتور ریلی هوشمند SM120B3</a></li>
+                        <li><a class="treeview-item" href="/ConfigurationForm/SM125"><i class="icon fa fa-microchip"></i>کنتور ترمینالی هوشمند SM125</a></li>
+                        <li><a class="treeview-item" href="/ConfigurationForm/Phase1"><i class="icon fa fa-microchip"></i>کنتور تک فاز هوشمند</a></li>
+                        <li><a class="treeview-item" href="/ConfigurationForm/Phase3"><i class="icon fa fa-microchip"></i>کنتور سه فاز هوشمند</a></li>
+                    </ul>
+                </li>
+            }
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("AfterSales") || User.IsInRole("BoardRepairs") || User.IsInRole("QA") || User.IsInRole("QC") || User.IsInRole("Sales"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-info-circle"></i><span class="app-menu__label">محصولات برگشتی</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/FaultyMeter/CreateComplaints"><i class="icon fa fa-list-ol"></i>ثبت شکایت</a></li>
+                        <li><a class="treeview-item" href="/FaultyMeter/Index"><i class="icon fa fa-microchip"></i>لیست برگشتی</a></li>
+                    </ul>
+                </li>
+            }
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("SalesMeter"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-info-circle"></i><span class="app-menu__label">قراردادها</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/CompanyInquery/IndexTender"><i class="icon fa fa-list-ol"></i>مناقصات</a></li>
+                        <li><a class="treeview-item" href="/CompanyInquery/IndexInquery"><i class="icon fa fa-list-ol"></i>استعلامات </a></li>
+                        <li><a class="treeview-item" href="/CompanyGuarantee/IndexGuarantee"><i class="icon fa fa-list-ol"></i>ضمانت نامه‌ها </a></li>
+                    </ul>
+                </li>
+            }
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Guard") || User.IsInRole("Edari"))
+            {
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-address-card-o"></i><span class="app-menu__label">انتظامات</span><i class="treeview-indicator fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a class="treeview-item" href="/GuardInOuts/Index"><i class="icon fa fa-list-ol"></i> ورود و خروج مهمانان / کالا</a></li>
+                        <li><a class="treeview-item" href="/GuardPersonInOuts/Index"><i class="icon fa fa-list-ol"></i> ورود و خروج پرسنل</a></li>
+                    </ul>
+                </li>
+            }
+        </ul>
+    </aside>
+    <main class="app-content">
+
+        <script src="~/vali admin rtl/js/jquery-3.2.1.min.js"></script>
+        <script src="~/vali admin rtl/js/popper.min.js"></script>
+        <script src="~/vali admin rtl/js/bootstrap.min.js"></script>
+        <script src="~/vali admin rtl/js/main.js"></script>
+        <script src="~/vali admin rtl/js/plugins/pace.min.js"></script>
+        <script src="~/kendo/js/kendo.all.min.js"></script>
+        <script src="~/kendo/js/kendo.aspnetmvc.min.js"></script>
+        <script src="~/kendo/js/kendo.web.min.js"></script>
+        <script src="~/kendo/js/kendo.messages.fa-ir.min.js"></script>
+        <script src="~/js/session-timeout.js"></script>
+        
+        @RenderBody()
+
+    </main>
+
+
+    <input type="hidden" value="@userid" id="userid" />
+    @RenderSection("Cropper", false)
+
+    <script language=javascript>
+        function submitPostLink() {
+            document.postlink.submit();
+        }
+        $(document).ready(function () {
+            listviewprocess();
+        });
+    </script>
+    <script>
+        function listviewprocess() {
+            var id = $("#userid").val();
+            $.ajax({
+                type: "POST",
+                url: "/Home/ListViewProcessNotif",
+                data: { id: id },
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                success: function (r) {
+                    if (r.status === 'ok') {
+                        $('#Notif').empty();
+                        for (var i = 0; i < r.data.length; i++) {
+                            var markup = "<li><a class='app-notification__item' href='javascript:;'><span class='app-notification__icon'><span class='fa-stack fa-lg'><i class='fa fa-circle fa-stack-2x text-primary'></i><i class='fa fa-envelope fa-stack-1x fa-inverse'></i></span></span><div><p class='app-notification__message'>فرستنده:" + r.data[i].SenderID + "</p><p class='app-notification__message'>موضوع:" + r.data[i].Type + "</p><p class='app-notification__meta'>" + r.data[i].ReceiverID + "</p></div></a></li>"
+                            $("#Notif").append(markup);
+                        }
+                        if (r.data.length > 0) {
+                            $("#numnotifications").append(r.data.length);
+                            $("#numnotificationscartable").append(r.data.length);
+                            $("#numnotifications").addClass("numnotifications");
+                            $("#numnotificationscartable").addClass("numnotifications")
+                        }
+                    }
+                    if (r.status === 'Not') {
+
+                    }
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            // لود دینامیک منوی درختی و تعداد unreadها
+            $.ajax({
+                url: '/Home/GetUnreadCounts',
+                type: 'GET',
+                success: function (counts) {
+
+                    // لود انواع (types)
+                    $.ajax({
+                        url: '/Home/GetCartableTypes',
+                        type: 'GET',
+                        success: function (types) {
+                            console.log('Types received:', types); // دیباگ
+
+                            const treeviewMenu = $('#cartable-treeview');
+                            treeviewMenu.empty(); // خالی کردن منو
+
+                             // اضافه کردن گزینه همه
+                            const allItem = `<li><a class="treeview-item" href="/Home/Cartable"><i class="icon fa fa-database"></i>همه ${counts.totalUnread > 0 ? '<span class="unread-count">' + counts.totalUnread + '</span>' : ''}</a></li>`;
+                            treeviewMenu.append(allItem);
+
+
+                            // اضافه کردن گزینه خوانده نشده‌ها با تعداد کل unread
+                            const unreadItem = `<li><a class="treeview-item" href="/Home/Cartable?unread=1"><i class="icon fa fa-envelope"></i>خوانده نشده‌ها ${counts.totalUnread > 0 ? '<span class="unread-count">' + counts.totalUnread + '</span>' : ''}</a></li>`;
+                            treeviewMenu.append(unreadItem);
+
+                            // اضافه کردن آیتم‌های type با تعداد unread هر کدام
+                            types.forEach(type => {
+                                const encodedType = encodeURIComponent(type);
+                                const unreadForType = counts.unreadByType.find(u => u.Type === type)?.Count || 0;
+                                const item = `<li><a class="treeview-item" href="/Home/Cartable?type=${encodedType}"><i class="icon fa fa-tasks"></i>${type}${unreadForType > 0 ? '<span class="unread-count">' + unreadForType + '</span>' : ''}</a></li>`;
+                                treeviewMenu.append(item);
+                            });
+
+                            // نمایش تعداد کل unread جلوی کارتابل
+                            // $('#total-unread-badge').text(counts.totalUnread > 0 ? counts.totalUnread : '');
+                             const $totalBadge = $('#total-unread-badge');
+                              if (counts.totalUnread > 0) {
+                                        $totalBadge.text(counts.totalUnread);
+                                        $totalBadge.addClass('total-unread-badge');
+                                       } else {
+                                          $totalBadge.text('').removeClass('total-unread-badge');
+                                   }
+
+                            // فعال کردن آیتم انتخاب‌شده
+                            const currentType = new URLSearchParams(window.location.search).get('type');
+                            const currentUnread = new URLSearchParams(window.location.search).get('unread');
+                            $('.treeview-item').each(function () {
+                                const href = $(this).attr('href');
+                                if (href.includes(`type=${currentType}`) || (href.includes('unread=1') && currentUnread === '1') || (href === '/Home/Cartable' && !currentType && !currentUnread)) {
+                                    $(this).addClass('active');
+                                }
+                            });
+
+                            // رفرش گرید اگر در صفحه کارتابل هستیم
+                            if (window.location.pathname.includes('/Home/Cartable')) {
+                                const grid = $('#cartablegrid').data('kendoGrid');
+                                if (grid) {
+                                    grid.dataSource.read();
+                                }
+                            }
+                        },
+                        error: function () {
+                            alert('خطا در بارگذاری انواع کارتابل');
+                        }
+                    });
+                },
+                error: function () {
+                    alert('خطا در بارگذاری تعداد خوانده‌نشده‌ها');
+                }
+            });
+        });
+    </script>
+    <script>
+        function goBackAndRefresh() {
+            if (document.referrer) {
+                window.location.href = document.referrer;
+            } else {
+                window.history.back();
+            }
+        }
+    </script>
+
+    <script>
+        function setTheme(theme) {
+            if (!['Black', 'Orange', 'Blue', 'Green'].includes(theme)) return;
+
+            $.ajax({
+                url: '/Home/SetTheme',
+                type: 'POST',
+                data: { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(), theme: theme },
+                success: function(response) {
+                    if (response.success) {
+                        applyTheme(theme);
+                        location.reload();
+                    } else {
+                        alert('خطا: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    alert('خطا در ارتباط: ' + xhr.responseText);
+                }
+            });
+        }
+
+        function applyTheme(theme) {
+            // کلاس body
+            document.body.classList.remove('Black', 'Orange', 'Blue', 'Green');
+            document.body.classList.add('' + theme);
+
+            removeThemeLinks();
+            const themeLink = document.createElement('link');
+            themeLink.rel = 'stylesheet';
+            themeLink.href = `../../vali admin rtl/${theme}.css`;
+            document.head.appendChild(themeLink);
+
+        }
+
+        function removeThemeLinks() {
+            const links = document.querySelectorAll('link[rel="stylesheet"][href*=""]');
+            links.forEach(link => link.remove());
+        }
+    </script>
+    @using (Html.BeginForm("LogOut", "Account", FormMethod.Post, new { name = "postlink" }))
+    {
+    }
+    @RenderSection("Scripts", false)
+
+</body>
+</html>
+
+

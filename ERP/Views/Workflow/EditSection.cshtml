@@ -1,0 +1,44 @@
+﻿@model ERP.Models.WorkflowSection
+
+@{
+    ViewData["Title"] = "ویرایش بخش";
+}
+
+<h2>ویرایش بخش</h2>
+
+<form asp-action="EditSection" method="post">
+    <input type="hidden" asp-for="WorkflowSectionID" />
+    <div class="form-group">
+        <label asp-for="ProcessName" class="control-label">نام فرایند</label>
+        <input asp-for="ProcessName" class="form-control" value="GuestEntryWorkflow" readonly />
+        <span asp-validation-for="ProcessName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="SectionCode" class="control-label">کد بخش</label>
+        <input asp-for="SectionCode" class="form-control" />
+        <span asp-validation-for="SectionCode" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="SectionName" class="control-label">نام بخش</label>
+        <input asp-for="SectionName" class="form-control" />
+        <span asp-validation-for="SectionName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="OrderIndex" class="control-label">ترتیب</label>
+        <input asp-for="OrderIndex" class="form-control" />
+        <span asp-validation-for="OrderIndex" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="ذخیره" class="btn btn-primary" />
+    </div>
+</form>
+
+<div>
+    <a asp-action="Sections">بازگشت به لیست</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

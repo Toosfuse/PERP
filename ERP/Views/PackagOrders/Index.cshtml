@@ -1,0 +1,253 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "لیست سفارشات بسته‌بندی کنتور";
+    var selectedCityId = ViewBag.SelectedCityId as int?;
+}
+
+
+<div class="container-fluid mt-4" dir="rtl">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white text-center py-4">
+            <h3 class="mb-0">
+                <i class="bi bi-box-seam-fill me-3"></i>
+                سفارشات بسته‌بندی کنتور
+            </h3>
+        </div>
+
+        <div class="card-body p-4">
+
+            <!-- فیلترها و دکمه ایجاد -->
+            <div class="row mb-4 g-3 align-items-end">
+                <div class="col-lg-4 col-md-5">
+                    <label class="form-label fw-bold text-secondary">فیلتر بر اساس شهر</label>
+                    <select id="cityFilter" class="form-select form-select-lg">
+                        <option value="">همه شهرها</option>
+                        @foreach (var city in ViewBag.Cities as IEnumerable<SelectListItem>)
+                        {
+                            bool isSelected = city.Value == selectedCityId?.ToString();
+                            <option value="@city.Value" selected="@isSelected">@city.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-lg-4 col-md-4">
+                    <label class="form-label fw-bold text-secondary">جستجوی آزاد</label>
+                    <input type="text" id="searchInput" class="form-control form-control-lg"
+                           placeholder="شماره سفارش، مشتری، شهر..."
+                           value="@Context.Request.Query["search"]" />
+                </div>
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Saba"))
+                {
+
+                    <div class="col-lg-4 col-md-3">
+                        <a asp-action="Create" class="btn btn-success btn-lg w-100 shadow-sm">
+                            <i class="bi bi-plus-circle-fill me-2"></i>
+                            ایجاد سفارش جدید
+                        </a>
+                    </div>
+                }
+
+            </div>
+
+            <!-- نمایش فیلتر فعال -->
+            @if (selectedCityId.HasValue)
+            {
+                var selectedCityName = (ViewBag.Cities as IEnumerable<SelectListItem>)
+                .FirstOrDefault(c => c.Value == selectedCityId.ToString())?.Text;
+
+                <div class="alert alert-info d-flex align-items-center mb-4">
+                    <i class="bi bi-funnel-fill me-2"></i>
+                    <strong>فیلتر فعال:</strong> فقط سفارشات شهر
+                    <strong class="mx-1">@selectedCityName</strong> نمایش داده می‌شود.
+                    <a href="@Url.Action("Index")" class="ms-auto text-decoration-underline">حذف فیلتر</a>
+                </div>
+            }
+
+            <!-- Telerik Grid -->
+            @(Html.Kendo().Grid<ERP.ViewModels.OrderViewModel>()
+                        .Name("gridOrders")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(c => c.Id).Title("#").Width(80)
+                            .HeaderHtmlAttributes(new { @class = "text-center" })
+                            .HtmlAttributes(new { @class = "text-center" });
+
+                            columns.Bound(c => c.OrderNumber).Title("شماره سفارش").Width(160)
+                            .ClientTemplate("<strong class='text-primary'>#= OrderNumber #</strong>");
+
+                            columns.Bound(c => c.CodeProduct).Title("شماره محصول").Width(150)
+                            .ClientTemplate("<strong class='text-primary'>#= CodeProduct #</strong>");
+
+                            columns.Bound(c => c.CityName).Title("شهر مقصد").Width(140)
+                            .ClientTemplate("<span class='badge bg-info text-dark px-3 py-2'>#= CityName #</span>");
+
+                            columns.Bound(c => c.StartSerial).Title("سریال اولیه").Width(160)
+                            .ClientTemplate("#= StartSerial ?? '-' #");
+
+                            columns.Bound(c => c.EndSerial).Title("سریال انتهایی").Width(160)
+                            .ClientTemplate("#= EndSerial ?? '-' #");
+
+                            columns.Bound(c => c.SerialCount).Title("تعداد سریال").Width(140)
+                            .ClientTemplate("<span class='text-success fw-bold fs-5'>#= kendo.toString(SerialCount, 'n0', 'fa-IR') #</span>")
+                            .HtmlAttributes(new { @class = "text-center" });
+
+                            columns.Bound(c => c.RegDate).Title("تاریخ ثبت").Width(130)
+                            .ClientTemplate("<span>#= RegDatePersian #</span>")
+                            .HtmlAttributes(new { @class = "text-center" });
+
+                            columns.Command(command =>
+                            {
+                                command.Custom("CreateKey")
+                            .Text("<i class='fa fa-key'></i>")
+                            .Click("createKeyAccess")
+                            .HtmlAttributes(new { @class = "btn btn-success btn-sm", title = "ساخت و دانلود کلید دسترسی" });
+
+                            }).Title("عملیات").Width(180).HtmlAttributes(new { @class = "text-center" });
+                                            columns.Command(command =>
+{
+    command.Custom("Edit")
+        .Text("<i class='fa fa-edit'></i>")
+        .Click("EditForms")
+        .HtmlAttributes(new { 
+            @class = "btn btn-sm text-white", 
+            style = "background-color: #ffc107; border-color: #ffc107;", 
+            title = "ویرایش سفارش" 
+        });
+}).Title("ویرایش سفارش")
+  .Width(120)
+  .HtmlAttributes(new { @class = "text-center" });
+                        })
+                        .Pageable(p => p
+                        .PageSizes(new[] { 10, 20, 50, 100 })
+                        .Refresh(true)
+                        .ButtonCount(5)
+                        .Messages(m => m
+                        .Display("نمایش {0} - {1} از {2} سفارش")
+                        .Empty("هیچ سفارشی یافت نشد")))
+                        .Sortable()
+                        .Filterable(f => f
+                        .Extra(false)
+                        .Messages(m => m.Info("فیلتر اعمال شده:")))
+                        .Scrollable(s => s.Height("auto"))
+                        .Resizable(r => r.Columns(true))
+                        .Reorderable(r => r.Columns(true))
+                        .NoRecords()
+                        .DataSource(ds => ds
+                        .Ajax()
+                        .PageSize(20)
+                        .ServerOperation(true)
+                        .Read(read => read
+                        .Action("Orders_Read", "PackagOrders")
+                        .Data("getFilterData"))
+                        .Model(m => m.Id(p => p.Id))
+                        )
+                        .Events(e => e.DataBound("onGridDataBound"))
+                        )
+        </div>
+    </div>
+</div>
+
+@section styles
+{
+    <link href="~/sweetalert2 new/css.css" rel="stylesheet" />
+}
+@section Scripts {
+
+    <script src="~/sweetalert2 new/js.js"></script>
+    <script>
+        function getFilterData() {
+            return {
+                cityId: $("#cityFilter").val() || null,
+                search: $("#searchInput").val().trim() || null
+            };
+        }
+
+        function applyFilters() {
+            $("#gridOrders").data("kendoGrid").dataSource.read();
+        }
+
+        function EditForms(e) {
+            e.preventDefault();
+            const tr = $(e.currentTarget).closest("tr");
+            const dataItem = $("#gridOrders").data("kendoGrid").dataItem(tr);
+            const orderId = dataItem.Id;
+            window.location.href = '@Url.Action("Edit", "PackagOrders")' + '?id=' + orderId;
+        }
+
+        function createKeyAccess(e) {
+            e.preventDefault();
+
+            const tr = $(e.currentTarget).closest("tr");
+            const dataItem = $("#gridOrders").data("kendoGrid").dataItem(tr);
+            const orderId = dataItem.Id;
+
+            Swal.fire({
+                title: 'در حال ساخت فایل کلید...',
+                text: 'لطفاً صبر کنید، این عملیات ممکن است چند ثانیه طول بکشد.',
+                icon: 'info',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('@Url.Action("CreateKeyAccessDB", "PackagOrders")?id=' + orderId)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || 'خطا در ارتباط با سرور'); });
+                    }
+
+                    const contentType = response.headers.get("Content-Type") || "";
+                    if (contentType.includes("ms-access") || contentType.includes("application/octet-stream")) {
+                        return response.blob();
+                    }
+
+                    return response.json().then(err => { throw new Error(err.message || 'خطا در ساخت فایل کلیدی'); });
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'key.accdb';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'موفقیت‌آمیز!',
+                        text: 'فایل کلیدی با موفقیت ساخته و دانلود شد.',
+                        confirmButtonText: 'تایید',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا در ساخت فایل',
+                        text: err.message || 'خطایی ناشناخته رخ داد. لطفاً دوباره تلاش کنید.',
+                        confirmButtonText: 'تایید'
+                    });
+                });
+        }
+
+        function onGridDataBound(e) {
+            if (this.dataSource.total() === 0) {
+                this.noRecords(true);
+            }
+        }
+
+        $(document).ready(function () {
+            $("#cityFilter").on("change", applyFilters);
+            $("#searchInput").on("keypress", function (e) {
+                if (e.key === "Enter") {
+                    applyFilters();
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,38 @@
+﻿@* @model ERP.Models.WorkflowAccess
+
+@{
+    ViewData["Title"] = "حذف دسترسی";
+    var usersList = ViewBag.Users as IEnumerable<dynamic>;
+}
+
+<h3>آیا مطمئن هستید که می‌خواهید این دسترسی را حذف کنید؟</h3>
+<div>
+    <h4>WorkflowAccess</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.UserID)
+        </dt>
+        <dd class="col-sm-10">
+            @(ViewBag.Users.FirstOrDefault(u => u.Id == Model.UserID)?.FirstName + " " + ViewBag.Users.FirstOrDefault(u => u.Id == Model.UserID)?.LastName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Section)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => Model.Section)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Role)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => Model.Role)
+        </dd>
+    </dl>
+
+    <form asp-action="DeleteAccess">
+        <input type="hidden" asp-for="WorkflowAccessID" />
+        <input type="submit" value="حذف" class="btn btn-danger" /> |
+        <a asp-action="Access">لغو</a>
+    </form>
+</div> *@

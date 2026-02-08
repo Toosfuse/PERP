@@ -1,0 +1,190 @@
+﻿@using Kendo.Mvc.UI
+@{
+    Layout = "_Layout";
+    var all = ViewBag.all;
+    var s1 = ViewBag.s1;
+    var s2 = ViewBag.s2;
+    var s3 = ViewBag.s3;
+    var s4 = ViewBag.s4;
+    var s5 = ViewBag.s5;
+}
+
+<style>
+    .k-grid-toolbar {
+        direction: ltr;
+    }
+
+    .asd {
+        margin-right: 10px;
+    }
+</style>
+<div class="app-title">
+    <div id="guaranteesGridContainer1">
+        <h1><i class="fa fa-book" style="margin-left:10px;color:red"></i>ضمانت نامه ها</h1>
+    </div>
+</div>
+<p>
+    <a asp-action="CoGuarantee" class="btn btn-primary shadow btn-sm">ایجاد ضمانت نامه</a>
+    <a href="/Guarantee-excel" class="btn btn-success shadow btn-sm">دانلود اکسل همه ضمانت نامه </a>
+</p>
+<div class="row" style="margin-bottom: 5px;">
+    <div class="col-lg-12">
+        <div class="tile" style="margin-bottom:0;">
+            <div class="bs-component">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#1" onclick="SelectTab('همه لیست')">همه لیست<span class="badge badge-pill badge-warning">@all</span></a></li>
+
+                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#6" onclick="SelectTab('در حال پیگیری جهت ابطال')">در حال پیگیری جهت ابطال<span class="badge badge-pill badge-warning">@s5</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#3" onclick="SelectTab('تا پایان دوره تضمین باید تمدید شود')">تا پایان دوره تضمین باید تمدید شود<span class="badge badge-pill badge-warning">@s2</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#4" onclick="SelectTab('در انتظاراعلام برنده')">در انتظاراعلام برنده<span class="badge badge-pill badge-warning">@s3</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#5" onclick="SelectTab('در حال اجرای قرارداد')">در حال اجرای قرارداد<span class="badge badge-pill badge-warning">@s4</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#2" onclick="SelectTab('ابطال شد')">ابطال شد<span class="badge badge-pill badge-warning">@s1</span></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="k-rtl" style="overflow-x:auto;width:100%; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+                <div id="guaranteesGrid"></div>
+
+                <div id="coGuaranteeGrid">
+                    @(Html.Kendo().Grid<dynamic>()
+                                        .Name("MyGrid")
+                                        .Columns(columns =>
+                                        {
+                                            columns.Bound("DistributionCompanyName").Title("نام شرکت توزیع");
+                                            columns.Bound("GuaranteeType").Title("نوع ضمانتنامه");
+                                            columns.Bound("ExpirationDate").Title("سررسید/تمدید");
+                                            columns.Bound("BankName").Title("بانک ");
+                                            columns.Bound("GuaranteeNumber").Title("شماره ضمانت نامه");
+                                            columns.Bound("GuaranteeStatus").Title("وضعیت ضمانت نامه");
+                                            columns.Bound("").Title("عملیات").ClientTemplate("<div class='btn-group' role='group'><a type='button' class='btn btn-info btn-icon' href='/CompanyGuarantee/CoGuarantee/#=GuaranteeLetterId#'><i class='fa fa-eye'></i> ویرایش</a></div>");
+                                        })
+                                        .ToolBar(toolbar =>
+                                        {
+                                            toolbar.Search();
+                                        })
+                                        .Sortable()
+                                        .Filterable()
+                                        .Events(e => e.DataBound("onRowDataBound"))
+                                        .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new int[] { 5, 10, 20, 100 }))
+                                        .DataSource(b => b.
+                                            Ajax()
+                                        .Read(read => read.Data("kendoDataBinding").Action("ListCoGuarantee", "CompanyGuarantee"))
+                                        )
+                                        .Mobile(MobileMode.Auto) // فعال کردن حالت ریسپانسیو برای موبایل
+                                        )
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="selectedtab" value="در حال پیگیری جهت ابطال" />
+
+
+
+@section styles
+{
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+
+    <style>
+        .success {
+            background-color: lawngreen !important;
+        }
+
+        .failed {
+            background-color: lightcoral !important;
+        }
+
+        .yellow {
+            background-color: #fbfb51 !important;
+        }
+    </style>
+    <style>
+
+        .k-grid .k-grid-header th {
+            text-align: center;
+        }
+
+        .btn-group .btn {
+            margin-right: 5px;
+        }
+
+        .k-grid .k-grid-toolbar {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .k-grid-content {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+        }
+
+            .btn-info:hover {
+                background-color: #138496;
+                border-color: #117a8b;
+            }
+
+        .tile {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+    </style>
+
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/wordifyfa/wordifyfa.js"></script>
+    <script src="~/sweetalert2/sweetalert2.js"></script>
+    <script>
+        function SelectTab(i) {
+            console.log('SelectTab:', i); // برای دیباگ
+            $("#selectedtab").val(i);
+            $("#MyGrid").data("kendoGrid").dataSource.read();
+        }
+        function kendoDataBinding() {
+            var SelectTab = $("#selectedtab").val();
+            return { SelectTab: SelectTab }
+        }
+    </script>
+    <script>
+        function onRowDataBound(e) {
+            var grid = $("#MyGrid").data("kendoGrid");
+            var rows = grid.tbody.find("tr");
+
+            rows.each(function () {
+                var dataItem = grid.dataItem(this);
+
+                if (dataItem.GuaranteeStatus === "فعال") {
+                    $(this).addClass("success");
+                } else if (dataItem.GuaranteeStatus === "منقضی") {
+                    $(this).addClass("failed");
+                } else if (dataItem.GuaranteeStatus === "معوق") {
+                    $(this).addClass("yellow");
+                }
+            });
+        }
+    </script>
+
+
+}

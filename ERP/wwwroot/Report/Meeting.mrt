@@ -1,0 +1,1744 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<StiSerializer version="1.02" type="Net" application="StiReport">
+  <CacheAllData>True</CacheAllData>
+  <Dictionary Ref="1" type="Dictionary" isKey="true">
+    <BusinessObjects isList="true" count="0" />
+    <Databases isList="true" count="0" />
+    <DataSources isList="true" count="4">
+      <Meetings Ref="2" type="DataTableSource" isKey="true">
+        <Alias>Meetings</Alias>
+        <Columns isList="true" count="11">
+          <value>Id,System.Int32</value>
+          <value>Title,System.String</value>
+          <value>Attendees,System.String</value>
+          <value>MeetingNumber,System.String</value>
+          <value>StartTime,System.String</value>
+          <value>EndTime,System.String</value>
+          <value>Tarikh,System.String</value>
+          <value>Input,System.String</value>
+          <value>SecretaryId,System.String</value>
+          <value>Date,System.DateTime</value>
+          <value>Guid,System.String</value>
+        </Columns>
+        <Dictionary isRef="1" />
+        <Key>cbbc7e0b8d284007bf203a1b2ec38669</Key>
+        <Name>Meetings</Name>
+        <NameInSource>Meetings</NameInSource>
+      </Meetings>
+      <MeetingDecisions Ref="3" type="DataTableSource" isKey="true">
+        <Alias>MeetingDecisions</Alias>
+        <Columns isList="true" count="15">
+          <value>Id,System.Int32</value>
+          <value>Description,System.String</value>
+          <value>Deadline,System.String</value>
+          <value>State,System.String</value>
+          <value>MeetingId,System.Int32</value>
+          <value>ResponsiblePersonId,System.String</value>
+          <value>FollowUpPersonId,System.String</value>
+          <value>Notes,System.String</value>
+          <value>Seen,System.Boolean</value>
+          <value>ORIGINAL,AcknowledgedAt,AcknowledgedAt,AcknowledgedAt,System.String,fda0f928f44b42628ae110b72851e4ce</value>
+          <value>Datefollowup1,System.String</value>
+          <value>Resultfollowup1,System.String</value>
+          <value>Datefollowup2,System.String</value>
+          <value>Resultfollowup2,System.String</value>
+          <value>MeetingId,System.Int32</value>
+        </Columns>
+        <Dictionary isRef="1" />
+        <Key>34aff7619a4543579cdc8fce9b16e97d</Key>
+        <Name>MeetingDecisions</Name>
+        <NameInSource>MeetingDecisions</NameInSource>
+      </MeetingDecisions>
+      <MeetingAccepts Ref="4" type="DataTableSource" isKey="true">
+        <Alias>MeetingAccepts</Alias>
+        <Columns isList="true" count="3">
+          <value>ORIGINAL,UserInMeetingID,UserInMeetingID,UserInMeetingID,System.String,_x0039_c17ef0cd4624c9d96ee1a1d5ac98c91</value>
+          <value>ORIGINAL,Seen,Seen,Seen,System.Boolean,e3e0c93846fe403698025d49b8d65477</value>
+          <value>AcknowledgedAt,System.String</value>
+        </Columns>
+        <Dictionary isRef="1" />
+        <Key>7ac3e966d6c6415095168f39277a340f</Key>
+        <Name>MeetingAccepts</Name>
+        <NameInSource>MeetingAccepts</NameInSource>
+      </MeetingAccepts>
+      <Absentees Ref="5" type="DataTableSource" isKey="true">
+        <Alias>Absentees</Alias>
+        <Columns isList="true" count="2">
+          <value>FullName,System.String</value>
+          <value>Post,System.String</value>
+        </Columns>
+        <Dictionary isRef="1" />
+        <Key>c45ad7f9e9ea49caaa4cc93098152d33</Key>
+        <Name>Absentees</Name>
+        <NameInSource>Absentees</NameInSource>
+      </Absentees>
+    </DataSources>
+    <Relations isList="true" count="0" />
+    <Report isRef="0" />
+    <Resources isList="true" count="0" />
+    <Variables isList="true" count="73">
+      <value>,Date,Date,,System.String,,False,False,False,False</value>
+      <value>,NameCustomer,NameCustomer,,System.String,,False,False,False,False</value>
+      <value>,NameRequest,NameRequest,,System.String,,False,False,False,False</value>
+      <value>,Tel,Tel,,System.String,,False,False,False,False</value>
+      <value>,Fax,Fax,,System.String,,False,False,False,False</value>
+      <value>,AddetionalPrice,AddetionalPrice,,System.Single,,False,False,False,False</value>
+      <value>,FactNum,FactNum,,System.String,,False,False,False,False</value>
+      <value>,Desc,Desc,,System.String,,False,False,False,False</value>
+      <value>,NameCompany,NameCompany,,System.String,شرکت_x0020_تیراژه_x0020_ماشین,True,False,False,False</value>
+      <value>,SabtNumber,SabtNumber,,System.String,_x0030_,False,False,False,False</value>
+      <value>,Logo,Logo,,System.Drawing.Image,,False,False,False,False</value>
+      <value>,CompanyName,CompanyName,,System.String,,False,False,False,False</value>
+      <value>,Seller,Seller,,System.String,,False,False,False,False</value>
+      <value>,SellerAddress,SellerAddress,,System.String,,False,False,False,False</value>
+      <value>,SellerCodeEghtesadi,SellerCodeEghtesadi,,System.String,,False,False,False,False</value>
+      <value>,SellerCodeMelli,SellerCodeMelli,,System.String,,False,False,False,False</value>
+      <value>,SellerSabtNum,SellerSabtNum,,System.String,,False,False,False,False</value>
+      <value>,SellerCity,SellerCity,,System.String,,False,False,False,False</value>
+      <value>,Payable,Payable,,System.String,,False,False,False,False</value>
+      <value>,SellerFax,SellerFax,,System.String,,False,False,False,False</value>
+      <value>,BuyerZipCode,BuyerZipCode,,System.String,,False,False,False,False</value>
+      <value>,SumQty,SumQty,,System.Double,,False,False,False,False</value>
+      <value>,TotalAmount,TotalAmount,,System.Double,,False,False,False,False</value>
+      <value>,Buyer,Buyer,,System.String,,False,False,False,False</value>
+      <value>,SellerZipCode,SellerZipCode,,System.String,,False,False,False,False</value>
+      <value>,BuyerAddress,BuyerAddress,,System.String,,False,False,False,False</value>
+      <value>,BuyerCodeEghtesadi,BuyerCodeEghtesadi,,System.String,,False,False,False,False</value>
+      <value>,BuyerCodeMelli,BuyerCodeMelli,,System.String,,False,False,False,False</value>
+      <value>,BuyerSabtNum,BuyerSabtNum,,System.String,,False,False,False,False</value>
+      <value>,BuyerCity,BuyerCity,,System.String,,False,False,False,False</value>
+      <value>,BuyerTel,BuyerTel,,System.String,,False,False,False,False</value>
+      <value>,BuyerFax,BuyerFax,,System.String,,False,False,False,False</value>
+      <value>,Discount,Discount,,System.Decimal,,False,False,False,False</value>
+      <value>,Tax,Tax,,System.Double,,False,False,False,False</value>
+      <value>,Expense,Expense,,System.Double,,False,False,False,False</value>
+      <value>,PayableWord,PayableWord,,System.String,,False,False,False,False</value>
+      <value>,InvoiceNum,InvoiceNum,,System.String,,False,False,False,False</value>
+      <value>,BuyerHamrah,BuyerHamrah,,System.String,,False,False,False,False</value>
+      <value>,InvoiceDate,InvoiceDate,,System.DateTime,_x0031_1_x002F_7_x002F_2021_x0020_12:22:40_x0020_PM,False,False,False,False</value>
+      <value>,InvoiceCat,InvoiceCat,,System.String,,False,False,False,False</value>
+      <value>,Note,Note,,System.String,,False,False,False,False</value>
+      <value>,TotoalPriceRepair,TotoalPriceRepair,,System.Decimal,,False,False,False,False</value>
+      <value>,TotalPriceService,TotalPriceService,,System.Decimal,,False,False,False,False</value>
+      <value>,TotalPricePart,TotalPricePart,,System.Decimal,,False,False,False,False</value>
+      <value>,TotoalPrice,TotoalPrice,,System.String,,False,False,False,False</value>
+      <value>,RoInc,RoInc,,System.Decimal,,False,False,False,False</value>
+      <value>,RoIncTax,RoIncTax,,System.Decimal,,False,False,False,False</value>
+      <value>,RoDec,RoDec,,System.Decimal,,False,False,False,False</value>
+      <value>,RoDecTax,RoDecTax,,System.Decimal,,False,False,False,False</value>
+      <value>,RoTax,RoTax,,System.Decimal,,False,False,False,False</value>
+      <value>,RoAll,RoAll,,System.Decimal,,False,False,False,False</value>
+      <value>,SerInc,SerInc,,System.Decimal,,False,False,False,False</value>
+      <value>,SerDec,SerDec,,System.Decimal,,False,False,False,False</value>
+      <value>,SerDecTax,SerDecTax,,System.Decimal,,False,False,False,False</value>
+      <value>,SerIncTax,SerIncTax,,System.Decimal,,False,False,False,False</value>
+      <value>,SerTax,SerTax,,System.Decimal,,False,False,False,False</value>
+      <value>,SerAll,SerAll,,System.Decimal,,False,False,False,False</value>
+      <value>,PartInc,PartInc,,System.Decimal,,False,False,False,False</value>
+      <value>,PartIncTax,PartIncTax,,System.Decimal,,False,False,False,False</value>
+      <value>,PartDec,PartDec,,System.Decimal,,False,False,False,False</value>
+      <value>,PartDecTax,PartDecTax,,System.Decimal,,False,False,False,False</value>
+      <value>,PartTax,PartTax,,System.Decimal,,False,False,False,False</value>
+      <value>,PartAll,PartAll,,System.Decimal,,False,False,False,False</value>
+      <value>,Year,Year,,System.String,,False,False,False,False</value>
+      <value>,StartDateX,StartDateX,,System.String,,False,False,False,False</value>
+      <value>,EndDateX,EndDateX,,System.String,,False,False,False,False</value>
+      <value>,BrancheName,BrancheName,,System.String,,False,False,False,False</value>
+      <value>,TotoalChargeInc,TotoalChargeInc,,System.Decimal,,False,False,False,False</value>
+      <value>,TotoalOutServiceUnit,TotoalOutServiceUnit,,System.Decimal,,False,False,False,False</value>
+      <value>,TotoalOutServiceEst,TotoalOutServiceEst,,System.Decimal,,False,False,False,False</value>
+      <value>,TotoalChargeDic,TotoalChargeDic,,System.Decimal,,False,False,False,False</value>
+      <value>,TotalRepairPrice,TotalRepairPrice,,System.Decimal,,False,False,False,False</value>
+      <value>,TotalSalePrice,TotalSalePrice,,System.Decimal,,False,False,False,False</value>
+    </Variables>
+  </Dictionary>
+  <EngineVersion>EngineV2</EngineVersion>
+  <GlobalizationStrings isList="true" count="0" />
+  <Key>f42221727fa7444184743cb320a443ba</Key>
+  <MetaTags isList="true" count="0" />
+  <Pages isList="true" count="3">
+    <Page1 Ref="6" type="Page" isKey="true">
+      <Border>All;Black;2;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <Components isList="true" count="8">
+        <PageHeaderBand1 Ref="7" type="PageHeaderBand" isKey="true">
+          <Border>Adv[0:176:240];1;Double;[0:176:240];1;Double;[0:176:240];1;Double;[0:176:240];1;Double;False;4;Black</Border>
+          <Brush>Transparent</Brush>
+          <ClientRectangle>0,0.2,7.72,0.4</ClientRectangle>
+          <Components isList="true" count="5">
+            <Text12 Ref="8" type="Text" isKey="true">
+              <Border>Top, Left, Right;[123:143:167];1;None;False;4;Black;True</Border>
+              <Brush>EmptyBrush</Brush>
+              <ClientRectangle>4.7,0,2.9,0.4</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,12,Bold</Font>
+              <Guid>60aa3e4cd426476b98f40296c171ee6c</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text12</Name>
+              <Page isRef="6" />
+              <Parent isRef="7" />
+              <Text>عنوان سند : صورتجلسه</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text12>
+            <Image1 Ref="9" type="Image" isKey="true">
+              <Brush>Transparent</Brush>
+              <ClientRectangle>0,-0.2,0,0</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <IconColor>68, 114, 196</IconColor>
+              <Margins>0,0,0,0</Margins>
+              <Name>Image1</Name>
+              <Page isRef="6" />
+              <Parent isRef="7" />
+            </Image1>
+            <Image5 Ref="10" type="Image" isKey="true">
+              <Brush>Transparent</Brush>
+              <ClientRectangle>0.3,0.03,0.98,0.35</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <IconColor>68, 114, 196</IconColor>
+              <ImageBytes>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</ImageBytes>
+              <Margins>0,0,0,0</Margins>
+              <Name>Image5</Name>
+              <Page isRef="6" />
+              <Parent isRef="7" />
+              <Stretch>True</Stretch>
+            </Image5>
+            <Text3 Ref="11" type="Text" isKey="true">
+              <Border>Top, Left, Right;[123:143:167];1;None;False;4;Black;True</Border>
+              <Brush>EmptyBrush</Brush>
+              <ClientRectangle>3.3,0,0.9,0.4</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,12,Bold</Font>
+              <Guid>4ed99384903b4bf78fe39db5228eb5e9</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text3</Name>
+              <Page isRef="6" />
+              <Parent isRef="7" />
+              <Text>شماره سریال:</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text3>
+            <Text4 Ref="12" type="Text" isKey="true">
+              <Border>Top, Left, Right;[123:143:167];1;None;False;4;Black;True</Border>
+              <Brush>EmptyBrush</Brush>
+              <ClientRectangle>0.8,0,2.4,0.39</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,12,Bold</Font>
+              <Guid>c6f77b71ed88410ab33ba02c552113c0</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text4</Name>
+              <Page isRef="6" />
+              <Parent isRef="7" />
+              <Text>{Meetings.MeetingNumber}</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>DataColumn</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text4>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <Expressions isList="true" count="0" />
+          <Name>PageHeaderBand1</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+        </PageHeaderBand1>
+        <PageHeaderBand2 Ref="13" type="PageHeaderBand" isKey="true">
+          <Border>AdvBlack;1;Solid;Black;1;Solid;[0:183:239];2;Solid;[0:183:239];2;Solid;False;4;[0:176:240]</Border>
+          <Brush>Transparent</Brush>
+          <ClientRectangle>0,1,7.72,0.3</ClientRectangle>
+          <Components isList="true" count="4">
+            <Text1 Ref="14" type="Text" isKey="true">
+              <Border>Top, Left, Right;[123:143:167];1;None;False;4;Black;True</Border>
+              <Brush>EmptyBrush</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>6.7,0,0.9,0.4</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,12,Bold</Font>
+              <Guid>fd59bc84686c467ab6e8cd4ea2ac58da</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text1</Name>
+              <Page isRef="6" />
+              <Parent isRef="13" />
+              <Text>عنوان جلسه:</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text1>
+            <Text2 Ref="15" type="Text" isKey="true">
+              <Border>Left;[0:0:0];1;Solid;False;4;Black;True</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>4.1,0.01,2.6,0.39</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>e6e89e668df94cd3bcd6773cee5e584c</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text2</Name>
+              <Page isRef="6" />
+              <Parent isRef="13" />
+              <Text>{Meetings.Title}</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>DataColumn</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text2>
+            <Text5 Ref="16" type="Text" isKey="true">
+              <Border>Top, Left, Right;[123:143:167];1;None;False;4;Black;True</Border>
+              <Brush>EmptyBrush</Brush>
+              <ClientRectangle>2.88,0,0.9,0.4</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,12,Bold</Font>
+              <Guid>3143fc4363694bca90b89c9b6da8d837</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text5</Name>
+              <Page isRef="6" />
+              <Parent isRef="13" />
+              <Text>تاریخ جلسه:</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text5>
+            <Text6 Ref="17" type="Text" isKey="true">
+              <Border>None;[0:0:0];1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>1.12,0.01,1.79,0.38</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>2bf5517fe6b74aebaabad62a75b37653</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text6</Name>
+              <Page isRef="6" />
+              <Parent isRef="13" />
+              <Text>{Meetings.Tarikh}</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>DataColumn</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text6>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <Expressions isList="true" count="0" />
+          <Name>PageHeaderBand2</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+        </PageHeaderBand2>
+        <PageHeaderBand3 Ref="18" type="PageHeaderBand" isKey="true">
+          <Border>AdvBlack;1;Solid;Black;1;Solid;[0:183:239];2;Solid;[0:183:239];2;Solid;False;4;Black</Border>
+          <Brush>Transparent</Brush>
+          <ClientRectangle>0,1.7,7.72,0.3</ClientRectangle>
+          <Components isList="true" count="2">
+            <Text11 Ref="19" type="Text" isKey="true">
+              <Border>Top, Left, Right;[123:143:167];1;None;False;4;Black;True</Border>
+              <Brush>EmptyBrush</Brush>
+              <ClientRectangle>6.48,0,1.1,0.4</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,12,Bold</Font>
+              <Guid>213defaff4c04ec996075090073a4784</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text11</Name>
+              <Page isRef="6" />
+              <Parent isRef="18" />
+              <Text>ورودی های جلسه:</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text11>
+            <Text13 Ref="20" type="Text" isKey="true">
+              <Border>None;[0:0:0];1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>1.6,0,4.8,0.4</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,12,Bold</Font>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text13</Name>
+              <Page isRef="6" />
+              <Parent isRef="18" />
+              <Text>{Meetings.Input}</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <TextOptions>,,RightToLeft=True,,,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </Text13>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <Expressions isList="true" count="0" />
+          <Name>PageHeaderBand3</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+        </PageHeaderBand3>
+        <DataBand1 Ref="21" type="DataBand" isKey="true">
+          <Border>AdvBlack;1;Solid;Black;1;Solid;[0:183:239];2;Solid;[0:183:239];2;Solid;False;4;Black</Border>
+          <Brush>Transparent</Brush>
+          <BusinessObjectGuid isNull="true" />
+          <ClientRectangle>0,2.4,7.72,0.9</ClientRectangle>
+          <Components isList="true" count="5">
+            <Text8 Ref="22" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>5.51,0,1.01,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>961a1d4aaeee467988133d6d51121d32</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text8</Name>
+              <Page isRef="6" />
+              <Parent isRef="21" />
+              <Text>نام و نام خانوادگی 
+</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text8>
+            <SubSignaure Ref="23" type="SubReport" isKey="true">
+              <Border>None;Black;1;None;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>0.01,0,5.5,0.9</ClientRectangle>
+              <Components isList="true" count="0" />
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Name>SubSignaure</Name>
+              <Page isRef="6" />
+              <Parameters isList="true" count="0" />
+              <Parent isRef="21" />
+              <SubReportPageGuid>052cf3fe8dd34281b591774e1cea1663</SubReportPageGuid>
+              <SubReportUrl />
+            </SubSignaure>
+            <Text9 Ref="24" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>5.51,0.3,1.01,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>002abdfe8d244ed7a14d49aa787dfcb1</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text9</Name>
+              <Page isRef="6" />
+              <Parent isRef="21" />
+              <Text>سمت</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text9>
+            <Text10 Ref="25" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>5.51,0.6,1.01,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>96e4826def13447d8ab10a6bc88ca8f9</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text10</Name>
+              <Page isRef="6" />
+              <Parent isRef="21" />
+              <Text>امضا
+</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text10>
+            <Text19 Ref="26" type="Text" isKey="true">
+              <Border>Top, Bottom;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>6.5,0,1.21,0.9</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>d57834c37f5d446191e8d9e7166c0bd5</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text19</Name>
+              <Page isRef="6" />
+              <Parent isRef="21" />
+              <Text>حاضرین در جلسه</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text19>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <DataRelationName isNull="true" />
+          <DataSourceName>MeetingAccepts</DataSourceName>
+          <Expressions isList="true" count="0" />
+          <Filters isList="true" count="0" />
+          <Name>DataBand1</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+          <Sort isList="true" count="0" />
+        </DataBand1>
+        <DataBand2 Ref="27" type="DataBand" isKey="true">
+          <Border>All;Black;1;Solid;False;4;Black</Border>
+          <Brush>Transparent</Brush>
+          <BusinessObjectGuid isNull="true" />
+          <ClientRectangle>0,3.7,7.72,0.9</ClientRectangle>
+          <Components isList="true" count="5">
+            <Text16 Ref="28" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>5.51,0,1.01,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>df6a9d7d8c834a38b841550abf266b4a</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text16</Name>
+              <Page isRef="6" />
+              <Parent isRef="27" />
+              <Text>نام و نام خانوادگی 
+</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text16>
+            <Text17 Ref="29" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>5.51,0.3,1.01,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>6fd670d258a24b398597a9dfb067fc6c</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text17</Name>
+              <Page isRef="6" />
+              <Parent isRef="27" />
+              <Text>سمت</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text17>
+            <Text18 Ref="30" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>5.51,0.6,1.01,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>9ea0b6b6c8f14b92a17e0a2ff3be4b60</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text18</Name>
+              <Page isRef="6" />
+              <Parent isRef="27" />
+              <Text>امضا
+</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text18>
+            <Text20 Ref="31" type="Text" isKey="true">
+              <Border>Top, Bottom;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>6.5,0,1.21,0.9</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Titr,10,Bold</Font>
+              <Guid>23195ec2f80b4a989847ddbcb73a169d</Guid>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text20</Name>
+              <Page isRef="6" />
+              <Parent isRef="27" />
+              <Text>غایبین در جلسه</Text>
+              <TextBrush>[0:0:17]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text20>
+            <SubReport1 Ref="32" type="SubReport" isKey="true">
+              <Brush>Transparent</Brush>
+              <ClientRectangle>0.01,0,5.5,0.9</ClientRectangle>
+              <Components isList="true" count="0" />
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Name>SubReport1</Name>
+              <Page isRef="6" />
+              <Parameters isList="true" count="0" />
+              <Parent isRef="27" />
+              <SubReportPageGuid>959d47305942499b8ec44e145ec15ab4</SubReportPageGuid>
+              <SubReportUrl />
+            </SubReport1>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <DataRelationName isNull="true" />
+          <DataSourceName>Absentees</DataSourceName>
+          <Expressions isList="true" count="0" />
+          <Filters isList="true" count="0" />
+          <Name>DataBand2</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+          <Sort isList="true" count="0" />
+        </DataBand2>
+        <DataBand3 Ref="33" type="DataBand" isKey="true">
+          <Brush>Transparent</Brush>
+          <BusinessObjectGuid isNull="true" />
+          <ClientRectangle>0,5,7.72,0.3</ClientRectangle>
+          <Components isList="true" count="0" />
+          <Conditions isList="true" count="0" />
+          <DataRelationName isNull="true" />
+          <DataSourceName>Absentees</DataSourceName>
+          <Expressions isList="true" count="0" />
+          <Filters isList="true" count="0" />
+          <Name>DataBand3</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+          <Sort isList="true" count="0" />
+        </DataBand3>
+        <HeaderMeetingDecisions Ref="34" type="HeaderBand" isKey="true">
+          <Brush>Transparent</Brush>
+          <ClientRectangle>0,5.7,7.72,0.3</ClientRectangle>
+          <Components isList="true" count="5">
+            <HeaderMeetingDecisions_Description Ref="35" type="Text" isKey="true">
+              <Border>All;Black;2;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>4,0,3.4,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,10,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>HeaderMeetingDecisions_Description</Name>
+              <Page isRef="6" />
+              <Parent isRef="34" />
+              <Text>شرح</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </HeaderMeetingDecisions_Description>
+            <HeaderMeetingDecisions_ResponsiblePersonId Ref="36" type="Text" isKey="true">
+              <Border>All;Black;2;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>1.4,0,1.2,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,10,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>HeaderMeetingDecisions_ResponsiblePersonId</Name>
+              <Page isRef="6" />
+              <Parent isRef="34" />
+              <Text>مسئول پیگیری</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </HeaderMeetingDecisions_ResponsiblePersonId>
+            <HeaderMeetingDecisions_FollowUpPersonId Ref="37" type="Text" isKey="true">
+              <Border>All;Black;2;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>2.6,0,1.4,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,10,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>HeaderMeetingDecisions_FollowUpPersonId</Name>
+              <Page isRef="6" />
+              <Parent isRef="34" />
+              <Text>مسئول انجام</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </HeaderMeetingDecisions_FollowUpPersonId>
+            <HeaderMeetingDecisions_Deadline Ref="38" type="Text" isKey="true">
+              <Border>All;Black;2;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>0,0,1.4,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,10,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>HeaderMeetingDecisions_Deadline</Name>
+              <Page isRef="6" />
+              <Parent isRef="34" />
+              <Text>مهلت انجام</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </HeaderMeetingDecisions_Deadline>
+            <Text14 Ref="39" type="Text" isKey="true">
+              <Border>All;Black;2;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>7.4,0,0.32,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,9,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text14</Name>
+              <Page isRef="6" />
+              <Parent isRef="34" />
+              <Text>ردیف</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text14>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <Expressions isList="true" count="0" />
+          <Name>HeaderMeetingDecisions</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+        </HeaderMeetingDecisions>
+        <DataMeetingDecisions Ref="40" type="DataBand" isKey="true">
+          <Border>All;[0:176:240];3;Solid;False;3;[0:176:240]</Border>
+          <Brush>Transparent</Brush>
+          <BusinessObjectGuid isNull="true" />
+          <ClientRectangle>0,6.4,7.72,0.6</ClientRectangle>
+          <Components isList="true" count="7">
+            <DataMeetingDecisions_ResponsiblePersonId Ref="41" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>2.6,0,1.4,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,5,0,0</Margins>
+              <Name>DataMeetingDecisions_ResponsiblePersonId</Name>
+              <Page isRef="6" />
+              <Parent isRef="40" />
+              <Text>{MeetingDecisions.ResponsiblePersonId}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </DataMeetingDecisions_ResponsiblePersonId>
+            <DataMeetingDecisions_FollowUpPersonId Ref="42" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>1.4,0,1.2,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,5,0,0</Margins>
+              <Name>DataMeetingDecisions_FollowUpPersonId</Name>
+              <Page isRef="6" />
+              <Parent isRef="40" />
+              <Text>{MeetingDecisions.FollowUpPersonId}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </DataMeetingDecisions_FollowUpPersonId>
+            <DataMeetingDecisions_Notes Ref="43" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>0,0.3,6.5,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,5,0,0</Margins>
+              <Name>DataMeetingDecisions_Notes</Name>
+              <Page isRef="6" />
+              <Parent isRef="40" />
+              <ShrinkFontToFit>True</ShrinkFontToFit>
+              <Text>{MeetingDecisions.Notes}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </DataMeetingDecisions_Notes>
+            <DataMeetingDecisions_Description Ref="44" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>4,0,3.4,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,5,0,0</Margins>
+              <Name>DataMeetingDecisions_Description</Name>
+              <Page isRef="6" />
+              <Parent isRef="40" />
+              <ShrinkFontToFit>True</ShrinkFontToFit>
+              <Text>{MeetingDecisions.Description}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </DataMeetingDecisions_Description>
+            <DataMeetingDecisions_Deadline Ref="45" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>0,0,1.4,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,5,0,0</Margins>
+              <Name>DataMeetingDecisions_Deadline</Name>
+              <Page isRef="6" />
+              <Parent isRef="40" />
+              <Text>{MeetingDecisions.Deadline}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </DataMeetingDecisions_Deadline>
+            <Text15 Ref="46" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>7.4,0,0.32,0.6</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,10,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text15</Name>
+              <Page isRef="6" />
+              <Parent isRef="40" />
+              <Text>{Line}</Text>
+              <TextBrush>[255:0:0]</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text15>
+            <Text7 Ref="47" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>6.5,0.3,0.9,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,9,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text7</Name>
+              <Page isRef="6" />
+              <Parent isRef="40" />
+              <Text>توضیحات</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text7>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <DataSourceName>MeetingDecisions</DataSourceName>
+          <Expressions isList="true" count="0" />
+          <Filters isList="true" count="0" />
+          <Name>DataMeetingDecisions</Name>
+          <Page isRef="6" />
+          <Parent isRef="6" />
+          <RightToLeft>True</RightToLeft>
+          <Sort isList="true" count="0" />
+        </DataMeetingDecisions>
+      </Components>
+      <Conditions isList="true" count="0" />
+      <Expressions isList="true" count="0" />
+      <Guid>62895fd78ba84a98baa1cf40b179d8d9</Guid>
+      <Margins>0.39,0.39,0.39,0.39</Margins>
+      <Name>Page1</Name>
+      <PageHeight>11</PageHeight>
+      <PageWidth>8.5</PageWidth>
+      <Report isRef="0" />
+      <RightToLeft>True</RightToLeft>
+      <Watermark Ref="48" type="Stimulsoft.Report.Components.StiWatermark" isKey="true">
+        <Font>Arial,100</Font>
+        <ImageStretch>True</ImageStretch>
+        <TextBrush>[50:0:0:0]</TextBrush>
+      </Watermark>
+    </Page1>
+    <subReport_1 Ref="49" type="Page" isKey="true">
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <Components isList="true" count="1">
+        <DataMeetingAccepts Ref="50" type="DataBand" isKey="true">
+          <Brush>Transparent</Brush>
+          <BusinessObjectGuid isNull="true" />
+          <ClientRectangle>0,0.2,5.5,0.9</ClientRectangle>
+          <Columns>6</Columns>
+          <Components isList="true" count="3">
+            <DataMeetingAccepts_AcknowledgedAt Ref="51" type="Text" isKey="true">
+              <Border>Top, Left;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>0,0.3,0.92,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>DataMeetingAccepts_AcknowledgedAt</Name>
+              <Page isRef="49" />
+              <Parent isRef="50" />
+              <Text>{MeetingAccepts.AcknowledgedAt}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,RightToLeft=True,,WordWrap=True,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </DataMeetingAccepts_AcknowledgedAt>
+            <DataMeetingAccepts_UserInMeetingID Ref="52" type="Text" isKey="true">
+              <Border>Top, Left;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>0,0,0.92,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>DataMeetingAccepts_UserInMeetingID</Name>
+              <Page isRef="49" />
+              <Parent isRef="50" />
+              <Text>{MeetingAccepts.UserInMeetingID}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,RightToLeft=True,,WordWrap=True,A=0</TextOptions>
+              <VertAlignment>Center</VertAlignment>
+            </DataMeetingAccepts_UserInMeetingID>
+            <CheckBox2 Ref="53" type="CheckBox" isKey="true">
+              <Border>Top, Left;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <Checked>{MeetingAccepts.Seen}</Checked>
+              <CheckStyleForFalse>NoneRectangle</CheckStyleForFalse>
+              <CheckStyleForTrue>CheckRectangle</CheckStyleForTrue>
+              <ClientRectangle>0,0.6,0.92,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <ContourColor>Black</ContourColor>
+              <Expressions isList="true" count="0" />
+              <Name>CheckBox2</Name>
+              <Page isRef="49" />
+              <Parent isRef="50" />
+              <TextBrush>Black</TextBrush>
+            </CheckBox2>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <DataSourceName>MeetingAccepts</DataSourceName>
+          <Expressions isList="true" count="0" />
+          <Filters isList="true" count="0" />
+          <Name>DataMeetingAccepts</Name>
+          <Page isRef="49" />
+          <Parent isRef="49" />
+          <RightToLeft>True</RightToLeft>
+          <Sort isList="true" count="0" />
+        </DataMeetingAccepts>
+      </Components>
+      <ComponentStyle>Collection_Page_Footer</ComponentStyle>
+      <Conditions isList="true" count="0" />
+      <Expressions isList="true" count="0" />
+      <Guid>052cf3fe8dd34281b591774e1cea1663</Guid>
+      <Margins>0.39,0.39,0.39,0.39</Margins>
+      <Name>subReport_1</Name>
+      <PageHeight>11.69</PageHeight>
+      <PageWidth>6.28</PageWidth>
+      <Report isRef="0" />
+    </subReport_1>
+    <subReport_2 Ref="54" type="Page" isKey="true">
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <Components isList="true" count="1">
+        <DataAbsentees Ref="55" type="DataBand" isKey="true">
+          <Brush>Transparent</Brush>
+          <BusinessObjectGuid isNull="true" />
+          <ClientRectangle>0,0.2,5.5,0.9</ClientRectangle>
+          <Columns>6</Columns>
+          <Components isList="true" count="3">
+            <Text21 Ref="56" type="Text" isKey="true">
+              <Border>Top, Left;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>0,0,0.92,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text21</Name>
+              <Page isRef="54" />
+              <Parent isRef="55" />
+              <Text>{Absentees.FullName}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,RightToLeft=True,,WordWrap=True,A=0</TextOptions>
+              <Type>DataColumn</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text21>
+            <Text22 Ref="57" type="Text" isKey="true">
+              <Border>Top, Left;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>0,0.3,0.92,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Expressions isList="true" count="0" />
+              <Font>B Mitra,8,Bold</Font>
+              <HorAlignment>Center</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text22</Name>
+              <Page isRef="54" />
+              <Parent isRef="55" />
+              <Text>{Absentees.Post}</Text>
+              <TextBrush>Black</TextBrush>
+              <TextOptions>,,RightToLeft=True,,WordWrap=True,A=0</TextOptions>
+              <Type>DataColumn</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text22>
+            <CheckBox1 Ref="58" type="CheckBox" isKey="true">
+              <Border>Top, Left;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <Checked>{MeetingAccepts.Seen}</Checked>
+              <CheckStyleForFalse>NoneRectangle</CheckStyleForFalse>
+              <CheckStyleForTrue>CheckRectangle</CheckStyleForTrue>
+              <ClientRectangle>0,0.6,0.92,0.3</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <ContourColor>Black</ContourColor>
+              <Expressions isList="true" count="0" />
+              <Name>CheckBox1</Name>
+              <Page isRef="54" />
+              <Parent isRef="55" />
+              <TextBrush>Black</TextBrush>
+            </CheckBox1>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <DataSourceName>Absentees</DataSourceName>
+          <Expressions isList="true" count="0" />
+          <Filters isList="true" count="0" />
+          <Name>DataAbsentees</Name>
+          <Page isRef="54" />
+          <Parent isRef="54" />
+          <RightToLeft>True</RightToLeft>
+          <Sort isList="true" count="0" />
+        </DataAbsentees>
+      </Components>
+      <ComponentStyle>Collection_Page_Footer</ComponentStyle>
+      <Conditions isList="true" count="0" />
+      <Expressions isList="true" count="0" />
+      <Guid>959d47305942499b8ec44e145ec15ab4</Guid>
+      <Margins>0.39,0.39,0.39,0.39</Margins>
+      <Name>subReport_2</Name>
+      <PageHeight>11.69</PageHeight>
+      <PageWidth>6.28</PageWidth>
+      <Report isRef="0" />
+    </subReport_2>
+  </Pages>
+  <ReferencedAssemblies isList="true" count="8">
+    <value>System.Dll</value>
+    <value>System.Drawing.Dll</value>
+    <value>System.Windows.Forms.Dll</value>
+    <value>System.Data.Dll</value>
+    <value>System.Xml.Dll</value>
+    <value>Stimulsoft.Controls.Dll</value>
+    <value>Stimulsoft.Base.Dll</value>
+    <value>Stimulsoft.Report.Dll</value>
+  </ReferencedAssemblies>
+  <ReportAlias>Report</ReportAlias>
+  <ReportChanged>7/23/2025 2:14:51 PM</ReportChanged>
+  <ReportCreated>3/15/2016 10:16:44 AM</ReportCreated>
+  <ReportFile>C:\My Src\ERP\wwwroot\Report\Meeting.mrt</ReportFile>
+  <ReportGuid>fefce8c7e836430a9b9f4fb68c6bbcf1</ReportGuid>
+  <ReportName>Report</ReportName>
+  <ReportUnit>Inches</ReportUnit>
+  <ReportVersion>2023.1.1.0</ReportVersion>
+  <Script>using System;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Data;
+using Stimulsoft.Controls;
+using Stimulsoft.Base.Drawing;
+using Stimulsoft.Report;
+using Stimulsoft.Report.Dialogs;
+using Stimulsoft.Report.Components;
+
+namespace Reports
+{
+	public class Report : Stimulsoft.Report.StiReport
+	{
+		public Report()        {
+			this.InitializeComponent();
+		}
+
+		#region StiReport Designer generated code - do not modify
+		#endregion StiReport Designer generated code - do not modify
+		
+		public string DateToPersian(object date) 
+		{ 
+			System.Globalization.PersianCalendar persian = new System.Globalization.PersianCalendar(); 
+
+			DateTime greg = (DateTime)date; 
+			int year = persian.GetYear(greg); 
+			int month = persian.GetMonth(greg); 
+			int day = persian.GetDayOfMonth(greg); 
+
+			return year.ToString()+"/"+month.ToString() + "/" + day.ToString();
+		} 
+	}
+}
+</Script>
+  <ScriptLanguage>CSharp</ScriptLanguage>
+  <Styles isList="true" count="33">
+    <Collection_Report_Title2 Ref="59" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item58 Ref="60" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <OperationPlacementNestedLevel>GreaterThanOrEqualTo</OperationPlacementNestedLevel>
+          <Placement>ReportTitle</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item58>
+      </Conditions>
+      <Font>B Nazanin,10,Bold</Font>
+      <Name>Collection_Report_Title2</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Report_Title2>
+    <Collection_Report_Summary1 Ref="61" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item60 Ref="62" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>ReportSummary</Placement>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item60>
+      </Conditions>
+      <Font>B Nazanin,12,Bold</Font>
+      <Name>Collection_Report_Summary1</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Report_Summary1>
+    <Collection_Report_Summary2 Ref="63" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item62 Ref="64" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <OperationPlacementNestedLevel>GreaterThanOrEqualTo</OperationPlacementNestedLevel>
+          <Placement>ReportSummary</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item62>
+      </Conditions>
+      <Font>B Nazanin,10,Bold</Font>
+      <Name>Collection_Report_Summary2</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Report_Summary2>
+    <Collection_Page_Header Ref="65" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item64 Ref="66" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>PageHeader</Placement>
+          <Type>ComponentType, Placement</Type>
+        </Item64>
+      </Conditions>
+      <Font>B Nazanin,10</Font>
+      <Name>Collection_Page_Header</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Page_Header>
+    <Collection_Page_Footer Ref="67" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item66 Ref="68" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>PageFooter</Placement>
+          <Type>ComponentType, Placement</Type>
+        </Item66>
+      </Conditions>
+      <Font>B Nazanin,10</Font>
+      <Name>Collection_Page_Footer</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Page_Footer>
+    <Collection_Group_Header1 Ref="69" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item68 Ref="70" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>GroupHeader</Placement>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item68>
+      </Conditions>
+      <Font>B Nazanin,13,Bold</Font>
+      <Name>Collection_Group_Header1</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Header1>
+    <Collection_Group_Header2 Ref="71" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item70 Ref="72" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>GroupHeader</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item70>
+      </Conditions>
+      <Font>B Nazanin,12,Bold</Font>
+      <Name>Collection_Group_Header2</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Header2>
+    <Collection_Group_Header3 Ref="73" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item72 Ref="74" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>GroupHeader</Placement>
+          <PlacementNestedLevel>3</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item72>
+      </Conditions>
+      <Font>B Nazanin,11,Bold</Font>
+      <Name>Collection_Group_Header3</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Header3>
+    <Collection_Group_Header4 Ref="75" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item74 Ref="76" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <OperationPlacementNestedLevel>GreaterThanOrEqualTo</OperationPlacementNestedLevel>
+          <Placement>GroupHeader</Placement>
+          <PlacementNestedLevel>4</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item74>
+      </Conditions>
+      <Font>B Nazanin,10,Bold</Font>
+      <Name>Collection_Group_Header4</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Header4>
+    <Collection_Group_Footer1 Ref="77" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item76 Ref="78" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>GroupFooter</Placement>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item76>
+      </Conditions>
+      <Font>B Nazanin,8.25,Bold</Font>
+      <Name>Collection_Group_Footer1</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Footer1>
+    <Collection_Group_Footer2 Ref="79" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item78 Ref="80" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>GroupFooter</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item78>
+      </Conditions>
+      <Font>B Nazanin,12,Bold</Font>
+      <Name>Collection_Group_Footer2</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Footer2>
+    <Collection_Group_Footer3 Ref="81" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item80 Ref="82" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>GroupFooter</Placement>
+          <PlacementNestedLevel>3</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item80>
+      </Conditions>
+      <Font>B Nazanin,8.25,Bold</Font>
+      <Name>Collection_Group_Footer3</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Footer3>
+    <Collection_Group_Footer4 Ref="83" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item82 Ref="84" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>GroupFooter</Placement>
+          <PlacementNestedLevel>4</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item82>
+      </Conditions>
+      <Font>B Nazanin,8.25,Bold</Font>
+      <Name>Collection_Group_Footer4</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[23:43:67]</TextBrush>
+    </Collection_Group_Footer4>
+    <Collection_Header1 Ref="85" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[173:193:217]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item84 Ref="86" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Header</Placement>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item84>
+      </Conditions>
+      <Font>B Nazanin,8,Bold</Font>
+      <Name>Collection_Header1</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Header1>
+    <Collection_Header2 Ref="87" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[185:205:229]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item86 Ref="88" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Header</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item86>
+      </Conditions>
+      <Font>B Nazanin,8,Bold</Font>
+      <Name>Collection_Header2</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Header2>
+    <Collection_Header3 Ref="89" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[198:218:242]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item88 Ref="90" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Header</Placement>
+          <PlacementNestedLevel>3</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item88>
+      </Conditions>
+      <Font>B Nazanin,8,Bold</Font>
+      <Name>Collection_Header3</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Header3>
+    <Collection_Header4 Ref="91" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[210:230:254]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item90 Ref="92" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <OperationPlacementNestedLevel>GreaterThanOrEqualTo</OperationPlacementNestedLevel>
+          <Placement>Header</Placement>
+          <PlacementNestedLevel>4</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item90>
+      </Conditions>
+      <Font>B Nazanin,8,Bold</Font>
+      <Name>Collection_Header4</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Header4>
+    <Collection_Data1 Ref="93" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item92 Ref="94" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Data</Placement>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item92>
+      </Conditions>
+      <Font>B Nazanin,8</Font>
+      <Name>Collection_Data1</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data1>
+    <Collection_Data1_Odd_x0020_Style Ref="95" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[248:255:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item94 Ref="96" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <Placement>DataOddStyle</Placement>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item94>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data1_Odd Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data1_Odd_x0020_Style>
+    <Collection_Data1_Even_x0020_Style Ref="97" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[210:230:254]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item96 Ref="98" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <Placement>DataEvenStyle</Placement>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item96>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data1_Even Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data1_Even_x0020_Style>
+    <Collection_Data2 Ref="99" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item98 Ref="100" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Data</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item98>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data2</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data2>
+    <Collection_Data2_Odd_x0020_Style Ref="101" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[255:255:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item100 Ref="102" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <Placement>DataOddStyle</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item100>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data2_Odd Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data2_Odd_x0020_Style>
+    <Collection_Data2_Even_x0020_Style Ref="103" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[214:234:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item102 Ref="104" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <Placement>DataEvenStyle</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item102>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data2_Even Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data2_Even_x0020_Style>
+    <Collection_Data3 Ref="105" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item104 Ref="106" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Data</Placement>
+          <PlacementNestedLevel>3</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item104>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data3</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data3>
+    <Collection_Data3_Odd_x0020_Style Ref="107" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[255:255:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item106 Ref="108" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <Placement>DataOddStyle</Placement>
+          <PlacementNestedLevel>3</PlacementNestedLevel>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item106>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data3_Odd Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data3_Odd_x0020_Style>
+    <Collection_Data3_Even_x0020_Style Ref="109" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[218:238:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item108 Ref="110" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <Placement>DataEvenStyle</Placement>
+          <PlacementNestedLevel>3</PlacementNestedLevel>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item108>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data3_Even Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data3_Even_x0020_Style>
+    <Collection_Data4 Ref="111" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item110 Ref="112" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <OperationPlacementNestedLevel>GreaterThanOrEqualTo</OperationPlacementNestedLevel>
+          <Placement>Data</Placement>
+          <PlacementNestedLevel>4</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item110>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data4</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data4>
+    <Collection_Data4_Odd_x0020_Style Ref="113" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[255:255:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item112 Ref="114" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <OperationPlacementNestedLevel>GreaterThanOrEqualTo</OperationPlacementNestedLevel>
+          <Placement>DataOddStyle</Placement>
+          <PlacementNestedLevel>4</PlacementNestedLevel>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item112>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data4_Odd Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data4_Odd_x0020_Style>
+    <Collection_Data4_Even_x0020_Style Ref="115" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[221:241:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item114 Ref="116" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <OperationPlacementNestedLevel>GreaterThanOrEqualTo</OperationPlacementNestedLevel>
+          <Placement>DataEvenStyle</Placement>
+          <PlacementNestedLevel>4</PlacementNestedLevel>
+          <Type>Placement, PlacementNestedLevel</Type>
+        </Item114>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Data4_Even Style</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Data4_Even_x0020_Style>
+    <Collection_Footer1 Ref="117" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[183:203:227]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item116 Ref="118" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Footer</Placement>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item116>
+      </Conditions>
+      <Font>Arial,8</Font>
+      <Name>Collection_Footer1</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Footer1>
+    <Collection_Footer2 Ref="119" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[195:215:239]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item118 Ref="120" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Footer</Placement>
+          <PlacementNestedLevel>2</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item118>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Footer2</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Footer2>
+    <Collection_Footer3 Ref="121" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[208:228:252]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item120 Ref="122" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Footer</Placement>
+          <PlacementNestedLevel>3</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item120>
+      </Conditions>
+      <Font>B Nazanin,8.25</Font>
+      <Name>Collection_Footer3</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Footer3>
+    <Collection_Footer4 Ref="123" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSidesFromLocation>True</AllowUseBorderSidesFromLocation>
+      <Border>None;[123:143:167];1;Solid;False;4;Black;True</Border>
+      <Brush>[220:240:255]</Brush>
+      <CollectionName>Collection</CollectionName>
+      <Conditions isList="true" count="1">
+        <Item122 Ref="124" type="Stimulsoft.Report.StiStyleCondition" isKey="true">
+          <ComponentType>Text, Primitive, Image, CheckBox</ComponentType>
+          <Placement>Footer</Placement>
+          <PlacementNestedLevel>4</PlacementNestedLevel>
+          <Type>ComponentType, Placement, PlacementNestedLevel</Type>
+        </Item122>
+      </Conditions>
+      <Font>B Nazanin,8.25,Regular,Point,False,178</Font>
+      <Name>Collection_Footer4</Name>
+      <NegativeTextBrush>Red</NegativeTextBrush>
+      <TextBrush>[0:0:17]</TextBrush>
+    </Collection_Footer4>
+  </Styles>
+</StiSerializer>

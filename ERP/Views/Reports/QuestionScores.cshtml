@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "نمودار امتیازات سؤالات";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // اگه Layout خاصی داری تغییرش بده
+}
+
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-file-text" style="margin-left:10px;color:red"></i>تحلیل داده های نظرسنجی</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+
+
+<div id="question-score-chart" style="min-height: 400px;"></div>
+
+<script src="~/Highcharts-9.0.1/highcharts.js"></script>
+
+<script>
+    fetch('/Reports/GetQuestionScores')
+        .then(res => res.json())
+        .then(data => {
+            Highcharts.chart('question-score-chart', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'مجموع امتیازها برای هر سؤال'
+                },
+                xAxis: {
+                    categories: data.map(d => d.name),
+                    title: {
+                        text: 'سؤالات'
+                    },
+                    labels: {
+                        style: {
+                            fontFamily: 'IRANSans, Tahoma',
+                            fontSize: '13px',
+                            color: '#333'
+                        },
+                        useHTML: false,
+                        step: 1
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'مجموع امتیاز'
+                    }
+                },
+                series: [{
+                    name: 'امتیاز کل',
+                    data: data.map(d => d.y),
+                    colorByPoint: true,
+                     dataLabels: {
+                        enabled: true,
+                        rotation: 0,
+                        color: '#FFFFFF',
+                            align: 'center',
+                        format: '{point.y:.f}', // one decimal
+                        y: 0, // 10 pixels down from the top
+                            style: {
+                                fontSize: '13px',
+                                fontFamily: 'shabnam'
+                            }
+                     }
+                }],
+                credits: { enabled: false },
+                tooltip: {
+                    pointFormat: 'مجموع امتیاز: <b>{point.y}</b>'
+                }
+
+            });
+        });
+</script>
+

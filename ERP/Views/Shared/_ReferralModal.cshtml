@@ -1,0 +1,291 @@
+﻿@using Kendo.Mvc.UI
+@model dynamic
+
+<div class="modal custom-modal" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form>
+                    <div id="referral-blocks">
+                        <!-- بلوک‌های دینامیک اینجا اضافه می‌شن -->
+                    </div>
+                    <button type="button" id="add-new-block" class="btn btn-info">
+                        <span class="fa fa-plus"></span>
+                        افزودن ارجاع جدید به سایر افراد
+                    </button>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        var username = User.Identity.Name;
+                        <input type="hidden" value="@username" name="username" id="username" />
+                        <input type="hidden" value="1" name="SenderID" id="SenderID" />
+                    }
+                    <input type="hidden" value="@ViewBag.Guid" name="Guid" id="Guid" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">بستن</button>
+                <button type="button" id="addreferral" class="btn btn-primary">ارجاع</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+                   // باز کردن modal با انیمیشن
+        function openCustomModal() {
+          const modal = document.getElementById('exampleModal');
+          const backdrop = document.getElementById('customBackdrop');
+
+          modal.style.display = 'block';  // نمایش modal
+          backdrop.style.display = 'block';  // نمایش backdrop
+
+          // انیمیشن: بعد از ۱۰ms کلاس show اضافه کن (برای trigger transition)
+          setTimeout(() => {
+            modal.classList.add('show');
+            backdrop.classList.add('show');
+          }, 10);
+        }
+
+        // بستن modal با انیمیشن
+        function closeCustomModal() {
+          const modal = document.getElementById('exampleModal');
+          const backdrop = document.getElementById('customBackdrop');
+
+          // انیمیشن: کلاس show رو بردار
+          modal.classList.remove('show');
+          backdrop.classList.remove('show');
+
+          // بعد از انیمیشن، مخفی کن
+          setTimeout(() => {
+            modal.style.display = 'none';
+            backdrop.style.display = 'none';
+          }, 300);  // همون مدت transition
+        }
+
+        // بستن با ESC key (اختیاری)
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            closeCustomModal();
+          }
+                });
+    </script>
+    <script>
+            $(document).on('click', '.referral-block .dropdown-item', function (e) {
+        e.preventDefault();
+        const selectedType = $(this).data('type');
+        const $button = $(this).closest('.dropdown').find('.selected-btn');
+        $button.data('selected-type', selectedType);
+
+        if (selectedType && selectedType !== "") {
+            $button.html(`<span class="fa fa-check"></span> ${$(this).text()}`)
+                   .addClass('selected');
+        } else {
+            $button.html(`<span class="fa fa-list"></span> انتخاب نوع ارجاع`)
+                   .removeClass('selected')
+                   .removeAttr('data-selected-type');
+        }
+            });
+    </script>
+}
+
+
+
+
+<style>
+    /* کلاس سفارشی برای انیمیشن modal */
+    .custom-modal {
+        opacity: 0; /* شروع با نامرئی */
+        transform: scale(0.8); /* کمی کوچک‌تر برای انیمیشن */
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; /* انیمیشن نرم (۳۰۰ms) */
+    }
+
+        /* وقتی modal show می‌شه (کلاس .show رو اضافه کن) */
+        .custom-modal.show {
+            opacity: 1; /* کاملاً مرئی */
+            transform: scale(1); /* اندازه کامل */
+        }
+
+        /* backdrop (پس‌زمینه تیره) هم fade کن */
+        .custom-modal .modal-backdrop {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+            .custom-modal .modal-backdrop.show {
+                opacity: 0.5; /* تاری پس‌زمینه */
+            }
+
+        /* RTL: برای فارسی، جهت رو درست کن */
+        .custom-modal .modal-dialog {
+            direction: rtl;
+            text-align: right;
+        }
+
+    .k-editor iframe body,
+    .k-editor .k-editable-area {
+        font-size: 16px !important;
+        line-height: 1.6;
+        color: #222;
+    }
+</style>
+<style>
+    body {
+        font-family: Yekan;
+    }
+
+    #numnotifications { /* این ID ثابت است، بدون تغییر */
+        margin-right: 3px;
+    }
+
+    .dropdown-header {
+        border-width: 0 0 1px 0;
+        text-transform: uppercase;
+    }
+
+        .dropdown-header > span {
+            display: inline-block;
+            padding: 10px;
+        }
+
+            .dropdown-header > span:first-child {
+                width: 50px;
+            }
+
+    .selected-value { /* عمومی، بدون تغییر */
+        display: inline-block;
+        vertical-align: middle;
+        width: 18px;
+        height: 18px;
+        background-size: 100%;
+        margin-right: 5px;
+        border-radius: 50%;
+    }
+
+    /* برای لیست MultiSelect: به جای ID خاص، از کلاس‌های Kendo استفاده کن (به همه اعمال می‌شه) */
+    .k-list-item-text { /* جایگزین #ReceiverID-list .k-list-item-text */
+        line-height: 1em;
+        min-width: 300px;
+    }
+
+    /* Material Theme padding adjustment: به همه لیست‌ها اعمال می‌شه */
+    .k-material .k-list-item-text,
+    .k-material .k-list-item-text.k-hover,
+    .k-materialblack .k-list-item-text,
+    .k-materialblack .k-list-item-text.k-hover {
+        padding-left: 5px;
+        border-left: 0;
+    }
+
+    .k-list-item-text > span { /* جایگزین #ReceiverID-list .k-list-item-text > span */
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        display: inline-block;
+        vertical-align: top;
+        margin: 20px 10px 10px 5px;
+    }
+
+        .k-list-item-text > span:first-child { /* جایگزین #ReceiverID-list .k-list-item-text > span:first-child */
+            -moz-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            -webkit-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            margin: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-size: 100%;
+            background-repeat: no-repeat;
+        }
+
+    .k-list-item-text h3 { /* جایگزین #ReceiverID-list h3 */
+        font-size: 1.2em;
+        font-weight: normal;
+        margin: 0 0 1px 0;
+        padding: 0;
+    }
+
+    .k-list-item-text p { /* جایگزین #ReceiverID-list p */
+        margin: 0;
+        padding: 0;
+        font-size: .8em;
+    }
+
+    /* برای Editor: از کلاس جدید استفاده کن */
+    .referral-editor iframe body,
+    .referral-editor .k-editable-area {
+        font-size: 16px !important;
+        line-height: 1.6;
+        color: #222;
+    }
+
+    .card-body2 {
+        padding-top: 0 !important;
+        padding: 0 15px;
+    }
+
+    #num { /* این ID ممکنه دینامیک باشه؟ اگر نه، بدون تغییر */
+        background-color: orange;
+        padding: 3px;
+        border-radius: 3px;
+        margin-left: 5px;
+        font-family: 'FontAwesome'
+    }
+
+    .image-rounded {
+        width: 24px;
+        height: 24px;
+        margin-left: 5px;
+        border-radius: 50%;
+    }
+
+    .image-rounded1 {
+        width: 24px;
+        height: 24px;
+        margin-left: 5px;
+    }
+
+    #referralrow .tile {
+        margin-bottom: 10px !important;
+    }
+
+    .fa {
+        border-radius: 0 !important;
+        color: white !important;
+    }
+
+    .asd {
+        color: black !important;
+        margin-right: 10px;
+    }
+
+    #referralrow {
+        overflow-y: auto;
+        height: 1230px;
+    }
+
+    .card-header {
+        color: #009688
+    }
+
+    #numnotifications {
+        margin-right: 3px;
+    }
+
+    .selected-btn::after {
+        display: none !important;
+    }
+
+    .selected-btn.selected {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+        color: white !important;
+    }
+
+        .selected-btn.selected:hover {
+            background-color: #218838 !important;
+            border-color: #1e7e34 !important;
+        }
+</style>

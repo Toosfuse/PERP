@@ -1,0 +1,45 @@
+﻿/* Theme: Warm Orange */
+:root {
+    --primary: #ff7a18;
+    --secondary: #6c757d;
+    --warning: #ffb74d;
+    --dark: #3a2f2f;
+    --light: #fff8f2;
+    --white: #ffffff;
+}
+
+/* هدر و سایدبار */
+.app-header {
+    background-color: var(--primary) !important;
+}
+
+.app-header__logo {
+    background-color: #e36500 !important;
+}
+
+.app-sidebar {
+    background-color: #3b2b1f !important;
+    color: var(--white) !important;
+}
+
+/* دکمه‌ها */
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+    .btn-primary:hover {
+        background-color: #e06300 !important;
+    }
+
+/* المان‌های رنگی */
+.widget-small.info.coloured-icon .icon {
+    background-color: var(--primary) !important;
+}
+
+.progress-bar {
+    background-color: var(--primary) !important;
+}
+::-webkit-scrollbar {
+    width: 8px;
+}

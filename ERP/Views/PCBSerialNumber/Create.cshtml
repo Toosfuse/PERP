@@ -1,0 +1,378 @@
+﻿@model ERP.ViewModels.PCBSerialNumberViewModel
+@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "اسکن نیم‌پلت";
+    Layout = "_EmptyLayout";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container-fluid mt-0 scan-page d-flex justify-content-center" dir="rtl">
+    <div class="scan-wrapper">
+
+        <div id="alertContainer" class="mt-2"></div>
+
+        <div class="card scan-card shadow-lg border-0">
+
+            <!-- ================= Header ================= -->
+            <div class="card-header scan-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 fw-bold">
+                    <i class="fa fa-barcode ms-2"></i>
+                    شماره سفارش:@Model.OrderNumber  / کد محصول:@Model.CodeProduct
+                </h3>
+
+                <button class="btn btn-danger btn-lg"
+                        onclick="history.back()">
+                    <i class="fa fa-arrow-right ms-2"></i>
+                    بازگشت
+                </button>
+            </div>
+
+            <!-- ================= Body ================= -->
+            <div class="p-3">
+
+                <!-- Info -->
+                <div class="row g-3 mb-3 text-center">
+
+                    <div class="col-lg-4">
+                        <div class="info-box bg-info text-white d-flex justify-content-between align-items-center px-3">
+                            <span>شهر</span>
+                            <span class="fw-bold">@Model.CityName</span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="info-box bg-primary text-white d-flex justify-content-between align-items-center px-3">
+                            <span>سریال شروع</span>
+                            <span class="fw-bold ltr">@Model.StartSerial</span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="info-box bg-primary text-white d-flex justify-content-between align-items-center px-3">
+                            <span>سریال پایان</span>
+                            <span class="fw-bold ltr">@Model.EndSerial</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                @{
+                    var total =
+                    long.Parse(Model.EndSerial.Replace("-", "")) -
+                    long.Parse(Model.StartSerial.Replace("-", "")) + 1;
+                  
+                    var remainingLaser = total - Model.ScannedCount;
+                    var remainingBoard = total - Model.ScannedBordCount;
+                }
+
+                <!-- Counters -->
+                <div class="row text-center mb-4">
+
+                    <div class="col-md-3">
+                        <div class="stat-box danger d-flex justify-content-between align-items-center px-3">
+                            <span>تعداد کل</span>
+                            <span class="fw-bold">@total</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-box @(remainingLaser == 0 ? "success" : "warning") d-flex justify-content-between align-items-center px-3">
+                            <span>تعداد لیزر شده</span>
+                            <span class="fw-bold" id="scannedCount">
+                                @(remainingLaser == 0 ? "کامل" : Model.ScannedCount.ToString())
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-box success d-flex justify-content-between align-items-center px-3">
+                            <span>تعدادبرد اسکن شده</span>
+                            <span class="fw-bold" id="scannedBordCount">
+                                @Model.ScannedBordCount
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div id="remainingBoardBox"
+                             class="stat-box @(remainingBoard == 0 ? "success" : "danger") d-flex justify-content-between align-items-center px-3">
+                            <span>تعداد برد اسکن نشده</span>
+                            <span class="fw-bold" id="remainingBoardText">
+                                @(remainingBoard == 0 ? "نداریم" : remainingBoard.ToString())
+                            </span>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="scan-input-wrapper">
+                            <label class="scan-label">اسکن سریال</label>
+                            <input id="serialInput"
+                                   class="form-control scan-input"
+                                   autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="scan-input-wrapper">
+                            <label class="scan-label">اسکن برد</label>
+                            <input id="serialBordInput"
+                                   class="form-control scan-input"
+                                   autocomplete="off" />
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- ================= Grid ================= -->
+                <div class="k-rtl p-3 bg-light rounded-3">
+
+                    @(Html.Kendo().Grid<ERP.ViewModels.PCBSerialNumber_MeterSerialInfo>()
+                                        .Name("guestentrygrid")
+                                        .Columns(columns =>
+                                        {
+                                            columns.Bound(c => c.Serial)
+                                            .Title("سریال")
+                                            .Width(150)
+                                            .HtmlAttributes(new { @class = "text-center" })
+                                            .HeaderHtmlAttributes(new { @class = "text-center" });
+
+                                            columns.Bound(c => c.SeialBord)
+                                            .Title("سریال برد")
+                                            .Width(150)
+                                            .HtmlAttributes(new { @class = "text-center" })
+                                            .HeaderHtmlAttributes(new { @class = "text-center" });
+
+                                            columns.Bound(c => c.PCBSerialNumber_Date)
+                                            .Title("تاریخ")
+                                            .Width(180)
+                                            .HtmlAttributes(new { @class = "text-center" })
+                                            .HeaderHtmlAttributes(new { @class = "text-center" });
+
+                                            columns.Bound(c => c.FullName)
+                                            .Title("کاربر")
+                                            .Width(150)
+                                            .HtmlAttributes(new { @class = "text-center" })
+                                            .HeaderHtmlAttributes(new { @class = "text-center" });
+                                        })
+                                        .Sortable()
+                                        .Scrollable()
+                                        .Pageable(p => p.PageSizes(new[] { 20 }))
+                                        .DataSource(ds => ds
+                                        .Ajax()
+                                        .Read(r => r
+                                        .Action("ListScanbarcode_Read", "PCBSerialNumber")
+                                        .Data("kendoDataBinding")
+                                        )
+                                        )
+                                        .Events(e => e.DataBound("onGridDataBound"))
+                                        )
+                </div>
+
+            </div>
+        </div>
+
+        <input type="hidden" id="PackageId" value="@Model.PackageId" />
+        <input type="hidden" id="OrderID" value="@Model.OrderID" />
+
+    </div>
+</div>
+
+<!-- ================= Styles ================= -->
+<style>
+    body {
+        font-family: Vazirmatn, IRANSans, sans-serif;
+        background: #f4f6f9;
+    }
+
+    .scan-wrapper {
+        max-width: 1250px;
+        width: 100%;
+    }
+
+    .scan-card {
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .scan-header {
+        background: linear-gradient(135deg, #0d6efd, #4dabf7);
+        color: #fff;
+        padding: 20px 30px;
+    }
+
+    .info-box {
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 6px 10px rgba(0,0,0,.1);
+        font-size: 1.1rem;
+    }
+
+    .stat-box {
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 5px 8px rgba(0,0,0,.1);
+    }
+
+        .stat-box.danger {
+            background: #ffe3e3
+        }
+
+        .stat-box.success {
+            background: #d3f9d8
+        }
+
+        .stat-box.warning {
+            background: #fff3bf
+        }
+
+    .scan-label {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: block;
+        text-align: center;
+    }
+
+    .scan-input {
+        font-size: 1.5rem;
+        padding: 16px;
+        border-radius: 14px;
+        text-align: center;
+        border: 2px dashed #0d6efd;
+    }
+
+    /* ===== Kendo Grid ===== */
+    #guestentrygrid {
+        direction: rtl;
+    }
+
+        #guestentrygrid th,
+        #guestentrygrid td {
+            text-align: center !important;
+            vertical-align: middle;
+        }
+
+            #guestentrygrid th .k-link {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+            }
+
+    .row-danger {
+        background-color: #f8d7da !important;
+        color: #721c24;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        var OrderID = $("#OrderID").val();
+        var totalCount = @total;
+
+        $(document).ready(function () {
+            $("#serialInput").focus();
+        });
+
+        function kendoDataBinding() {
+            return { packageId: $("#PackageId").val() };
+        }
+
+        function showAlert(msg, type = "danger") {
+            $("#alertContainer").html(
+                `<div class="alert alert-${type}">${msg}</div>`
+            );
+            setTimeout(() => $("#alertContainer").html(""), 4000);
+        }
+
+        function onGridDataBound(e) {
+            var grid = e.sender;
+            grid.items().each(function () {
+                var item = grid.dataItem(this);
+                if (!item.Serial || !item.PCBSerialNumber_Date || !item.FullName) {
+                    $(this).addClass("row-danger");
+                }
+            });
+        }
+
+        $("#serialInput").on("keypress", function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $("#serialBordInput").focus();
+            }
+        });
+
+        $("#serialBordInput").on("keypress", function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+
+                var serial = $("#serialInput").val().trim();
+                var serialBord = $("#serialBordInput").val().trim();
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                if (!serial || !serialBord) {
+                    showAlert("هر دو بارکد را اسکن کنید", "warning");
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("RegisterSerial", "PCBSerialNumber")',
+                    type: 'POST',
+                    data: {
+                        __RequestVerificationToken: token,
+                        OrderID: OrderID,
+                        serial: serial,
+                        serialBord: serialBord
+                    },
+                    success: function (res) {
+
+                        if (res.success) {
+
+                            $("#scannedCount").text(res.newCount);
+                            $("#scannedBordCount").text(res.newBordCount);
+
+                            // ===== Remaining Board =====
+                            var remainingBoard = totalCount - res.newBordCount;
+
+                            if (remainingBoard <= 0) {
+                                $("#remainingBoardText").text("نداریم");
+                                $("#remainingBoardBox")
+                                    .removeClass("danger")
+                                    .addClass("success");
+                            } else {
+                                $("#remainingBoardText").text(remainingBoard);
+                                $("#remainingBoardBox")
+                                    .removeClass("success")
+                                    .addClass("danger");
+                            }
+
+                            $("#guestentrygrid")
+                                .data("kendoGrid")
+                                .dataSource.read();
+
+                            $("#serialInput").val("");
+                            $("#serialBordInput").val("");
+                            $("#serialInput").focus();
+
+                        } else {
+                            showAlert(res.message);
+                        }
+                    },
+                    error: function () {
+                        showAlert("خطا در ارتباط با سرور");
+                    }
+                });
+            }
+        });
+    </script>
+}
+
+

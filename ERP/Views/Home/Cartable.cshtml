@@ -1,0 +1,116 @@
+﻿@using Kendo.Mvc.UI
+@{
+    var selectedType = ViewBag.SelectedType as string;
+    var isUnreadOnly = ViewBag.IsUnreadOnly as bool? ?? false;
+}
+<style>
+    .k-grid-toolbar {
+        direction: ltr;
+    }
+</style>
+
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-inbox" style="margin-left:10px;color:red"></i>کارتابل</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+<style>
+    .image-rounded {
+        width: 24px;
+        height: 24px;
+        margin-left: 5px;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="k-rtl" style="overflow-x:auto;width:100%;">
+
+                @(
+
+                    Html.Kendo().Grid<ViewProcess>()
+                    .Name("cartablegrid")
+                    .Columns(col =>
+                    {
+                        @* col.Bound(c => c.IsView).Title("وضعیت"); *@
+                        col.Bound(p => p.IsView).Title("وضعیت").ClientTemplate(
+                            "# if (IsView == true) { #" +
+                            "<img src='/../icon/letterread.png'>" +
+                            "# } else { #" +
+                            "<img src='/../icon/letterUnread.png'>" +
+                            "# } #"
+                            ).HtmlAttributes(new { style = "text-align: center" });
+                        col.Bound(c => c.SenderID).Title("فرستنده").ClientTemplate(
+                        "# if (IsView == true) { #" +
+                        "<img src='/../userimage/#= Guid #' class='image-rounded'><span>#= SenderID #</span>" +
+                        "# } else { #" +
+                        "<img src='/../userimage/#= Guid #' class='image-rounded'><strong>#= SenderID #</strong>" +
+                        "# } #"
+                        ).HtmlAttributes(new { style = "text-align: center" });
+                        col.Bound(c => c.ReceiverID).Title("تاریخ ارسال").ClientTemplate(
+                        "# if (IsView == true) { #" +
+                        "<span>#= ReceiverID #</span>" +
+                        "# } else { #" +
+                        "<strong>#= ReceiverID #</strong>" +
+                        "# } #"
+                        ).HtmlAttributes(new { style = "text-align: center" });
+                        col.Bound(c => c.Type).Title("نوع").ClientTemplate(
+                        "# if (IsView == true) { #" +
+                        "<span>#= Type #</span>" +
+                        "# } else { #" +
+                        "<strong>#= Type #</strong>" +
+                        "# } #"
+                        ).HtmlAttributes(new { style = "text-align: center" });
+                        col.Bound(c => c.Title).Title("عنوان").ClientTemplate(
+                        "# if (IsView == true) { #" +
+                        "<span>#= Title #</span>" +
+                        "# } else { #" +
+                        "<strong>#= Title #</strong>" +
+                        "# } #"
+                        ).HtmlAttributes(new { style = "text-align: center" });
+                        col.Bound("").Title("عملیات").ClientTemplate("<button class='btn btn-primary btn-sm' type='button'><a href='/Home/VisitCartable/#=ViewProcessID#'>مشاهده</a></button>").HtmlAttributes(new { style = "text-align: center" });
+                    })
+                    .ToolBar(toolbar =>
+                    {
+                        toolbar.Search();
+                    })
+                    .Sortable()
+                    .Filterable()
+                    .Pageable()
+                                .DataSource(b => b
+                                .Ajax()
+                                .PageSize(20)
+                                .Read(read => read.Action("Data_Cartable", "Home").Data("getFilterType"))
+                                )
+                    )
+            </div>
+
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function getFilterType() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const type = urlParams.get('type');
+            const unread = urlParams.get('unread') || 0;
+            console.log('Sending type:', type, 'Unread:', unread); // دیباگ
+            return { type: type || '', unread: unread };
+        }
+
+        $(document).ready(function () {
+            const grid = $('#cartablegrid').data('kendoGrid');
+            if (grid) {
+                grid.dataSource.read();
+            }
+        });
+
+        function visitCartable(e) {
+            e.preventDefault();
+            const dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            window.location.href = '/Home/VisitCartable?ID=' + dataItem.ViewProcessID;
+        }
+    </script>
+}

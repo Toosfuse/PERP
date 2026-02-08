@@ -1,0 +1,277 @@
+@model IEnumerable<ERP.ViewModels.AssestViewModel.AssetPropertyViewModel>
+@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "?????? ?????? ?????";
+}
+
+<div class="container-fluid mt-5" dir="rtl">
+    @Html.AntiForgeryToken()
+
+    <div id="alertContainer" class="mb-4"></div>
+
+    <div class="card shadow-lg border-0" style="border-radius: 20px;">
+        <div class="card-header bg-success text-white text-center py-4">
+            <h3 class="mb-0 fw-bold">
+                <i class="fas fa-cogs me-2"></i>
+                ?????? ?????? ?????
+            </h3>
+        </div>
+
+        <div class="card-body p-4">
+            @(Html.Kendo().Grid<ERP.ViewModels.AssestViewModel.AssetPropertyViewModel>()
+                .Name("assetPropertyGrid")
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.AssetName)
+                        .Title("?????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.PropertyName)
+                        .Title("??? ?????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.PropertyValue)
+                        .Title("?????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.SerialNumber)
+                        .Title("?????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.Model)
+                        .Title("???")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.Brand)
+                        .Title("????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.LastOwnerUserName)
+                        .Title("???? ????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.IsActive)
+                        .Title("?????")
+                        .ClientTemplate("#= IsActive ? '<span class=\"badge bg-success\">????</span>' : '<span class=\"badge bg-danger\">???????</span>' #")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Command(cmd =>
+                    {
+                        cmd.Custom("??????").Click("openEditPropertyModal");
+                        cmd.Destroy().Text("???");
+                    })
+                    .Title("??????")
+                    .HtmlAttributes(new { style = "text-align:center;" })
+                    .HeaderHtmlAttributes(new { style = "text-align:center;" });
+                })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Create().Text("?????? ?????? ????");
+                    toolbar.Search();
+                })
+                .Sortable()
+                .Filterable()
+                .Pageable()
+                .Scrollable()
+                .DataSource(ds => ds
+                    .Ajax()
+                    .PageSize(20)
+                    .Read(r => r.Action("AssetProperties_Read", "Assest"))
+                    .Create(c => c.Action("AssetProperties_Create", "Assest").Data("antiForgery"))
+                    .Update(u => u.Action("AssetProperties_Update", "Assest").Data("antiForgery"))
+                    .Destroy(d => d.Action("AssetProperties_Destroy", "Assest").Data("antiForgery"))
+                    .Model(m =>
+                    {
+                        m.Id(f => f.Id);
+                        m.Field(f => f.Id).Editable(false);
+                    })
+                )
+            )
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ?????? ?????? -->
+<div class="modal fade" id="editPropertyModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg rounded-3">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fa fa-edit ml-1"></i>
+                    ?????? ?????? ?????
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body bg-light">
+                <input type="hidden" id="editPropertyId" />
+
+                <div class="form-group">
+                    <label class="font-weight-bold">?????</label>
+                    <select id="editAssetId" class="form-control"></select>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">??? ?????</label>
+                    <input type="text" id="editPropertyName" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">?????</label>
+                    <input type="text" id="editPropertyValue" class="form-control" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">?????</label>
+                            <input type="text" id="editSerialNumber" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">???</label>
+                            <input type="text" id="editModel" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">????</label>
+                    <input type="text" id="editBrand" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">???? ????</label>
+                    <select id="editLastOwnerUserId" class="form-control"></select>
+                </div>
+
+                <div class="form-group">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="editPropertyIsActive">
+                        <label class="custom-control-label" for="editPropertyIsActive">????</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">??????</button>
+                <button id="saveEditPropertyBtn" class="btn btn-primary">????? ???????</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function antiForgery() {
+            return {
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            };
+        }
+
+        function showAlert(msg, type = 'success') {
+            $("#alertContainer").html(`
+                <div class="alert alert-${type} alert-dismissible fade show">
+                    ${msg}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            `);
+            setTimeout(() => {
+                $("#alertContainer .alert").alert('close');
+            }, 4000);
+        }
+
+        let grid;
+
+        $(document).ready(function () {
+            grid = $("#assetPropertyGrid").data("kendoGrid");
+
+            // ???????? ????? ? ???????
+            loadAssets();
+            loadUsers();
+
+            grid.dataSource.bind("requestEnd", function (e) {
+                if (e.type === "create") {
+                    showAlert("?????? ?? ?????? ??? ??", "success");
+                }
+                if (e.type === "update") {
+                    showAlert("?????? ?? ?????? ????? ??", "success");
+                    $("#editPropertyModal").modal("hide");
+                }
+                if (e.type === "destroy") {
+                    showAlert("??? ?? ?????? ????? ??", "success");
+                }
+            });
+        });
+
+        function loadAssets() {
+            $.get("@Url.Action("GetAssets", "Assest")", function (data) {
+                let assets = '<option value="">?????? ????</option>';
+                data.forEach(function (item) {
+                    assets += `<option value="${item.id}">${item.name}</option>`;
+                });
+                $("#editAssetId").html(assets);
+            });
+        }
+
+        function loadUsers() {
+            $.get("@Url.Action("GetAssetUsers", "Assest")", function (data) {
+                let users = '<option value="">?????? ????</option>';
+                data.forEach(function (item) {
+                    users += `<option value="${item.id}">${item.name}</option>`;
+                });
+                $("#editLastOwnerUserId").html(users);
+            });
+        }
+
+        function openEditPropertyModal(e) {
+            e.preventDefault();
+            let item = grid.dataItem($(e.currentTarget).closest("tr"));
+            if (!item) {
+                showAlert("??? ?? ?????? ???????", "danger");
+                return;
+            }
+
+            $("#editPropertyId").val(item.Id);
+            $("#editAssetId").val(item.AssetId);
+            $("#editPropertyName").val(item.PropertyName);
+            $("#editPropertyValue").val(item.PropertyValue);
+            $("#editSerialNumber").val(item.SerialNumber);
+            $("#editModel").val(item.Model);
+            $("#editBrand").val(item.Brand);
+            $("#editLastOwnerUserId").val(item.LastOwnerUserId || "");
+            $("#editPropertyIsActive").prop("checked", item.IsActive);
+
+            $("#editPropertyModal").modal("show");
+        }
+
+        $("#saveEditPropertyBtn").click(function () {
+            let id = parseInt($("#editPropertyId").val());
+            let item = grid.dataSource.get(id);
+
+            if (!item) {
+                showAlert("????? ???? ???", "danger");
+                return;
+            }
+
+            item.set("AssetId", parseInt($("#editAssetId").val()));
+            item.set("PropertyName", $("#editPropertyName").val());
+            item.set("PropertyValue", $("#editPropertyValue").val());
+            item.set("SerialNumber", $("#editSerialNumber").val());
+            item.set("Model", $("#editModel").val());
+            item.set("Brand", $("#editBrand").val());
+            item.set("LastOwnerUserId", parseInt($("#editLastOwnerUserId").val()) || null);
+            item.set("IsActive", $("#editPropertyIsActive").is(":checked"));
+
+            grid.dataSource.sync();
+        });
+    </script>
+}

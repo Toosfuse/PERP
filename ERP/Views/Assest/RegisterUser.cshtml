@@ -1,0 +1,290 @@
+﻿@model ERP.ViewModels.Assest.AssestUserPageViewModel
+@using Kendo.Mvc.UI
+
+<div class="container mt-5" dir="rtl">
+    @Html.AntiForgeryToken()
+
+    <div id="alertContainer" class="mb-4"></div>
+
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="mb-0">ثبت مالک اموال</h3>
+        </div>
+
+        <div class="card-body">
+
+            <!-- فرم ثبت -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label>نام</label>
+                    <input type="text" id="Name" autocomplete="off" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label>نام خانوادگی</label>
+                    <input type="text" id="Family" autocomplete="off" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label>نوع مالک</label>
+                    <div>
+                        <label><input type="radio" name="AssestUserTypes" value="0" checked /> کاربر</label>
+                        <label class="ml-3"><input type="radio" name="AssestUserTypes" value="1" /> واحد</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="btnRegister" class="btn btn-success mb-4">ثبت مالک</button>
+
+            <!-- GRID -->
+            @(Html.Kendo().Grid<ERP.ViewModels.Assest.AssestUserViewModel>()
+                        .Name("assestUserGrid")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(c => c.Name)
+                            .Title("نام")
+                            .HtmlAttributes(new { style = "text-align:center;" })
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                            columns.Bound(c => c.Family)
+                            .Title("نام خانوادگی")
+                            .HtmlAttributes(new { style = "text-align:center;" })
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                            columns.Bound(c => c.AssestUserTypes)
+                            .Title("نوع مالک")
+                            .ClientTemplate("#= AssestUserTypes == 0 ? 'کاربر' : 'واحد' #")
+                            .HtmlAttributes(new { style = "text-align:center;" })
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                            columns.Bound(c => c.IsActive)
+                            .Title("وضعیت")
+                            .ClientTemplate("#= IsActive ? 'فعال' : 'غیرفعال' #")
+                            .HtmlAttributes(new { style = "text-align:center;" })
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                            columns.Bound(c => c.CreatedAt)
+                            .Title("تاریخ ثبت/ویرایش")
+                            .HtmlAttributes(new { style = "text-align:center;" })
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                            columns.Command(cmd =>
+                            {
+                                cmd.Custom("ویرایش").Click("openEditModal");
+                                cmd.Destroy().Text("حذف");
+                            })
+                            .Title("عملیات")
+                            .HtmlAttributes(new { style = "text-align:center;" })
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" });
+                        })
+
+                        .ToolBar(toolbar =>
+                        {
+                            toolbar.Search();
+                        })
+
+                        .Sortable()
+                        .Filterable()
+                        .Pageable()
+                       
+                        .Scrollable()
+                        .DataSource(ds => ds
+                        .Ajax()
+                        .PageSize(20)
+                        .Read(r => r.Action("AssestUsers_read", "Assest"))
+                        .Create(c => c.Action("RegisterUser", "Assest").Data("antiForgery"))
+                        .Update(u => u.Action("AssestUsers_update", "Assest").Data("antiForgery"))
+                        .Destroy(d => d.Action("AssestUsers_destroy", "Assest").Data("antiForgery"))
+                        .Model(m =>
+                        {
+                            m.Id(f => f.Id);
+                            m.Field(f => f.Id).Editable(false);
+                        })
+                        )
+                        )
+
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<!-- MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg rounded-3">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fa fa-user-edit ml-1"></i>
+                    ویرایش مالک
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="editId" />
+
+                <div class="form-group">
+                    <label class="font-weight-bold">نام</label>
+                    <input type="text" id="editName" autocomplete="off" class="form-control" placeholder="نام را وارد کنید" />
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">نام خانوادگی</label>
+                    <input type="text" id="editFamily" autocomplete="off" class="form-control" placeholder="نام خانوادگی را وارد کنید" />
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold d-block">نوع مالک</label>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" id="editUser" name="editAssestUserTypes" value="0" class="custom-control-input">
+                        <label class="custom-control-label" for="editUser">کاربر</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" id="editUnit" name="editAssestUserTypes" value="1" class="custom-control-input">
+                        <label class="custom-control-label" for="editUnit">واحد</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="editIsActive">
+                        <label class="custom-control-label" for="editIsActive">وضعیت کاربر فعال/غیر فعال</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer justify-content-between">
+                <button class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times ml-1"></i>
+                    انصراف
+                </button>
+                <button id="saveEditBtn" class="btn btn-primary">
+                    <i class="fa fa-save ml-1"></i>
+                    ذخیره تغییرات
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        function antiForgery() {
+            return {
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            };
+        }
+
+        function showAlert(msg, type = 'success') {
+            $("#alertContainer").html(`
+                <div class="alert alert-${type} alert-dismissible fade show">
+                    ${msg}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            `);
+
+            setTimeout(() => {
+                $("#alertContainer .alert").alert('close');
+            }, 4000);
+        }
+
+        let grid;
+
+        $(document).ready(function () {
+            grid = $("#assestUserGrid").data("kendoGrid");
+
+         
+            grid.dataSource.bind("requestEnd", function (e) {
+                if (e.type === "create") {
+                    showAlert("ثبت مالک با موفقیت انجام شد", "success");
+                    clearForm();
+                }
+                if (e.type === "update") {
+                    showAlert("ویرایش با موفقیت انجام شد", "success");
+                }
+                if (e.type === "destroy") {
+                    showAlert("حذف با موفقیت انجام شد", "success");
+                }
+            });
+        });
+
+        // ======================
+        // CREATE
+        // ======================
+        $("#btnRegister").click(function () {
+
+            grid.dataSource.add({
+                Name: $("#Name").val(),
+                Family: $("#Family").val(),
+                AssestUserTypes: parseInt($("input[name='AssestUserTypes']:checked").val()),
+                IsActive: true
+            });
+
+            grid.dataSource.sync();
+        });
+
+        // ======================
+        // OPEN MODAL
+        // ======================
+        function openEditModal(e) {
+            e.preventDefault();
+
+            let item = grid.dataItem($(e.currentTarget).closest("tr"));
+            if (!item) {
+                showAlert("خطا در دریافت اطلاعات رکورد", "danger");
+                return;
+            }
+
+            $("#editId").val(item.Id);
+            $("#editName").val(item.Name);
+            $("#editFamily").val(item.Family);
+            $("input[name='editAssestUserTypes'][value='" + item.AssestUserTypes + "']")
+                .prop("checked", true);
+            $("#editIsActive").prop("checked", item.IsActive);
+
+            $("#editModal").modal("show");
+        }
+
+
+        function clearForm() {
+            $("#Name").val("");
+            $("#Family").val("");
+            $("input[name='AssestUserTypes'][value='0']").prop("checked", true);
+        }
+
+        // ======================
+        // UPDATE
+        // ======================
+        $("#saveEditBtn").click(function () {
+
+            let id = parseInt($("#editId").val());
+            let item = grid.dataSource.get(id);
+
+            if (!item) {
+                showAlert("رکورد مورد نظر یافت نشد", "danger");
+                return;
+            }
+
+            item.set("Name", $("#editName").val());
+            item.set("Family", $("#editFamily").val());
+            item.set("AssestUserTypes",
+            parseInt($("input[name='editAssestUserTypes']:checked").val()));
+          
+
+            item.set("IsActive", $("#editIsActive").is(":checked"));
+
+            // ✅ اول مودال بسته می‌شود
+            $("#editModal").modal("hide");
+
+            // ✅ بعد Sync
+            grid.dataSource.sync();
+        });
+
+    </script>
+}
+

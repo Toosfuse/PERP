@@ -1,0 +1,230 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "لیست اسکن نیم پلیت";
+    var selectedCityId = ViewBag.SelectedCityId as int?;
+}
+
+<div class="container-fluid mt-4" dir="rtl">
+    <div class="card shadow-lg border-0 rounded-4">
+
+        <!-- Header -->
+        <div class="card-header text-white text-center py-4" style="background:#11fff0">
+            <h3 class="mb-0 fw-bold">
+                <i class="bi bi-box-seam-fill me-2"></i>
+                لیست اسکن نیم پلیت
+            </h3>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+
+            <!-- Filters -->
+            <div class="row g-4 mb-4 align-items-end">
+
+                <!-- City Filter -->
+                <div class="col-lg-4 col-md-5">
+                    <label class="form-label fw-bold text-secondary">
+                        فیلتر بر اساس شهر
+                    </label>
+                    <select id="cityFilter" class="select2-lg w-100">
+                        <option value="">همه شهرها</option>
+                        @foreach (var city in ViewBag.Cities as IEnumerable<SelectListItem>)
+                        {
+                            bool isSelected = city.Value == selectedCityId?.ToString();
+                            <option value="@city.Value" selected="@isSelected">@city.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Search -->
+                <div class="col-lg-4 col-md-4">
+                    <label class="form-label fw-bold text-secondary">
+                        جستجوی آزاد
+                    </label>
+                    <input type="text"
+                           id="searchInput"
+                           class="form-control form-control-lg shadow-sm"
+                           placeholder="شماره سفارش، مشتری، شهر..."
+                           value="@Context.Request.Query["search"]" />
+                </div>
+
+            </div>
+
+            <!-- Grid -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="k-rtl p-3 bg-light rounded-3">
+
+                        @(Html.Kendo().Grid<ERP.ViewModels.OrderViewModel>()
+                                                .Name("gridOrders")
+                                                .Columns(columns =>
+                                                {
+
+                                                    columns.Bound(c => c.OrderNumber)
+                                                    .Title("شماره سفارش")
+                                                    .Width(160)
+                                                    .HtmlAttributes(new { @class = "text-center" })
+                                                    .ClientTemplate("<strong class='text-primary'>#= OrderNumber #</strong>").HtmlAttributes(new { @class = "text-center" });
+
+                                                    columns.Bound(c => c.CityName)
+                                                    .Title("شهر مقصد")
+                                                    .Width(140)
+                                                    .HtmlAttributes(new { @class = "text-center" })
+                                                    .ClientTemplate("<span class='badge bg-info text-dark px-3 py-2'>#= CityName #</span>");
+
+                                                    columns.Bound(c => c.StartSerial)
+                                                    .Title("سریال اولیه")
+                                                    .Width(160)
+                                                    .HtmlAttributes(new { @class = "text-center" })
+                                                    .ClientTemplate("#= StartSerial ?? '-' #");
+
+                                                    columns.Bound(c => c.EndSerial)
+                                                    .Title("سریال انتهایی")
+                                                    .Width(160)
+                                                    .HtmlAttributes(new { @class = "text-center" })
+                                                    .ClientTemplate("#= EndSerial ?? '-' #");
+
+                                                    columns.Bound(c => c.SerialCount)
+                                                    .Title("تعداد سریال")
+                                                    .Width(140)
+                                                    .HtmlAttributes(new { @class = "text-center" })
+                                                    .ClientTemplate("<span class='text-success fw-bold fs-5'>#= kendo.toString(SerialCount, 'n0', 'fa-IR') #</span>");
+
+                                                    columns.Bound(c => c.RegDate)
+                                                    .Title("تاریخ ثبت")
+                                                    .Width(130)
+                                                    .HtmlAttributes(new { @class = "text-center" });
+
+                                                    columns.Command(cmd =>
+                                                    {
+                                                        cmd.Custom("scan")
+
+                                                    .Text("<i class='fa fa-barcode'></i>")
+                                                    .Click("CreateScanBarcode")
+                                                    .HtmlAttributes(new
+                                                    {
+                                                        @class = "btn btn-success text-center",
+                                                        style = "background:#11fff0;border-color:#11fff0",
+                                                        title = "اسکن نیم پلیت"
+                                                    });
+                                                    })
+                                                    .Title("عملیات")
+                                                    .Width(120)
+                                                    .HtmlAttributes(new { @class = "text-center" });
+                                                })
+                                                .Pageable()
+                                                .Sortable()
+                                                .Scrollable()
+                                                .NoRecords()
+                                                .DataSource(ds => ds
+                                                .Ajax()
+                                                .PageSize(20)
+                                                .ServerOperation(true)
+                                                .Read(r => r
+                                                .Action("Orders_Read", "ScanBarcode")
+                                                .Data("getFilterData")
+                                                )
+                                                )
+                                                )
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section styles {
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+
+    <style>
+
+        .k-grid th {
+            text-align: center !important;
+            vertical-align: middle;
+        }
+
+            /* وسط‌چین شدن متن داخل لینک هدرها */
+            .k-grid th .k-link {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+        /* Select2 same size as form-control-lg */
+        .select2-container--default .select2-selection--single {
+            height: calc(3.5rem + 2px);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #ced4da;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+        }
+
+        .select2-selection__rendered {
+            padding-right: 0;
+            line-height: 1.8;
+        }
+
+        .select2-selection__arrow {
+            height: 100%;
+            right: 10px;
+        }
+
+        .select2-container--focus .select2-selection {
+            border-color: #11fff0;
+            box-shadow: 0 0 0 .2rem rgba(17,255,240,.25);
+        }
+
+        .select2-dropdown {
+            border-radius: .5rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/select 2/select 2.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $('#cityFilter').select2({
+                placeholder: "انتخاب شهر مقصد",
+                allowClear: true,
+                dir: "rtl",
+                width: "100%"
+            });
+
+            $('#cityFilter').on('change', applyFilters);
+
+            $('#searchInput').on('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    applyFilters();
+                }
+            });
+        });
+
+        function getFilterData() {
+            return {
+                cityId: $('#cityFilter').val() || null,
+                search: $('#searchInput').val().trim() || null
+            };
+        }
+
+        function applyFilters() {
+            $('#gridOrders').data('kendoGrid').dataSource.read();
+        }
+
+        function CreateScanBarcode(e) {
+            e.preventDefault();
+            const tr = $(e.currentTarget).closest("tr");
+            const dataItem = $("#gridOrders").data("kendoGrid").dataItem(tr);
+            window.location.href =
+                '@Url.Action("Create", "ScanBarcode")?id=' + dataItem.Id;
+        }
+    </script>
+}

@@ -1,0 +1,819 @@
+﻿@inject LookupService UsersLookup
+@using Kendo.Mvc.UI
+@model ERP.Models.CompanyTender
+
+
+@{
+    var users = UsersLookup.GetUsers();
+    var guid = ViewBag.guid;
+}
+
+
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-shopping-cart" style="margin-left:10px;color:red"></i> مناقصه</h1>
+        @if (Model.CompanyTenderID == 0)
+        {
+            <span>جدید</span>
+        }
+        else
+        {
+            <span>ویرایش  </span>
+        }
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+    </ul>
+</div>
+<style>
+    .asd {
+        margin-right: 10px;
+    }
+
+    .margintable {
+        margin-top: 28px;
+    }
+</style>
+<input type="hidden" value="@guid" id="Guid" />
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+
+            <div class="tile-body">
+                <div class="container-fluid mt-12" dir="rtl">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-success text-white fw-bold text-center">
+                            مناقصات
+                        </div>
+                        <div class="card-body">
+
+                            @if (Model.CompanyTenderID != 0)
+                            {
+                                <input type="hidden" asp-for="CompanyTenderID" />
+                            }
+                            <!-- ردیف اول -->
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label asp-for="City" class="form-label">شرکت توزیع برق</label>
+                                    <select class="form-control select2" asp-for="City" id="City" style="width: 100%;">
+                                        <option></option>
+                                        <option>شرکت توزیع نیروی برق استان یزد</option>
+                                        <option>شرکت توزیع نیروی برق استان کردستان</option>
+                                        <option>شرکت توزیع نیروی برق استان خوزستان</option>
+                                        <option>شرکت توزیع نیروی برق استان مازندران</option>
+                                        <option>شرکت توزیع نیروی برق استان قم</option>
+                                        <option>شرکت توزیع نیروی برق شهرستان اصفهان</option>
+                                        <option>شرکت توزیع نیروی برق استان مرکزی</option>
+                                        <option>شرکت توزیع نیروی برق شهرستان مشهد</option>
+                                        <option>شرکت توزیع نیروی برق استان خراسان شمالی</option>
+                                        <option>شرکت توزیع نیروی برق استان خراسان جنوبی</option>
+                                        <option>شرکت توزیع نیروی برق استان گیلان</option>
+                                        <option>شرکت توزیع نیروی برق استان فارس</option>
+                                        <option>شرکت توزیع نیروی برق استان اصفهان</option>
+                                        <option>شرکت توزیع نیروی برق استان آذربایجان شرقی</option>
+                                        <option>شرکت توزیع نیروی برق غرب استان مازندران</option>
+                                        <option>شرکت توزیع نیروی برق استان همدان</option>
+                                        <option>شرکت توزیع نیروی برق استان لرستان</option>
+                                        <option>شرکت توزیع نیروی برق استان بوشهر</option>
+                                        <option>شرکت توزیع نیروی برق جنوب استان کرمان</option>
+                                        <option>شرکت توزیع نیروی برق استان کرمانشاه</option>
+                                        <option>شرکت توزیع نیروی برق تبریز</option>
+                                        <option>شرکت توزیع نیروی برق استان تهران</option>
+                                        <option>شرکت توزیع نیروی برق استان چهارمحال و بختیاری</option>
+                                        <option>شرکت توزیع نیروی برق اهواز</option>
+                                        <option>شرکت توزیع نیروی برق استان قزوین</option>
+                                        <option>شرکت توزیع نیروی برق استان کهگیلویه و بویر احمد</option>
+                                        <option>شرکت توزیع نیروی برق استان ایلام</option>
+                                        <option>شرکت توزیع نیروی برق استان سمنان</option>
+                                        <option>شرکت توزیع نیروی برق شیراز</option>
+                                        <option>شرکت توزیع نیروی برق استان خراسان رضوی</option>
+                                        <option>شرکت توزیع نیروی برق شمال استان کرمان</option>
+                                        <option>شرکت توزیع نیروی برق استان زنجان</option>
+                                        <option>شرکت توزیع نیروی برق استان گلستان</option>
+                                        <option>شرکت توزیع نیروی برق استان هرمزگان</option>
+                                        <option>شرکت توزیع نیروی برق استان سیستان و بلوچستان</option>
+                                        <option>شرکت توزیع نیروی برق استان آذربایجان غربی</option>
+                                        <option>شرکت توزیع نیروی برق تهران بزرگ</option>
+                                        <option>شرکت توزیع نیروی برق استان اردبیل</option>
+                                        <option>شرکت توزیع نیروی برق استان البرز</option>
+                                        <option>کنتور فرعی</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="TenderNumber">شماره مناقصه:</label>
+                                    <input type="text" asp-for="TenderNumber" id="NeedNumber" class="form-control" placeholder="شماره مناقصه">
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="TotalPrice">قیمت کل:</label>
+                                    <input type="number" asp-for="TotalPrice" id="TotalPrice" class="form-control" placeholder="قیمت کل" readonly>
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="FeeCost">هزینه کارمزد :</label>
+                                    <input type="number" asp-for="FeeCost" id="FeeCost" class="form-control" placeholder="هزینه کارمزد ">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+
+                                <div class="col-md-3">
+                                    <label asp-for="AlefDate">ارسال پاکت الف و نمونه:</label>
+                                    <input type="text" data-jdp id="AlefDate" asp-for="AlefDate" class="form-control" autocomplete="off">
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="AllPocketDate">ارسال تمام پاکت ها:</label>
+                                    <input type="text" asp-for="AllPocketDate" data-jdp id="AllPocketDate" class="form-control" autocomplete="off">
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="TenderResult" class="form-label">نتیجه ‌</label>
+                                    <select class="form-control" asp-for="TenderResult" id="TenderResult">
+                                        <option selected disabled>انتخاب کنید...</option>
+                                        <option value="عدم حضور">عدم حضور</option>
+                                        <option value="برنده">برنده</option>
+                                        <option value="بازنده">بازنده</option>
+                                        <option value="تجدید شد">تجدید شد</option>
+
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="Winner" class="form-label">برنده نهایی‌</label>
+                                    <select class="form-control" asp-for="Winner" id="Winner">
+                                        <option selected disabled>انتخاب کنید...</option>
+                                        <option value="نامشخص">نامشخص</option>
+                                        <option value="توس فیوز">توس فیوز</option>
+                                        <option value="افزارآزما">افزارآزما</option>
+                                        <option value="بهینه سازان">بهینه سازان</option>
+                                        <option value="راد نیرو">راد نیرو</option>
+                                        <option value="سنجش نیرو">سنجش نیرو</option>
+                                        <option value="کنتوز سازی">کنتوز سازی</option>
+                                        <option value="سنجش نیرو">سنجش نیرو</option>
+                                        <option value="سنجش افزار">سنجش افزار</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="container-fluid my-4">
+
+                                    <div class="card shadow-sm p-4 mb-4">
+                                        <h4 class="mb-3">افزودن محصول به مناقصه</h4>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-3">
+                                                <label for="products">جستجو بر اساس نام محصول:</label>
+                                                <div class="k-w-300 k-rtl form-control" style="border:none !important;">
+                                                    @(
+                                                        Html.Kendo().DropDownList()
+                                                        .Name("products")
+                                                        .DataTextField("NameProduct")
+                                                        .DataValueField("ProductID")
+                                                        .HtmlAttributes(new { style = "" })
+                                                        .AutoBind(false)
+                                                        .Filter(FilterType.Contains)
+                                                        .Events(e => e.Filtering("onFilter").Select("onSelect"))
+                                                        .DataSource(source =>
+                                                        {
+                                                            source.Read(read =>
+                                                            {
+                                                                read.Action("GetProductMeter", "CompanyInquery");
+                                                            })
+                                                            .ServerFiltering(false);
+                                                        })
+                                                        .Template("#=CodeProduct# | #=NameProduct#")
+                                                        )
+                                                </div>
+                                            </div>
+                                            <input type="hidden" value="" id="1" />
+                                            <div class="form-group col-md-2">
+                                                <label for="productQty">تعداد</label>
+                                                <input type="number" id="productQty" class="form-control" min="1" required />
+                                            </div>
+
+                                            <div class="form-group col-md-2">
+                                                <label for="Price">قیمت توس فیوز</label>
+                                                <input type="text" id="Price" class="form-control number-input" inputmode="numeric" pattern="\d*" required />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Price">امتیاز توس فیوز</label>
+                                                <input type="text" id="Score" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                            </div>
+
+                                            <div class="form-group col-md-3">
+                                                <label for="productDesc">توضیحات</label>
+                                                <input type="text" id="productDesc" class="form-control" />
+                                            </div>
+                                        </div>
+
+                                        <hr class="my-4" />
+
+                                        <h5>قیمت‌ها و امتیازها</h5>
+                                        <div class="form-row">
+                                            <!-- 6 جفت Price و Score -->
+                                            <div class="form-group col-md-2">
+                                                <label for="Price1">قیمت افزارآزما</label>
+                                                <input type="text" id="Price1" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                                <label for="Score1" class="mt-2">امتیاز افزارآزما</label>
+                                                <input type="text" id="Score1" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Price2">قیمت بهینه سازان</label>
+                                                <input type="text" id="Price2" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                                <label for="Score2" class="mt-2">امتیاز بهینه سازان</label>
+                                                <input type="text" id="Score2" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Price3">قیمت راد نیرو</label>
+                                                <input type="text" id="Price3" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                                <label for="Score3" class="mt-2">امتیاز راد نیرو</label>
+                                                <input type="text" id="Score3" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Price4">قیمت سنجش نیرو</label>
+                                                <input type="text" id="Price4" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                                <label for="Score4" class="mt-2">امتیاز سنجش نیرو</label>
+                                                <input type="text" id="Score4" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Price5">قیمت کنتوز سازی</label>
+                                                <input type="text" id="Price5" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                                <label for="Score5" class="mt-2">امتیاز کنتور سازی</label>
+                                                <input type="text" id="Score5" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Price6">قیمت سنجش افزار</label>
+                                                <input type="text" id="Price6" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                                <label for="Score6" class="mt-2">امتیاز سنجش افزار</label>
+                                                <input type="text" id="Score6" class="form-control number-input" inputmode="numeric" pattern="\d*" />
+                                            </div>
+                                        </div>
+
+                                        <div class="text-right mt-4">
+                                            <button id="addrow" class="btn btn-primary">افزودن محصول</button>
+                                            @* onclick="addProduct()" *@
+                                        </div>
+                                    </div>
+
+                                    <div class="card shadow-sm p-4">
+                                        <h4 class="mb-3">محصولات اضافه شده</h4>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-striped text-center" id="productTable">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>ردیف</th>
+                                                        <th>نام محصول</th>
+                                                        <th>تعداد</th>
+                                                        <th>قیمت توس فیوز</th>
+                                                        <th>امتیاز توس فیوز</th>
+                                                        <th>قیمت افزارآزما</th>
+                                                        <th>امتیاز افزارآزما</th>
+                                                        <th>قیمت بهینه سازان</th>
+                                                        <th>امتیاز بهینه سازان</th>
+                                                        <th>قیمت راد نیرو</th>
+                                                        <th>امتیاز راد نیرو</th>
+                                                        <th>قیمت سنجش نیرو</th>
+                                                        <th>امتیاز سنجش نیرو</th>
+                                                        <th>قیمت کنتوز سازی</th>
+                                                        <th>امتیاز کنتور سازی</th>
+                                                        <th>قیمت سنجش افزار</th>
+                                                        <th>امتیاز سنجش افزار</th>
+                                                        <th>توضیحات</th>
+                                                        <th>حذف</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tablerow">
+                                                    <!-- محصولات اینجا اضافه می‌شوند -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tile-footer">
+                <button class="btn btn-success w-100 mt-4" id="SubmitForm">ارسال فرم</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<a href="javascript:void(0)" onclick="goBackAndRefresh()" class="btn btn-outline-primary btn-lg">
+    <i class="fa fa-arrow-right "></i> بازگشت
+</a>
+
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ویرایش محصول</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editId" />
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">تعداد</label>
+                        <input type="number" id="editQty" class="form-control" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت توس فیوز</label>
+                        <input type="text" id="editPrice" class="form-control" />
+                    </div>
+
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">امتیاز توس فیوز</label>
+                        <input type="text" id="editScore" class="form-control" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">توضیحات</label>
+                        <input type="text" id="editDesc" class="form-control" />
+                    </div>
+
+                    <!-- قیمت‌های دیگر -->
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت افزارآزما</label>
+                        <input type="text" id="editPrice1" class="form-control" />
+                    </div>
+                     <div class="col-md-3">
+                        <label class="form-label">امتیاز افزارآزما</label>
+                        <input type="text" id="editScore1" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت بهینه سازان</label>
+                        <input type="text" id="editPrice2" class="form-control" />
+                    </div>
+                     <div class="col-md-3">
+                        <label class="form-label">امتیاز بهینه سازان</label>
+                        <input type="text" id="editScore2" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت راد نیرو</label>
+                        <input type="text" id="editPrice3" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت راد نیرو</label>
+                        <input type="text" id="editScore3" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت سنجش نیرو</label>
+                        <input type="text" id="editPrice4" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت سنجش نیرو</label>
+                        <input type="text" id="editScore4" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت کنتوز سازی</label>
+                        <input type="text" id="editPrice5" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت کنتوز سازی</label>
+                        <input type="text" id="editScore5" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">قیمت سنجش افزار</label>
+                        <input type="text" id="editPrice6" class="form-control" />
+                    </div>
+                     <div class="col-md-3">
+                        <label class="form-label">قیمت سنجش افزار</label>
+                        <input type="text" id="editScore6" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                <button class="btn btn-primary" onclick="saveEdit()">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section styles
+{
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: calc(2.375rem + 2px); /* معادل height با form-control */
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                line-height: 1.5;
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 100%;
+                right: 0.75rem;
+            }
+    </style>
+
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/wordifyfa/wordifyfa.js"></script>
+    <script src="~/sweetalert2/sweetalert2.js"></script>
+    <script src="~/number-divider/number-divider.min.js"></script>
+    <script src="~/select 2/select 2.js"></script>
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>
+            <script>
+            $(document).ready(function () {
+                addrow();
+            });
+        </script>
+    <script>
+        $(document).ready(function () {
+            $('#City').select2({
+                placeholder: "آرم یا نام مشتری را انتخاب کنید",
+                allowClear: true,
+                dir: "rtl" // پشتیبانی از راست‌چین
+            });
+        });
+    </script>
+
+    <script>
+        function onSelect(e) {
+            if (e.item) {
+                var dataItem = this.dataItem(e.item);
+                document.getElementById("1").value = dataItem.ProductID;
+            } else {
+                alert("event :: select");
+            }
+        }
+        function onFilter(e) {
+            e.preventDefault();
+            var filterValue = e.filter != undefined ? e.filter.value : "";
+            this.dataSource.filter({
+                logic: "or",
+                filters: [
+                    {
+                        field: "CodeProduct",
+                        operator: "contains",
+                        value: filterValue
+                    },
+                    {
+                        field: "NameProduct",
+                        operator: "contains",
+                        value: filterValue
+                    },
+                    {
+                        field: "NameProductMarket",
+                        operator: "contains",
+                        value: filterValue
+                    }
+                ]
+            });
+        }
+    </script>
+    <script>
+        function clearProductForm() {
+            $("#products").data("kendoDropDownList").value("");
+            document.getElementById("productQty").value = "";
+            document.getElementById("Price").value = "";
+            document.getElementById("Score").value = "";
+            document.getElementById("productDesc").value = "";
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById("Price" + i).value = "";
+                document.getElementById("Score" + i).value = "";
+            }
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#addrow").click(function () {
+                const qty = +document.getElementById("productQty").value.replace(/[^\d]/g, '');
+                if (!qty || qty <= 0) {
+                    alert("لطفا تعداد معتبر وارد کنید.");
+                    return;
+                }
+
+                const basePrice = +document.getElementById("Price").value.replace(/[^\d]/g, '');
+                if (basePrice < 0) {
+                    alert("لطفا قیمت  معتبر وارد کنید.");
+                    return;
+                }
+                const score = +document.getElementById("Score").value.replace(/[^\d]/g, '') || 0;
+                const desc = document.getElementById("productDesc").value || "";
+
+                let priceScoreList = [];
+                for (let i = 1; i <= 6; i++) {
+                    let p = +document.getElementById("Price" + i).value.replace(/[^\d]/g, '') || 0;
+                    let s = +document.getElementById("Score" + i).value.replace(/[^\d]/g, '') || 0;
+                    priceScoreList.push({ price: p, score: s });
+                }
+
+                var productid = $("#1").val();
+                var price = basePrice;
+                var quantity = qty;
+                var Guid = $("#Guid").val();
+                var Description = desc;
+                var Score = score;
+                var Price1 = priceScoreList[0].price;
+                var Price2 = priceScoreList[1].price;
+                var Price3 = priceScoreList[2].price;
+                var Price4 = priceScoreList[3].price;
+                var Price5 = priceScoreList[4].price;
+                var Price6 = priceScoreList[5].price;
+                var Score1 = priceScoreList[0].score;
+                var Score2 = priceScoreList[1].score;
+                var Score3 = priceScoreList[2].score;
+                var Score4 = priceScoreList[3].score;
+                var Score5 = priceScoreList[4].score;
+                var Score6 = priceScoreList[5].score;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/CompanyInquery/InsertCotenderItem",
+                    data: { ProductID: productid, Price: price, Quantity: quantity, Description: Description, Guid: Guid, Score: Score, Price1: Price1, Price2: Price2, Price3: Price3, Price4: Price4, Price5: Price5, Price6: Price6, Score1: Score1, Score2: Score2, Score3: Score3, Score4: Score4, Score5: Score5, Score6: Score6 },
+                    success: function (r) {
+                        addrow();
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        alert(response.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        function addrow() {
+            var Guid = $("#Guid").val();
+            $.ajax({
+                type: "POST",
+                url: "/CompanyInquery/ListCotenderItem",
+                data: { Guid: Guid },
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                success: function (r) {
+                    clearProductForm();
+                    $('#tablerow').empty();
+                    for (var i = 0; i < r.data.length; i++) {
+                        var y = i + 1;
+                        var markup = "<tr>" +
+                            "<td scope='col'>" + y + "</td>" +
+                            "<td scope='col'>" + r.data[i].ProductName + "</td>" +
+                            "<td scope='col'>" + r.data[i].Quantity + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Price) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Score) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Price1) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Score1) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Price2) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Score2) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Price3) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Score3) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Price4) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Score4) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Price5) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Score5) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Price6) + "</td>" +
+                            "<td scope='col'>" + formatNumberText(r.data[i].Score6) + "</td>" +
+                            "<td scope='col'>" + r.data[i].Description + "</td>" +
+                            "<td scope='col'>" +
+                            "<a class='fa fa-trash-o asd' onclick='D(" + r.data[i].CoTenderItemID + ")'></a>" +
+                            "<a class='fa fa-edit text-primary mx-1' onclick='editRow(" + r.data[i].CoTenderItemID + ")'></a>" +
+                            "</td>" +
+                            "</tr>";
+
+                            "</tr>";
+                        $("#tablerow").append(markup);
+                        $('.divide').divide();
+                    }
+                    $('#TotalPrice').empty();
+                    $("#TotalPrice").append(r.totalprice);
+                    $("#TotalPrice").val(r.totalprice);
+                    var multi = $("#products").data("kendoDropDownList");
+                    multi.value("");
+                },
+                failure: function (response) {
+                    document.getElementById("vahid").value = response.responseText;
+                },
+                error: function (response) {
+                    document.getElementById("vahid").value = response.responseText;
+                }
+            });
+        }
+    </script>
+
+    <script>
+
+        $(document).ready(function () {
+            $("#SubmitForm").click(function () {
+                var CompanyTenderID=$("#CompanyTenderID").val();
+                var City = $("#City").val();
+                var TenderNumber = $("#NeedNumber").val();
+                var TotalPrice = +document.getElementById("TotalPrice").value.replace(/[^\d]/g, '');
+                var AlefDate = $("#AlefDate").val();
+                var AllPocketDate = $("#AllPocketDate").val();
+                var TenderResult = $("#TenderResult").val();
+                var FeeCost = +$("#FeeCost").val().replace(/[^\d]/g, '');
+                var Guid = $("#Guid").val();
+                var Winner=$("#Winner").val();
+
+                $.ajax({
+                    url: '/CompanyInquery/SubmitTender',
+                    method: 'POST',
+                    data: { CompanyTenderID: CompanyTenderID,Winner:Winner, City: City, TenderNumber: TenderNumber, TotalPrice: TotalPrice, AlefDate: AlefDate, AllPocketDate: AllPocketDate, TenderResult: TenderResult, FeeCost: FeeCost, Guid: Guid },
+                    success: function (response) {
+                        alert("فرم مناقصه با موفقیت ارسال شد.");
+                        window.location.href = '/CompanyInquery/IndexTender';
+                    },
+                    error: function () {
+                        alert("خطا در ارسال فرم مناقصه.");
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        function D(id) {
+            var i = id;
+            swal({
+                title: "هشدار",
+                text: "آیا از حذف مطمین هستید؟",
+                type: "error",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "بله",
+                cancelButtonText: "خیر"
+            }
+            ).then(
+                function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/CompanyInquery/DeleteCotenderItem",
+                            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                            data: { id: i },
+                            success: function (r) {
+                                if (r.status === 'OK') {
+                                    swal({
+                                        title: "",
+                                        text: "با موفقیت انجام شد",
+                                        type: "success",
+                                        confirmButtonText: "اوکی",
+                                    }).then(function () {
+                                        addrow();
+                                    });
+                                }
+                            },
+                            failure: function (response) {
+                                alert(response.responseText);
+                            },
+                            error: function (response) {
+                                alert(response.responseText);
+                            }
+                        });
+                    }
+                },
+                function () {
+                }
+            );
+        }
+    </script>
+
+    <script>
+        function formatNumberInput(el) {
+            let value = el.value.replace(/[^\d]/g, '');
+            if (value !== "") {
+                el.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, "/");
+            }
+        }
+        function unformatNumberInput(el) {
+            el.value = el.value.replace(/[^\d]/g, '');
+        }
+        document.querySelectorAll('.number-input').forEach(input => {
+            input.addEventListener('input', () => formatNumberInput(input));
+            input.addEventListener('focus', () => unformatNumberInput(input));
+            input.addEventListener('blur', () => formatNumberInput(input));
+        });
+        function getNumericValue(id) {
+            return parseFloat(document.getElementById(id).value.replace(/[^\d]/g, '')) || 0;
+        }
+        //  برای فرمت عدد به صورت متن
+        function formatNumberText(val) {
+            val = val?.toString().replace(/[^\d]/g, '') || '';
+            return val.replace(/\B(?=(\d{3})+(?!\d))/g, "/");
+        }
+    </script>
+
+        <script>
+        function editRow(id) {
+            // ایجکس برای دریافت اطلاعات با آیدی
+            $.ajax({
+                type: "GET",
+                url: "/CompanyInquery/GetCoTenderItemById",
+                data: { id: id },
+                success: function (data) {
+                    $("#editQty").val("");
+                    $("#editPrice").val("");
+                    $("#editScore").val("");
+                    
+                    $("#editDesc").val("");
+                    $("#editPrice1").val("");
+                    $("#editScore1").val("");
+                    $("#editPrice2").val("");
+                    $("#editScore2").val("");
+                    $("#editPrice3").val("");
+                    $("#editScore3").val("");
+                    $("#editPrice4").val("");
+                    $("#editScore4").val("");
+                    $("#editPrice5").val("");
+                    $("#editScore5").val("");
+                    $("#editPrice6").val("");
+                    $("#editScore6").val("");
+                    // پر کردن فیلدهای مدال
+                    $("#editId").val(id);
+                    $("#editQty").val(data.Quantity);
+                    $("#editPrice").val(data.Price);
+                    $("#editScore").val(data.Score);
+                    
+                    $("#editDesc").val(data.Description);
+
+                    $("#editPrice1").val(data.Price1);
+                    $("#editScore1").val(data.Score1);
+                    $("#editPrice2").val(data.Price2);
+                    $("#editScore2").val(data.Score2);
+                    $("#editPrice3").val(data.Price3);
+                    $("#editScore3").val(data.Score3);
+                    $("#editPrice4").val(data.Price4);
+                    $("#editScore4").val(data.Score4);
+                    $("#editPrice5").val(data.Price5);
+                    $("#editScore5").val(data.Score5);
+                    $("#editPrice6").val(data.Price6);
+                    $("#editScore6").val(data.Score6);
+
+                   $('#editModal').modal('show');
+                },
+                error: function () {
+                    alert("خطا در دریافت اطلاعات.");
+                }
+            });
+        }
+
+        function saveEdit() {
+            var data = {
+                CoTenderItemID: $("#editId").val(),
+                Quantity: +$("#editQty").val(),
+                Price: +$("#editPrice").val(),
+                Score: +$("#editScore").val(),
+                Description: $("#editDesc").val(),
+                Price1: +$("#editPrice1").val(),
+                Score1:+$("#editScore1").val(),
+                Price2: +$("#editPrice2").val(),
+                Score2:+$("#editScore2").val(),
+                Price3: +$("#editPrice3").val(),
+                Score3:+$("#editScore3").val(),
+                Price4: +$("#editPrice4").val(),
+                Score4:+$("#editScore4").val(),
+                Price5: +$("#editPrice5").val(),
+                Score5:+$("#editScore5").val(),
+                Price6: +$("#editPrice6").val(),
+                Score6:+$("#editScore6").val(),
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/CompanyInquery/UpdateCoTenderItem",
+                data: data,
+                success: function () {
+                    $("#editModal").modal('hide');
+                    addrow();
+                },
+                error: function () {
+                    alert("خطا در ذخیره تغییرات.");
+                }
+            });
+        }
+
+    </script>
+}
+
+
+
+
+

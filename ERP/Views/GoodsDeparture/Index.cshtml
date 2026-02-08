@@ -1,0 +1,222 @@
+﻿@using ERP.ViewModels.GoodsDeparture
+@using ERP.ViewModels.GuestEntry
+@using Kendo.Mvc.UI
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var all = ViewBag.all;
+    var s1 = ViewBag.s1;
+    var s2 = ViewBag.s2;
+    var s3 = ViewBag.s3;
+    var s4 = ViewBag.s4;
+    var s5 = ViewBag.s5;
+
+
+}
+<div class="app-title" style="display: flex; justify-content: space-between; align-items: center; padding: 0; margin: 0;">
+    <h1><i class="fa fa-address-card-o" style="margin-left:10px;color:red"></i>لیست خروج کالا</h1>
+    <button type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="window.location.href='@Url.Action("GoodsDepartureView", "GoodsDeparture")'">
+        <i class="fa fa-plus"></i> خروج کالا جدید
+    </button>
+</div>
+<ul class="app-breadcrumb breadcrumb">
+</ul>
+
+<style>
+    .k-grid-toolbar {
+        direction: ltr;
+    }
+
+    .btn-icon {
+        border-radius: 0 !important;
+        padding: 0.1rem 0.3rem;
+        color: white !important;
+    }
+
+    .asd {
+        color: black !important;
+        margin-right: 10px;
+    }
+
+    .modal-xl {
+        max-width: 70%;
+    }
+</style>
+@section styles
+{
+    <link href="~/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+}
+<div class="row" style="margin-bottom: 5px;">
+    <div class="col-lg-12">
+        <div class="tile" style="margin-bottom:0;">
+            <div class="bs-component">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#2" onclick="SelectTab('TayidMali1')">تایید واحد مالی<span class="badge badge-pill badge-warning">@s1</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#3" onclick="SelectTab('Negahbani2')">نگهبانی<span class="badge badge-pill badge-warning">@s2</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#4" onclick="SelectTab('End3')">پایان<span class="badge badge-pill badge-warning">@s3</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#1" onclick="SelectTab('همه لیست')">همه لیست<span class="badge badge-pill badge-warning">@all</span></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="k-rtl" style="overflow-x:auto;width:100%;">
+
+                @(
+                                Html.Kendo().Grid<IndexGoodsDepartureViewModel>()
+                                .Name("goodsdeparturegrid")
+                                .Columns(col =>
+                                {
+                                    col.Bound(p => p.GoodsDepartureID).Title("شناسه");
+                                    col.Bound(p => p.State).Title("مرحله فعلی"); // نمایش مرحله
+                                    col.Bound(p => p.Nam_TahvilGirandeh).Title("نام تحویل گیرنده");
+                                    col.Bound(p => p.S_persiandate).Title("تاریخ درخواست");
+                                    col.Bound(c => c.Tozihat_Entezamat)
+                                        .Title("توضیحات")
+                                        .ClientTemplate(
+                                    "<a href='javascript:void(0);' onclick='showHtmlDescription(`#: kendo.htmlEncode(Tozihat_Entezamat) #`, `#: Nam_TahvilGirandeh #`,`#: GoodsDepartureID #`, this)' " +
+                                            "class='btn btn-sm btn-outline-primary' title='نمایش شرح'>" +
+                                            "<i class='fa fa-eye'></i> مشاهده</a>"
+                                        );
+                                    col.Bound(p => p.SourceTable).Title("منبع").Visible(false);
+                                    col.Bound("").Title("عملیات").ClientTemplate(
+                                    "<a type='button' class='btn btn-success btn-icon' href='/GoodsDeparture/GoodsDepartureView/#=GoodsDepartureID#'>جزئیات</a>"
+                                    + "<a type='button' class='btn btn-primary btn-icon' onclick='openHistoryModal(\"#=Guid#\")'>سوابق</a>"
+                                    );
+
+                                })
+                                .ToolBar(toolbar =>
+                                {
+                                    toolbar.Search();
+                                })
+                                .Sortable()
+                                .Filterable()
+                                .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new int[] { 5, 10, 20, 100 }))
+                                .DataSource(b => b.
+                                Ajax()
+                                .Read(read => read.Data("kendoDataBinding").Action("Data_GoodsDeparture", "GoodsDeparture"))
+                                )
+                                )
+            </div>
+
+        </div>
+    </div>
+</div>
+<input id="guid" value="" type="hidden" />
+
+<input type="hidden" id="selectedtab" value="همه لیست" />
+
+
+<div class="modal fade" id="AttachModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">سوابق</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="historyTable">
+                        <thead class="table-danger">
+                            <tr>
+                                <th scope="col">فرستنده</th>
+                                <th scope="col">گیرنده</th>
+                                <th scope="col">عنوان</th>
+                                <th scope="col">تاریخ ارسال</th>
+                                <th scope="col">تاریخ مشاهده</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableFile"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    <script src="~/sweetalert2/sweetalert2.js"></script>
+    <script>
+        function SelectTab(i) {
+            $("#selectedtab").val(i);
+            $("#goodsdeparturegrid").data("kendoGrid").dataSource.read();
+        }
+        function kendoDataBinding() {
+            var SelectTab = $("#selectedtab").val();
+            return { SelectTab: SelectTab }
+        }
+    </script>
+    <script>
+            function History(Guid) {
+            // var Guid = $("#Guid").val();
+
+            $.ajax({
+                type: "POST",
+                url: "/GoodsDeparture/History",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { Guid: Guid },
+                success: function (response) {
+                    if (response.status === 'OK') {
+                        $('#tableFile').empty();
+                        if (response.data.length > 0) {
+                            $.each(response.data, function (i, item) {
+                                var markup = `<tr>
+                                    <td>${item.SenderID}</td>
+                                    <td>${item.ReceiverID}</td>
+                                    <td>${item.Title}</td>
+                                   <td>${item.SendDateTime}</td>
+                                   <td>${item.ViewDateTime}</td>
+                                </tr>`;
+                                $("#tableFile").append(markup);
+                            });
+                            $("#historyTable").show();
+                        } else {
+                            $("#tableFile").append('<tr><td colspan="6" class="text-center">هیچ رکوردی یافت نشد</td></tr>');
+                            $("#historyTable").show();
+                        }
+                    } else {
+                        alert('خطایی رخ داده است. لطفاً دوباره تلاش کنید.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('خطا در ارتباط با سرور: ' + error);
+                }
+            });
+                $("#AttachModal").modal('show');
+        }
+
+        // تابع برای باز کردن مودال
+        function openHistoryModal(guid) {
+            History(guid);
+        }
+    </script>
+
+    <script>
+        function showHtmlDescription(encodedHtml, Nam_TahvilGirandeh, GoodsDepartureID, el) {
+            var html = $("<div>").html(encodedHtml).text();
+            swal({
+                html: `
+                <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:10px;">
+                    شناسه:
+                    <span style="color:red;">${GoodsDepartureID}</span>
+                    تحویل گیرنده:
+                    <span style="color:red;">${Nam_TahvilGirandeh}</span>
+                </div>
+                <hr>
+                <div style="text-align:right; direction:rtl;">${html}</div>
+            `,
+                confirmButtonText: 'بستن',
+            })
+        }
+    </script>
+}

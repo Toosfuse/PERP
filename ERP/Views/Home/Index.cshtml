@@ -1,0 +1,655 @@
+﻿@{
+    var R1 = ViewBag.R1;
+    var R2 = ViewBag.R2;
+    var R3 = ViewBag.R3;
+    var R4 = ViewBag.R4;
+    var R5 = ViewBag.R5;
+    var R6 = ViewBag.R6;
+    var R7 = ViewBag.R7;
+    var R8 = ViewBag.R8;
+    var R9 = ViewBag.R9;
+    var R10 = ViewBag.R10;
+    var R11 = ViewBag.R11;
+    var R12 = ViewBag.R12;
+}
+
+@if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Sales") || User.IsInRole("SalesMeter"))
+{
+    <div class="app-title d-flex justify-content-center" dir="rtl">
+        <div>
+            <ul class="nav nav-tabs justify-content-end" id="myTab" role="tablist" style="flex: 1; margin-left: 20px;">
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab1-tab" data-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">عمومی</a>
+                    </li>
+                    @*  <li class="nav-item">
+                        <a class="nav-link" id="tab2-tab" data-toggle="tab" href="#tab2" role="tab" aria-controls="tab2" aria-selected="false">منابع انسانی</a>
+                    </li> *@
+                    @* <li class="nav-item">
+                        <a class="nav-link" id="tab3-tab" data-toggle="tab" href="#tab3" role="tab" aria-controls="tab3" aria-selected="false">کنتور</a>
+                    </li> *@
+                }
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("SalesMeter"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(User.IsInRole("SalesMeter") ? "active" : "")" id="tab4-tab" data-toggle="tab" href="#tab4" role="tab" aria-controls="tab4" aria-selected="@(User.IsInRole("SalesMeter") ? "true" : "false")">سفارشات کنتور</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab9-tab" data-toggle="tab" href="#tab9" role="tab" aria-controls="tab9" aria-selected="@(User.IsInRole("SalesMeter") ? "true" : "false")">فروش کنتور(پویا)</a>
+                    </li>
+                }
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Sales"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(User.IsInRole("Sales") ? "active" : "")" id="tab5-tab" data-toggle="tab" href="#tab5" role="tab" aria-controls="tab5" aria-selected="@(User.IsInRole("Sales") ? "true" : "false")">سفارشات کلید</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab10-tab" data-toggle="tab" href="#tab10" role="tab" aria-controls="tab10" aria-selected="@(User.IsInRole("Sales") ? "true" : "false")">فروش کلید(پویا)</a>
+                    </li>
+                }
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("SalesMeter") || User.IsInRole("Sales"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab7-tab" data-toggle="tab" href="#tab7" role="tab" aria-controls="tab7" aria-selected="false">برگشتی</a>
+                    </li>
+                }
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab6-tab" data-toggle="tab" href="#tab6" role="tab" aria-controls="tab6" aria-selected="false">VoIP</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab8-tab" data-toggle="tab" href="#tab8" role="tab" aria-controls="tab8" aria-selected="false">قراردادها</a>
+                    </li>
+                }
+
+            </ul>
+        </div>
+    </div>
+
+    <!-- محتوای تب‌ها -->
+    <div class="tab-content mt-3" id="myTabContent">
+
+        <!-- تب 1و2و3 -->
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management"))
+        {
+            <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="/Employments">
+                            <div class="widget-small primary">
+                                <i class="icon fa fa-users fa-3x"></i>
+                                <div class="info">
+                                    <h4>رزومه ارسالی</h4>
+                                    <p><b>@R1</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/Meetings">
+                            <div class="widget-small info">
+                                <i class="icon fa fa-list-ol fa-3x"></i>
+                                <div class="info">
+                                    <h4>صورت جلسات</h4>
+                                    <p><b>@R2</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/Tickets">
+                            <div class="widget-small warning">
+                                <i class="icon fa fa-files-o fa-3x"></i>
+                                <div class="info">
+                                    <h4>تیکت</h4>
+                                    <p><b>@R3</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/Gantt/IndexProject">
+                            <div class="widget-small danger">
+                                <i class="icon fa fa-tasks fa-3x"></i>
+                                <div class="info">
+                                    <h4>پروژه</h4>
+                                    <p><b>@R4</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="/WorkReports">
+                            <div class="widget-small primary coloured-icon">
+                                <i class="icon fa fa-users fa-3x"></i>
+                                <div class="info">
+                                    <h4>گزارش کار</h4>
+                                    <p><b>@R5</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/Orders/IndexAllOrders">
+                            <div class="widget-small info coloured-icon">
+                                <i class="icon fa fa-shopping-cart fa-3x"></i>
+                                <div class="info">
+                                    <h4>سفارشات کنتور</h4>
+                                    <p><b>@R6</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/Orders/IndexAllOrders">
+                            <div class="widget-small info coloured-icon">
+                                <i class="icon fa fa-shopping-cart fa-3x"></i>
+                                <div class="info">
+                                    <h4>سفارشات کلید</h4>
+                                    <p><b>@R7</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/CustomerSurveys">
+                            <div class="widget-small warning coloured-icon">
+                                <i class="icon fa fa-files-o fa-3x"></i>
+                                <div class="info">
+                                    <h4>نظرسنجی</h4>
+                                    <p><b>@R8</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="/GuestEntry">
+                            <div class="widget-small primary coloured-icon">
+                                <i class="icon fa fa-users fa-3x"></i>
+                                <div class="info">
+                                    <h4>ورود مهمان</h4>
+                                    <p><b>@R9</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/MissionReport">
+                            <div class="widget-small info coloured-icon">
+                                <i class="icon fa fa-tasks fa-3x"></i>
+                                <div class="info">
+                                    <h4>ماموریت</h4>
+                                    <p><b>@R10</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/GoodsDeparture">
+                            <div class="widget-small warning coloured-icon">
+                                <i class="icon fa fa-files-o fa-3x"></i>
+                                <div class="info">
+                                    <h4>خروج کالا</h4>
+                                    <p><b>@R11</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="widget-small danger coloured-icon">
+                            <i class="icon fa fa-shopping-cart fa-3x"></i>
+                            <div class="info">
+                                <h4>تعداد محصولات</h4>
+                                <p><b>@R12</b></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+                <p>محتوای تب دوم</p>
+            </div>
+            <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
+                <p>محتوای تب سوم</p>
+            </div>
+        }
+
+        <!--تب 4 و 9 -->
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("SalesMeter"))
+        {
+            <div class="tab-pane fade @(User.IsInRole("SalesMeter") ? "show active" : "")" id="tab4" role="tabpanel" aria-labelledby="tab4-tab">
+                <div id="product-sales-chart" style="min-width: 310px; height: 500px; margin: 0 auto;"></div>
+                <div id="customerOrderChart" style="height: 600px; direction: rtl;"></div>
+                <div id="line-chart-container" style="width: 100%; height: 500px;"></div>
+            </div>
+            <div class="tab-pane fade" id="tab9" role="tabpanel" aria-labelledby="tab9-tab">
+
+                <div class="col-md-12">
+                    <div class="tile">
+                        <h3 class="tile-title">پیشرفت کلی فروش کنتور به تارگت ۱۴۰۴ (درصد)</h3>
+                        <div class="row text-center">
+                            <div class="col-md-12">
+                                <div id="sale_chart_total_meter" style="min-height:300px"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tile">
+                        <div class="col-md-12">
+                            <div class="tile">
+                                <div id="sync-result" style="width:100%; height:600px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="tile">
+                        <h3 class="tile-title">روند فروش کنتور بر اساس ماه</h3>
+                        <div id="sale_chartTrend_Meter"></div>
+                    </div>
+                </div>
+
+
+
+            </div>
+        }
+
+        <!-- تب 5و10 -->
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Sales"))
+        {
+            <div class="tab-pane fade @(User.IsInRole("Sales") ? "show active" : "")" id="tab5" role="tabpanel" aria-labelledby="tab5-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">پیشرفت کلی نمایندگان به تارگت ۱۴۰۴ (درصد)</h3>
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <div id="chart_mcb"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="chart_rcbo"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="chart_total"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">پیشرفت نمایندگان به تارگت ۱۴۰۴ (درصد)</h3>
+                            <div id="chartDelegateProgress"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نقشه حرارتی پیشرفت گروه‌ها به تارگت ۱۴۰۴</h3>
+                            <div id="heatmapChart"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نمایندگان فعال براساس تقاضای کلید مینیاتوری</h3>
+                            <div id="chart6"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نمایندگان فعال براساس تقاضای کلید محافظ جان</h3>
+                            <div id="chart7"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">تقاضای کلید مینیاتوری بر اساس ماه</h3>
+                            <div id="chartTrend"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">تقاضای کلید محافظ جان بر اساس ماه</h3>
+                            <div id="chartTrend-RCBO"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">عملکرد نمایندگان بر اساس دسته محصولات</h3>
+                            <div id="chartRepPerformance"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">10 نماینده برتر</h3>
+                            <div id="chartRepRadar"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نمایندگان فعال براساس تعداد سفارش</h3>
+                            <div id="chart2"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">محبوب‌ترین محصولات بر اساس تعداد در ثبت سفارش</h3>
+                            <div id="chart3"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">تعداد سفارشات هر محصول</h3>
+                            <div id="chart4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="tab10" role="tabpanel" aria-labelledby="tab10-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">پیشرفت کلی فروش کلید به تارگت ۱۴۰۴ (درصد)</h3>
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <div id="sale_chart_mcb"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="sale_chart_rcbo"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="sale_chart_total"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">پیشرفت فروش نمایندگان به تارگت ۱۴۰۴ (درصد)</h3>
+                            <div id="sale_chartDelegateProgress"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نقشه حرارتی پیشرفت گروه‌ها به تارگت ۱۴۰۴ (فروش)</h3>
+                            <div id="sale_heatmapChart"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نمایندگان فعال براساس فروش کلید مینیاتوری</h3>
+                            <div id="sale_chart6"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نمایندگان فعال براساس فروش کلید محافظ جان</h3>
+                            <div id="sale_chart7"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">روند فروش کلید مینیاتوری بر اساس ماه</h3>
+                            <div id="sale_chartTrend"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">روند فروش کلید محافظ جان بر اساس ماه</h3>
+                            <div id="sale_chartTrend-RCBO"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">عملکرد فروش نمایندگان بر اساس دسته محصولات</h3>
+                            <div id="sale_chartRepPerformance"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">10 نماینده برتر (فروش)</h3>
+                            <div id="sale_chartRepRadar"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">نمایندگان فعال براساس تعداد فاکتور فروش</h3>
+                            <div id="sale_chart2"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">محبوب‌ترین محصولات بر اساس فروش</h3>
+                            <div id="sale_chart3"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">تعداد فروش هر محصول</h3>
+                            <div id="sale_chart4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <!-- تب 7 -->
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("SalesMeter") || User.IsInRole("Sales"))
+        {
+            <div class="tab-pane fade" id="tab7" role="tabpanel" aria-labelledby="tab7-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">توزیع نوع مشکل در کنتورهای برگشتی</h3>
+                            <div id="faulty-meter-issue-pie" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">تعداد فیوزهای برگشتی به تفکیک محصول</h3>
+                            <div id="faulty-fuse-product-bar" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">روند برگشتی کنتورها بر اساس تاریخ ورودی</h3>
+                            <div id="faulty-meter-date-line" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">مقایسه تعداد برگشتی‌ها: کنتور vs فیوز</h3>
+                            <div id="faulty-comparison-column" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">توزیع نوع اشکال در فیوزهای برگشتی</h3>
+                            <div id="faulty-fuse-issue-pie" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <h3 class="tile-title">کنتورهای برگشتی به تفکیک نوع محصول</h3>
+                            <div id="faulty-meter-product-bar" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">تعداد کنتورها بر اساس نوع محصول و خرابی</h3>
+                            <div id="meter-product-issue-stacked-bar" style="width:100%; height:700px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tile">
+                            <h3 class="tile-title">تعداد فیوزها بر اساس محصول و نوع خرابی</h3>
+                            <div id="fuse-product-issue-stacked-bar" style="width:100%; height:700px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- تب 6 -->
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management"))
+        {
+            <div class="tab-pane fade" id="tab6" role="tabpanel" aria-labelledby="tab6-tab">
+            </div>
+
+        }
+        <!-- تب 8 -->
+        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management"))
+        {
+            <div class="tab-pane fade" id="tab8" role="tabpanel" aria-labelledby="tab8-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <div id="tender-winner-pie" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tile">
+                            <div id="inquery-winner-pie" style="width:100%; height:400px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+}
+
+@section Styles
+{
+    <link href="~/vali admin rtl/home.css" rel="stylesheet" />
+    <link href="~/jalalidatepicker/jalalidatepicker.min.css" rel="stylesheet" />
+}
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/Highcharts-9.0.1/highcharts.js"></script>
+    <script src="~/highcharts-9.0.1/exporting.js"></script>
+    <script src="~/highcharts-9.0.1/heatmap.js"></script>
+    <script src="~/highcharts-9.0.1/highcharts-more.js"></script>
+    <script src="~/highcharts-9.0.1/solid-gauge.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const loadedTabs = {};
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                const tabId = $(e.target).attr('href').substring(1);
+                if (!loadedTabs[tabId]) {
+                    loadedTabs[tabId] = true;
+                    const funcName = 'load_' + tabId;
+                    if (typeof window[funcName] === 'function') {
+                        window[funcName]();
+                    }
+                }
+            });
+            // اجرای تب پیش‌فرض
+            @if (User.IsInRole("SalesMeter"))
+            {
+                                                        @:loadedTabs['tab4'] = true;
+                                                        @:if (typeof window['load_tab4'] === 'function') {
+                                                            @: window['load_tab4']();
+                                                        @:}
+            }
+            else if (User.IsInRole("Sales"))
+            {
+                                                        @:loadedTabs['tab5'] = true;
+                                                        @:if (typeof window['load_tab5'] === 'function') {
+                                                            @: window['load_tab5']();
+                                                        @:}
+            }
+            else
+            {
+                                                        @:loadedTabs['tab1'] = true;
+                                                        @:if (typeof window['load_tab1'] === 'function') {
+                                                            @: window['load_tab1']();
+                                                        @:}
+            }
+        });
+    </script>
+
+                            // تب 4
+    @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("SalesMeter"))
+    {
+        <script src="~/js/tab4.js"></script>
+        <script src="~/js/tab9.js"></script>
+
+    }
+                            // تب 5
+    @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("Sales"))
+    {
+        <script src="~/js/tab5.js"></script>
+        <script src="~/js/tab10.js"></script>
+    }
+                            // تب 7
+    @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management") || User.IsInRole("SalesMeter") || User.IsInRole("Sales"))
+    {
+        <script src="~/js/tab7.js"></script>
+    }
+                             //تب 6و8
+    @if (User.IsInRole("SuperAdmin") || User.IsInRole("Management"))
+    {
+
+        <script src="~/js/tab6.js"></script>
+        <script src="~/js/tab8.js"></script>
+    }
+
+}
+
+
+<!--
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-dashboard" style="margin-left:10px;color:red"></i>اطلاعیه</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb"></ul>
+</div>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <img src="~/001.jpg" alt="تصویر اطلاعیه مهم" class="img-fluid rounded shadow" />
+</div>
+-->

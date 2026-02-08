@@ -1,0 +1,240 @@
+﻿@model ERP.ViewModels.ManageUser.EditUserViewModel
+
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-user-o" style="margin-left:10px;color:red"></i>ویرایش کاربر</h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb"></ul>
+</div>
+<div class="col-md-12">
+    <div class="tile">
+        <div class="col-md-12 col-sm-12 left-side-content internal-style left-side-content-seller">
+            <section class="border-radius">
+                <article class="articlecreateseller">
+                    @using (Html.BeginForm("EditUser", "ManageUser", FormMethod.Post, new { enctype = "multipart/form-data", id = "wizard_example" }))
+                    {
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        @Html.HiddenFor(m => m.Id)
+                        @Html.HiddenFor(m => m.Image)
+                        <div class="tile-body">
+                            <div class="row">
+                                <div class="col-md-3 form-group">
+                                    <label class="control-label">نام کاربری:</label>
+                                    @Html.TextBoxFor(m => m.UserName, new {
+                                    @class = "form-control",
+                                                                @data_parsley_required = "true",
+                                                                @data_parsley_required_message = "نام کاربری الزامی است",
+                                                                @data_parsley_remote = $"/ManageUser/CheckUserName?id={Model.Id}&userName={{value}}",
+                                                                @data_parsley_remote_validator = "checkusername",
+                                                                @data_parsley_remote_message = "این نام کاربری قبلاً استفاده شده است."
+                                                                })
+                                @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="control-label">نام:</label>
+                                @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="control-label">نام خانوادگی:</label>
+                                @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="control-label">پست سازمانی:</label>
+                                @Html.TextBoxFor(m => m.Post, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.Post, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="control-label">رمزعبور جدید:</label>
+                                <input name="NewPassword" class="form-control" />
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="control-label">کدملی:</label>
+                                @Html.TextBoxFor(m => m.NationalCode, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.NationalCode, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="control-label">تلفن:</label>
+                                @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="control-label">کد تفصیلی:</label>
+                                @Html.TextBoxFor(m => m.CustCodeAmel, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.CustCodeAmel, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="control-label">آدرس:</label>
+                                @Html.TextBoxFor(m => m.Address, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <fieldset>
+                        <legend>تصویر</legend>
+                        <link href="~/Cropper js/css/cropper.css" rel="stylesheet" />
+                        <link href="~/Cropper js/css/main.css" rel="stylesheet" />
+                        <div class="container">
+                            <div class="row">
+                                <div class="col text-center" id="getimage" style="width:300px;height:300px;">
+                                    <img src="~/userimage/@Model.Image" style="width:300px;height:300px;" id="imagenotfound" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-center" style="margin-top:20px">
+                                    <button type="button" class="btn btn-primary" data-target="#modal" data-toggle="modal">
+                                        بارگزاری تصویر
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" name="ImageMain" id="upImgTheme" value="" accept="image/png, image/jpeg"
+                                   data-parsley-errors-container="#inputhidden-errors"
+                                   data-parsley-filemimetypes="image/gif, image/png, image/jpeg, image/bmp"
+                                   data-parsley-group="block3">
+                            <div id="inputhidden-errors"></div>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content docs-buttons">
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="img-container">
+                                                        <img id="image" src="~/userimage/@Model.Image">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-9">
+                                                    <label class="btn btn-warning btn-upload" for="inputImage" title="Upload image file">
+                                                        <input type="file" class="sr-only" id="inputImage" accept="image/*">
+                                                        انتخاب عکس
+                                                    </label>
+                                                    <button type="button" class="btn btn-primary" data-method="zoom" data-option="0.1" title="Zoom In" id="ZoomInBtn">
+                                                        <span class="fa fa-search-plus"></span>
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary" data-method="zoom" data-option="-0.1" title="Zoom Out" id="ZoomOutBtn">
+                                                        <span class="fa fa-search-minus"></span>
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary" data-method="rotate" data-option="-45" title="Rotate Left">
+                                                        <span class="fa fa-undo"></span>
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary" data-method="rotate" data-option="45" title="Rotate Right">
+                                                        <span class="fa fa-redo"></span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal fade docs-cropped" id="getCroppedCanvasModal" aria-hidden="true" aria-labelledby="getCroppedCanvasTitle" role="dialog" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-body"></div>
+                                                    <div class="modal-footer">
+                                                        <a class="btn btn-primary" id="download" data-dismiss="modal"></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">انصراف</button>
+                                            <button type="button" class="btn btn-primary" data-dismiss="modal" data-method="getCroppedCanvas" data-option="{ &quot;maxWidth&quot;: 4096, &quot;maxHeight&quot;: 4096 }">تایید</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-info pull-left" style="margin-top:40px;">ثبت</button>
+                    </div>
+                                        }
+                    <div class="clearfix"></div>
+                </article>
+            </section>
+        </div>
+    </div>
+</div>
+<a href="javascript:void(0)" onclick="goBackAndRefresh()" class="btn btn-outline-primary btn-lg">
+    <i class="fa fa-arrow-right"></i> بازگشت
+</a>
+
+@section styles
+{
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link href="~/css/pretty-checkbox.min.css" rel="stylesheet" />
+    <style>
+        #getimage canvas {
+            width: 300px !important;
+            height: 300px !important;
+        }
+
+        .cropper-view-box,
+        .cropper-face {
+            border-radius: 50%;
+        }
+
+        .tile-body .row {
+            border: solid 1px;
+            border-radius: 4px;
+        }
+    </style>
+}
+
+@section scripts
+{
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/Cropper js/js/cropper.js"></script>
+    <script src="~/Cropper js/js/jquery-cropper.js"></script>
+    <script src="~/Cropper js/js/mainn.js"></script>
+
+    <script type="text/javascript">
+        window.Parsley.addValidator('filemaxmegabytes', {
+            requirementType: 'string',
+            validateString: function (value, requirement, parsleyInstance) {
+                if (!window.FormData) {
+                    return true;
+                }
+                var file = parsleyInstance.$element[0].files;
+                var maxBytes = requirement * 1048576;
+                if (file.length == 0) {
+                    return true;
+                }
+                return file.length === 1 && file[0].size <= maxBytes;
+            },
+            messages: {
+                en: 'حجم تصویر زیاد است.'
+            }
+        });
+
+        window.Parsley.addValidator('filemimetypes', {
+            requirementType: 'string',
+            validateString: function (value, requirement, parsleyInstance) {
+                if (!window.FormData) {
+                    return true;
+                }
+                var file = parsleyInstance.$element[0].files;
+                if (file.length == 0) {
+                    return true;
+                }
+                var allowedMimeTypes = requirement.replace(/\s/g, "").split(',');
+                return allowedMimeTypes.indexOf(file[0].type) !== -1;
+            },
+            messages: {
+                en: 'نمی‌توانید این فرمت را بارگزاری کنید.'
+            }
+        });
+
+        window.Parsley.addValidator('checkusername', {
+            validateString: function (value, requirement) {
+                return $.ajax({
+                    url: requirement,
+                    dataType: 'json',
+                    type: 'GET'
+                });
+            }
+        });
+    </script>
+}

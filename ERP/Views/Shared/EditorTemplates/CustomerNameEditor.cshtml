@@ -1,0 +1,60 @@
+﻿@using Kendo.Mvc.UI
+@model string
+
+@(Html.Kendo().DropDownList()
+    .Name("")
+    .BindTo(new List<SelectListItem>
+    {
+        new SelectListItem { Text = "مشهد", Value = "مشهد" },
+        new SelectListItem { Text = "نواحی تهران", Value = "نواحی تهران" },
+        new SelectListItem { Text = "خوزستان", Value = "خوزستان" },
+        new SelectListItem { Text = "فارس", Value = "فارس" },
+        new SelectListItem { Text = "قم", Value = "قم" },
+        new SelectListItem { Text = "سیستان", Value = "سیستان" },
+        new SelectListItem { Text = "کهکیلویه", Value = "کهکیلویه" },
+        new SelectListItem { Text = "سمنان", Value = "سمنان" },
+        new SelectListItem { Text = "ایلام", Value = "ایلام" },
+        new SelectListItem { Text = "چهارمحال", Value = "جهارمحال" },
+        new SelectListItem { Text = "مازندران", Value = "مازندران" },
+        new SelectListItem { Text = "یزد", Value = "یزد" },
+        new SelectListItem { Text = "خراسان جنوبی", Value = "خراسان جنوبی" },
+        new SelectListItem { Text = "کرمانشاه", Value = "کرمانشاه" },
+        new SelectListItem { Text = "غرب تهران", Value = "غرب تهران" },
+        new SelectListItem { Text = "تهران بزرگ", Value = "تهران بزرگ" },
+        new SelectListItem { Text = "همدان", Value = "همدان" },
+        new SelectListItem { Text = "آذربایجان غربی", Value = "اذربایجان غربی" },
+        new SelectListItem { Text = "مرکزی", Value = "مرکزی" },
+        new SelectListItem { Text = "شیراز", Value = "شیراز" },
+        new SelectListItem { Text = "خرمشهر", Value = "خرمشهر" },
+        new SelectListItem { Text = "رودبار", Value = "رودبار" },
+        new SelectListItem { Text = "قزوین", Value = "قزوین" },
+        new SelectListItem { Text = "زیبا اسکان کادوس", Value = "زیبا اسکان کادوس" },
+        new SelectListItem { Text = "هوا خورشید", Value = "هوا خورشید" },
+        new SelectListItem { Text = "اهواز", Value = "اهواز" },
+        new SelectListItem { Text = "تبریز", Value = "تبریز" },
+        new SelectListItem { Text = "اصفهان", Value = "اصفهان" },
+        new SelectListItem { Text = "خراسان شمالی", Value = "خراسان شمالی" },
+        new SelectListItem { Text = "زنجان", Value = "زنجان" },
+        new SelectListItem { Text = "خراسان رضوی", Value = "خراسان رضوی" },
+        new SelectListItem { Text = "گلستان", Value = "گلستان" },
+        new SelectListItem { Text = "بوشهر", Value = "بوشهر" },
+        new SelectListItem { Text = "هرمزگان", Value = "هرمزگان" },
+        new SelectListItem { Text = "اردبیل", Value = "اردبیل" },
+        new SelectListItem { Text = "افغانستان", Value = "افغانستان" },
+        new SelectListItem { Text = "شمال استان کرمان", Value = "شمال استان کرمان" },
+        new SelectListItem { Text = "کردستان", Value = "کردستان" },
+        new SelectListItem { Text = "جنوب استان کرمان", Value = "جنوب استان کرمان" },
+        new SelectListItem { Text = "لرستان", Value = "لرستان" },
+        new SelectListItem { Text = "البرز", Value = "البرز" },
+        new SelectListItem { Text = "استان تهران", Value = "استان تهران" },
+        new SelectListItem { Text = "پدیده برق و صنعت", Value = "پدیده برق و صنعت" },
+        new SelectListItem { Text = "متفرقه", Value = "متفرقه" },
+        new SelectListItem { Text = "غرب استان مازندران", Value = "غرب استان مازندران" },
+        new SelectListItem { Text = "آذربایجان شرقی", Value = "آذربایجان شرقی" },
+        new SelectListItem { Text = "گیلان", Value = "گیلان" }
+    })
+    .Value(Model)
+    .OptionLabel("انتخاب کنید...")
+     .Filter("contains")
+    .IgnoreCase(true)
+)

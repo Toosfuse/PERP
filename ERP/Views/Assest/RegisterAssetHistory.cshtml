@@ -1,0 +1,256 @@
+@model IEnumerable<ERP.ViewModels.AssestViewModel.AssetHistoryViewModel>
+@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "?????? ???? ?????";
+}
+
+<div class="container-fluid mt-5" dir="rtl">
+    @Html.AntiForgeryToken()
+
+    <div id="alertContainer" class="mb-4"></div>
+
+    <div class="card shadow-lg border-0" style="border-radius: 20px;">
+        <div class="card-header bg-warning text-white text-center py-4">
+            <h3 class="mb-0 fw-bold">
+                <i class="fas fa-exchange-alt me-2"></i>
+                ?????? ???? ?????
+            </h3>
+        </div>
+
+        <div class="card-body p-4">
+            @(Html.Kendo().Grid<ERP.ViewModels.AssestViewModel.AssetHistoryViewModel>()
+                .Name("assetHistoryGrid")
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.AssetName)
+                        .Title("?????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.PropertyName)
+                        .Title("?????? (?? ???? ?????? ????)")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.FromUser)
+                        .Title("??")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.ToUser)
+                        .Title("??")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.AssignDate)
+                        .Title("????? ??????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Bound(c => c.Description)
+                        .Title("???????")
+                        .HtmlAttributes(new { style = "text-align:center;" })
+                        .HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    columns.Command(cmd =>
+                    {
+                        cmd.Custom("??????").Click("openEditHistoryModal");
+                        cmd.Destroy().Text("???");
+                    })
+                    .Title("??????")
+                    .HtmlAttributes(new { style = "text-align:center;" })
+                    .HeaderHtmlAttributes(new { style = "text-align:center;" });
+                })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Create().Text("??? ?????? ????");
+                    toolbar.Search();
+                })
+                .Sortable()
+                .Filterable()
+                .Pageable()
+                .Scrollable()
+                .DataSource(ds => ds
+                    .Ajax()
+                    .PageSize(20)
+                    .Read(r => r.Action("AssetHistories_Read", "Assest"))
+                    .Create(c => c.Action("AssetHistories_Create", "Assest").Data("antiForgery"))
+                    .Update(u => u.Action("AssetHistories_Update", "Assest").Data("antiForgery"))
+                    .Destroy(d => d.Action("AssetHistories_Destroy", "Assest").Data("antiForgery"))
+                    .Model(m =>
+                    {
+                        m.Id(f => f.Id);
+                        m.Field(f => f.Id).Editable(false);
+                    })
+                )
+            )
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ?????? ???? -->
+<div class="modal fade" id="editHistoryModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg rounded-3">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fa fa-edit ml-1"></i>
+                    ?????? ???? ?????
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body bg-light">
+                <input type="hidden" id="editHistoryId" />
+
+                <div class="form-group">
+                    <label class="font-weight-bold">????? <span class="text-danger">*</span></label>
+                    <select id="editHistoryAssetId" class="form-control"></select>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">?????? (?? ???? ?????? ????)</label>
+                    <select id="editHistoryAssetPropertyId" class="form-control">
+                        <option value="">?????? ????</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">?? <span class="text-danger">*</span></label>
+                            <select id="editHistoryFromUser" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">?? <span class="text-danger">*</span></label>
+                            <select id="editHistoryToUser" class="form-control"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">???????</label>
+                    <textarea id="editHistoryDescription" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">??????</button>
+                <button id="saveEditHistoryBtn" class="btn btn-primary">????? ???????</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function antiForgery() {
+            return {
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            };
+        }
+
+        function showAlert(msg, type = 'success') {
+            $("#alertContainer").html(`
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${msg}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            `);
+            setTimeout(() => {
+                $("#alertContainer .alert").alert('close');
+            }, 4000);
+        }
+
+        let grid;
+
+        $(document).ready(function () {
+            grid = $("#assetHistoryGrid").data("kendoGrid");
+
+            // ???????? ????? ? ???????
+            loadAssets();
+            loadUsers();
+
+            // ?????? ????? ????? ???? ???????? ??????
+            $(document).on("change", "#editHistoryAssetId", function () {
+                let assetId = $(this).val();
+                if (assetId) {
+                    $.get("@Url.Action("GetAssetPropertiesForAssignment", "Assest")?assetId=" + assetId, function (data) {
+                        let properties = '<option value="">?????? ????</option>';
+                        data.forEach(function (item) {
+                            properties += `<option value="${item.id}">${item.name}</option>`;
+                        });
+                        $("#editHistoryAssetPropertyId").html(properties);
+                    });
+                }
+            });
+
+            grid.dataSource.bind("requestEnd", function (e) {
+                if (e.type === "create") {
+                    showAlert("?????? ?? ?????? ??? ??", "success");
+                }
+                if (e.type === "update") {
+                    showAlert("?????? ?? ?????? ????? ??", "success");
+                    $("#editHistoryModal").modal("hide");
+                }
+                if (e.type === "destroy") {
+                    showAlert("??? ?? ?????? ????? ??", "success");
+                }
+            });
+        });
+
+        function loadAssets() {
+            $.get("@Url.Action("GetAssetsForAssignment", "Assest")", function (data) {
+                let assets = '<option value="">?????? ????</option>';
+                data.forEach(function (item) {
+                    assets += `<option value="${item.id}">${item.name}</option>`;
+                });
+                $("#editHistoryAssetId").html(assets);
+            });
+        }
+
+        function loadUsers() {
+            $.get("@Url.Action("GetAssetUsers", "Assest")", function (data) {
+                let users = '<option value="">?????? ????</option>';
+                data.forEach(function (item) {
+                    users += `<option value="${item.id}">${item.name}</option>`;
+                });
+                $("#editHistoryFromUser").html(users);
+                $("#editHistoryToUser").html(users);
+            });
+        }
+
+        function openEditHistoryModal(e) {
+            e.preventDefault();
+            let item = grid.dataItem($(e.currentTarget).closest("tr"));
+            if (!item) {
+                showAlert("??? ?? ?????? ???????", "danger");
+                return;
+            }
+
+            $("#editHistoryId").val(item.Id);
+            $("#editHistoryAssetId").val(item.AssetId);
+            $("#editHistoryAssetPropertyId").val(item.AssetPropertyId || "");
+            $("#editHistoryDescription").val(item.Description);
+
+            $("#editHistoryModal").modal("show");
+        }
+
+        $("#saveEditHistoryBtn").on("click", function () {
+            let id = parseInt($("#editHistoryId").val());
+            let item = grid.dataSource.get(id);
+
+            if (!item) {
+                showAlert("????? ???? ???", "danger");
+                return;
+            }
+
+            item.set("AssetId", parseInt($("#editHistoryAssetId").val()));
+            item.set("AssetPropertyId", parseInt($("#editHistoryAssetPropertyId").val()) || null);
+            item.set("Description", $("#editHistoryDescription").val());
+
+            grid.dataSource.sync();
+        });
+    </script>
+}

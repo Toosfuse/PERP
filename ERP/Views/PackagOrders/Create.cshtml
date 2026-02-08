@@ -1,0 +1,402 @@
+﻿@using ERP.ViewModels
+@model OrderViewModel
+@{
+    ViewData["Title"] = "ایجاد سفارش جدید";
+}
+
+<style>
+    .input-ltr {
+        direction: ltr !important;
+        text-align: center;
+    }
+
+    /* یکسان‌سازی کامل ارتفاع و ظاهر تمام input و select */
+    .form-control-lg,
+    .form-select-lg {
+        height: 58px !important;
+        font-size: 1.1rem !important;
+        padding: 0.75rem 1.25rem !important;
+        margin-top: 5px;
+        
+        background-color: white !important;
+    }
+
+    .card-package {
+        border: 2px solid #0d6efd;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .label-col {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 15px;
+        font-weight: bold;
+    }
+
+    .field-col {
+        display: flex;
+        align-items: center;
+    }
+
+    .disabled-field {
+        background-color: #e9ecef !important;
+        color: #6c757d !important;
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+
+    @@media (max-width: 768px) {
+        .label-col
+
+    {
+        justify-content: flex-start !important;
+        padding-right: 0;
+        margin-bottom: 8px;
+    }
+
+    }
+</style>
+
+<div class="container mt-5" dir="rtl">
+    <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+        <div class="card-header bg-success text-white text-center py-5">
+            <h3 class="mb-0 fw-bold fs-3">
+                <i class="fas fa-plus-circle fa-lg me-3"></i>
+                ایجاد سفارش بسته‌بندی جدید
+            </h3>
+        </div>
+
+        <div class="card-body p-5 bg-light">
+            <form asp-action="Create" method="post" id="createOrderForm">
+
+                <!-- اطلاعات اصلی سفارش -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">شهر مقصد <span class="text-danger">*</span></label>
+                        <select asp-for="CityId" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.Cities">
+                            <option value="">-- انتخاب شهر --</option>
+                        </select>
+                    </div>
+
+                    <!-- تاریخ ثبت سفارش -->
+                    <div class="col-md-6">
+                        <label for="regDatePicker" class="form-label fw-bold">تاریخ ثبت سفارش <span class="text-danger">*</span></label>
+                        <input type="text" name="RegDatePersian" id="regDatePicker"
+                               class="form-control form-control-lg input-ltr shadow-sm"
+                               placeholder="1404/06/12"
+                               value="@ViewBag.RegDatePersian"
+                               maxlength="10" required data-jdp />
+                        <small class="text-muted d-block mt-1">تقویم شمسی</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">شماره سفارش <span class="text-danger">*</span></label>
+                        <input asp-for="OrderNumber" autocomplete="off" class="form-control form-control-lg input-ltr shadow-sm" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">سریال اولیه <span class="text-danger">*</span></label>
+                        <input asp-for="StartSerial" autocomplete="off" class="form-control form-control-lg input-ltr shadow-sm" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">سریال انتهایی <span class="text-danger">*</span></label>
+                        <input asp-for="EndSerial" autocomplete="off" class="form-control form-control-lg input-ltr shadow-sm" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">کد محصول <span class="text-danger">*</span></label>
+                        <input asp-for="CodeProduct" autocomplete="off"  class="form-control form-control-lg input-ltr shadow-sm" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">تعداد سفارش درخواست شده</label>
+                        <input type="text" id="MeterCountDisplay" readonly
+                               value="@(long.TryParse(Model?.StartSerial, out long s) && long.TryParse(Model?.EndSerial, out long e) && e >= s ? String.Format("{0:N0}", e - s + 1) : "0")"
+                               class="form-control form-control-lg input-ltr bg-light fw-bold text-success shadow-sm" />
+                        <small class="text-muted">بر اساس محدوده سریال محاسبه می‌شود</small>
+                    </div>
+                </div>
+
+                <hr class="my-5 border-secondary opacity-50" />
+
+                <h4 class="text-primary mb-4 fw-bold">
+                    <i class="fas fa-boxes fa-lg me-3"></i> ثبت محموله
+                </h4>
+
+                <div class="card card-package shadow-lg mb-5">
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h5 class="mb-0 fw-bold fs-4">
+                            <i class="fas fa-truck-loading fa-lg me-3"></i> مشخصات محموله
+                        </h5>
+                    </div>
+
+                    <div class="card-body p-5 bg-white">
+                        <div class="row g-4 align-items-center">
+
+                            <!-- ردیف ۱ -->
+                            <div class="col-md-2 label-col"><label class="fw-bold">نوع کنتور <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.MeterTypeId" id="MeterType" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.MeterTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 label-col"><label class="fw-bold">درپوش <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.CoverTypeId" id="CoverTypeId" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.CoverTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 label-col"><label class="fw-bold">کارتن <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.PackageTypeId" id="PackageTypeId" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.PackageTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <!-- ردیف ۲ -->
+                            <div class="col-md-2 label-col"><label class="fw-bold">نوع پایه <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.MeterBaseId" id="MeterBaseId" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.MeterBaseTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 label-col"><label class="fw-bold">نوع ماژول <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.ModuleTypeId" id="ModuleTypeId" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.ModuleTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 label-col"><label class="fw-bold">نوع برد <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.BoardTypeId" id="BoardTypeId" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.BoardTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <!-- ردیف ۳ -->
+                            <div class="col-md-2 label-col"><label class="fw-bold">ملحقات <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.AccessoriesTypeId" id="AccessoriesTypeId" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.AccessoriesTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 label-col"><label class="fw-bold">پورت RS <span class="text-danger">*</span></label></div>
+                            <div class="col-md-2 field-col">
+                                <select asp-for="Packages.RsPortTypeId" id="RsPortTypeId" style="width:160px" class="form-select form-select-lg shadow-sm" asp-items="ViewBag.RsPortTypes">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"></div>
+
+                            <!-- فریم‌ور و چک‌سام -->
+                            <div class="col-md-2 label-col"><label class="fw-bold">نسخه فریم‌ور</label></div>
+                            <div class="col-md-4 field-col">
+                                <input asp-for="Packages.FrimWareVersion" autocomplete="off" id="FrimWareVersion" class="form-control form-control-lg input-ltr shadow-sm" />
+                            </div>
+
+                            <div class="col-md-2 label-col"><label class="fw-bold">چک‌سام</label></div>
+                            <div class="col-md-4 field-col">
+                                <input asp-for="Packages.CheckSum" autocomplete="off" id="CheckSum" class="form-control form-control-lg input-ltr shadow-sm" />
+                            </div>
+                            <div class="col-md-2 text-md-start text-center mt-3">
+                                <div class="form-check form-switch d-inline-flex align-items-center ml-2">
+                                    <input asp-for="Packages.ShowInBarcodeScan"
+                                           class="form-check-input mr-4"
+                                           type="checkbox"
+                                           id="ShowInBarcodeScan"
+                                           style="width: 3.8rem; height: 2rem;" />
+
+
+                                </div>
+                            </div>
+                            <div class="row  align-content-center align-items-center ">
+                                <!-- سوئیچ + لیبل چسبیده به آن در سمت راست -->
+                                
+                                <!-- توضیح عنوان در سمت چپ -->
+                                <div class="col-md-12 text-md-center text-center mt-3 ">
+                                    <div class="fw-bold text-primary ">
+                                        <i class="fas fa-barcode fa-lg "></i>
+                                        <span style="font-size:x-large;text-wrap:nowrap">نمایش در اسکن بارکد</span>
+                                    </div>
+                                </div>
+
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 text-start">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 shadow-lg">
+                        <i class="fas fa-save fa-lg me-2"></i> ذخیره سفارش نهایی
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-danger btn-lg px-5 me-3 shadow">
+                        <i class="fas fa-times fa-lg me-2"></i> انصراف
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/SweetAlert2 New/CSS.css"   />
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/SweetAlert2 New/JS.js"></script>
+    <script src="~/js/calculate-meter-count.js"></script>
+
+    <script>
+        jalaliDatepicker.startWatch();
+
+        $(document).ready(function () {
+
+     
+            const disabledMeterTypeIds = [53, 74, 76, 77];
+
+            function toggleFirmwareAndChecksum() {
+                const selectedId = parseInt($("#MeterType").val(), 10);
+                const isDisabled = !isNaN(selectedId) && disabledMeterTypeIds.includes(selectedId);
+
+                // $("#FrimWareVersion, #CheckSum")
+                //     .prop("disabled", isDisabled)
+                //     .toggleClass("disabled-field", isDisabled);
+
+                // if (isDisabled) {
+                //     $("#FrimWareVersion").val("");
+                //     $("#CheckSum").val("");
+                // }
+            }
+
+            $("#MeterType").on("change", toggleFirmwareAndChecksum);
+            setTimeout(toggleFirmwareAndChecksum, 300);
+
+            // اعتبارسنجی کلاینت - فیلدهای خالی
+            $("#createOrderForm").on("submit", function (e) {
+                let missingFields = [];
+
+                if (!$("select[name='CityId']").val()) missingFields.push("شهر مقصد");
+                if (!$("#regDatePicker").val()) missingFields.push("تاریخ ثبت سفارش");
+                if (!$("input[name='OrderNumber']").val().trim()) missingFields.push("شماره سفارش");
+                if (!$("input[name='StartSerial']").val().trim()) missingFields.push("سریال اولیه");
+                if (!$("input[name='EndSerial']").val().trim()) missingFields.push("سریال انتهایی");
+                if (!$("input[name='CodeProduct']").val().trim()) missingFields.push("کد محصول");
+
+                if (!$("#MeterType").val()) missingFields.push("نوع کنتور");
+                if (!$("#CoverTypeId").val()) missingFields.push("درپوش");
+                if (!$("#PackageTypeId").val()) missingFields.push("کارتن");
+                if (!$("#MeterBaseId").val()) missingFields.push("نوع پایه");
+                if (!$("#ModuleTypeId").val()) missingFields.push("نوع ماژول");
+                if (!$("#BoardTypeId").val()) missingFields.push("نوع برد");
+                if (!$("#AccessoriesTypeId").val()) missingFields.push("ملحقات");
+                if (!$("#RsPortTypeId").val()) missingFields.push("پورت RS");
+
+                if (missingFields.length > 0) {
+                    e.preventDefault();
+                    let message = "<strong>لطفاً فیلدهای زیر را پر کنید:</strong><br><ul style='text-align:right; direction:rtl; margin-top:10px'>";
+                    missingFields.forEach(field => message += `<li>${field}</li>`);
+                    message += "</ul>";
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'فیلدهای الزامی خالی است!',
+                        html: message,
+                        confirmButtonText: 'تایید',
+                        width: '650px'
+                    });
+                }
+            });
+
+            // === نمایش خطاهای سرور (ModelState) با SweetAlert2 ===
+            @if (ViewBag.ModelStateErrors != null)
+            {
+                    <text>
+                    var serverErrors = @Html.Raw(Json.Serialize(ViewBag.ModelStateErrors));
+                    if (serverErrors && serverErrors.length > 0) {
+                        // تبدیل نام فیلدها به فارسی
+                        const fieldNames = {
+                            "OrderNumber": "شماره سفارش",
+                            "CodeProduct": "کد محصول",
+                            "StartSerial": "سریال اولیه",
+                            "EndSerial": "سریال انتهایی",
+                            "Packages.MeterTypeId": "نوع کنتور",
+                            "Packages.CoverTypeId": "درپوش",
+                            "Packages.PackageTypeId": "کارتن",
+                            "Packages.MeterBaseId": "نوع پایه",
+                            "Packages.ModuleTypeId": "نوع ماژول",
+                            "Packages.BoardTypeId": "نوع برد",
+                            "Packages.AccessoriesTypeId": "ملحقات",
+                            "Packages.RsPortTypeId": "پورت RS",
+                            "": "عمومی"
+                        };
+
+                        let errorList = "<ul style='text-align:right; direction:rtl; margin:0; padding-right:20px; line-height:1.8;'>";
+                        serverErrors.forEach(function(err) {
+                            let fieldDisplay = err.Field ? `<strong>${fieldNames[err.Field] || err.Field}:</strong> ` : "";
+                            errorList += `<li>${fieldDisplay}${err.Message}</li>`;
+                        });
+                        errorList += "</ul>";
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: '❌ خطا در ثبت سفارش',
+                            html: `<div style='text-align:right; direction:rtl; font-size:15px;'>` +
+                                  `<strong>لطفاً خطاهای زیر را برطرف کنید:</strong><br><br>` +
+                                  errorList +
+                                  `</div>`,
+                            confirmButtonText: 'باشه، اصلاح می‌کنم',
+                            confirmButtonColor: '#d33',
+                            width: '750px',
+                            allowOutsideClick: false
+                        }).then(() => {
+                            $('html, body').animate({ scrollTop: 0 }, 600);
+                        });
+                    }
+                    </text>
+            }
+        });
+
+        // پیام‌های TempData (موفقیت و خطای کلی)
+        @if (TempData["Success"] != null)
+        {
+                <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'موفقیت‌آمیز!',
+                    text: '@Html.Raw(TempData["Success"])',
+                    confirmButtonText: 'تایید',
+                    timer: 6000,
+                    timerProgressBar: true
+                }).then(() => {
+                    window.location.href = '@Url.Action("Index", "PackagOrders")';
+                });
+                </text>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: '@Html.Raw(TempData["Error"])',
+                    confirmButtonText: 'تایید'
+                });
+                </text>
+        }
+    </script>
+}

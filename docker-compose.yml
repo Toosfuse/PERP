@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  basketdb:
+    image: redis:latest
+    container_name: basketdb
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: rediscommander
+    restart: always
+    environment:
+      - REDIS_HOST=basketdb
+      - REDIS_PORT=6379
+    depends_on:
+      - basketdb
+
+volumes:
+  redis_data:

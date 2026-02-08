@@ -1,0 +1,47 @@
+﻿@model ERP.Models.WorkflowAccess
+
+@{
+    ViewData["Title"] = "ویرایش دسترسی";
+}
+
+<h2>ویرایش دسترسی</h2>
+
+<form asp-action="EditAccess" method="post">
+    <input type="hidden" asp-for="WorkflowAccessID" />
+    <div class="form-group">
+        <label asp-for="UserID" class="control-label">کاربر</label>
+        <select asp-for="UserID" class="form-control">
+            @foreach (var user in ViewBag.Users)
+            {
+                <option value="@user.Id">@user.FirstName @user.LastName</option>
+            }
+        </select>
+        <span asp-validation-for="UserID" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Section" class="control-label">بخش</label>
+        <select asp-for="Section" class="form-control">
+            @foreach (var item in ViewBag.Sections)
+            {
+                <option value="@item.SectionCode">@item.SectionName</option>
+            }
+        </select>
+        <span asp-validation-for="Section" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Role" class="control-label">نقش</label>
+        <input asp-for="Role" class="form-control" />
+        <span asp-validation-for="Role" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="ذخیره" class="btn btn-primary" />
+    </div>
+</form>
+
+<div>
+    <a asp-action="Access">بازگشت به لیست</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

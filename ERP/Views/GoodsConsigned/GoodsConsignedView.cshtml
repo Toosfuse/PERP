@@ -1,0 +1,1525 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@model ERP.Models.GoodsConsigned
+
+@{
+    var guid = ViewBag.Guid;
+    var workflowInstance = ViewBag.WorkflowInstance as ERP.Models.WorkflowInstance;
+    var currentState = Model?.State ?? "start0";
+    var canEdit = ViewBag.CanEdit ?? false;
+    var isObserver = ViewBag.IsObserver ?? false;
+    var isSuccessfulCompletion = ViewBag.IsSuccessfulCompletion ?? false;
+    var endReason = ViewBag.EndReason ?? "";
+    var workflowSteps = ViewBag.WorkflowSteps as List<ERP.Models.WorkflowStep>;
+     var Sendertype = Model?.TypeSending;
+
+    var completedSections = new List<string>();
+    if (workflowInstance != null)
+    {
+        var history = ViewBag.WorkflowHistory as List<ERP.Models.WorkflowInstance>;
+        if (history != null)
+        {
+            completedSections = history
+                .Where(w => w.IsCompleted)
+                .OrderBy(w => w.AssignedDate)
+                .Select(w => w.Section)
+                .Distinct()
+                .ToList();
+        }
+    }
+    else if (currentState == "start0")
+    {
+        completedSections.Add("start0");
+    }
+}
+<div class="app-title">
+    <div>
+        <h1><i class="fa fa-inbox" style="margin-left:10px;color:red"></i><span>کالای امانی</span><span class="id-card">@Model.GoodsConsignedID</span> </h1>
+    </div>
+    <ul class="app-breadcrumb breadcrumb"></ul>
+</div>
+
+<input type="hidden" asp-for="GoodsConsignedID" />
+<input type="hidden" value="@guid" name="Guid" id="Guid" />
+
+
+<div class="row justify-content-center align-items-center">
+    <div class="col-md-9">
+        <div class="tile">
+            <!-- مرحله اول -->
+            @if ((completedSections.Contains("start0") && (canEdit || isObserver)) || (currentState == "start0" && (canEdit)))
+            {
+                <div class="card shadow-sm" id="section1" @(canEdit && currentState == "start0" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="mb-0">ارسال کالای امانی</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form1" novalidate>
+                            <div class="form-row">
+
+ <div class="form-group col-md-4">
+    <label class="font-weight-bold d-block">نوع ارسال</label>
+   
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" 
+               asp-for="TypeSending" value="1" id="Amani">
+        <label class="form-check-label mr-2" for="Amani">امانی</label>
+    </div>
+   
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio"
+               asp-for="TypeSending" value="0" id="Outsourcing">
+        <label class="form-check-label mr-2" for="Outsourcing">برون‌سپاری</label>
+    </div>
+    
+    <span asp-validation-for="TypeSending" class="text-danger"></span>
+</div>
+</div>
+   <div class="form-row">
+  
+                                <div class="form-group col-md-2">
+                                    <label asp-for="S_persiandate" class="font-weight-bold">تاریخ درخواست</label>
+                                    <input asp-for="S_persiandate" class="form-control" data-jdp disabled autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label asp-for="Shomare_Serial" class="font-weight-bold">شماره سریال</label>
+                                    <input asp-for="Shomare_Serial" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(!canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="MahalDaryaft" class="font-weight-bold">محل دریافت</label>
+                                    <input asp-for="MahalDaryaft" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(!canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label asp-for="Name_Darkhastkonnande" class="font-weight-bold">نام درخواست کننده</label>
+                                    <input asp-for="Name_Darkhastkonnande" class="form-control" data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(!canEdit)" autocomplete="off" />
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label asp-for="Darkhast_persiandate" class="font-weight-bold">تاریخ ارسال</label>
+                                    <input asp-for="Darkhast_persiandate" class="form-control" data-jdp data-parsley-required="true" data-parsley-required-message="فیلد خالی است" disabled="@(!canEdit)" autocomplete="off" />
+                                </div>
+
+                            </div>
+                            <div class="form-row">
+                                <div class="col-md-12">
+                                    <label class="font-weight-bold">اقلام کالا</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover" id="GoodsTable">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>شرح کالا</th>
+                                                    <th>تعداد</th>
+                                                    <th>علت ارسال</th>
+                                                    @if (currentState == "start0" && canEdit)
+                                                    {
+                                                        <th>عملیات</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model?.ConsignedItem != null && Model.ConsignedItem.Any())
+                                                {
+                                                    int rowIndex = 0;
+                                                    foreach (var guest in Model.ConsignedItem)
+                                                    {
+                                                        <tr>
+                                                            @if (currentState == "start0" && canEdit)
+                                                            {
+                                                                <td><input type="text" name="Goods[@rowIndex].ItemName" value="@guest.ItemName" class="form-control" data-parsley-required="true" data-parsley-required-message="شرح کالا الزامی است" /></td>
+                                                                <td><input type="number" name="Goods[@rowIndex].Quantity" value="@guest.Quantity" class="form-control" data-parsley-required="true" data-parsley-required-message="تعداد الزامی است" min="1" /></td>
+                                                                <td><input type="text" name="Goods[@rowIndex].Description" value="@guest.Description" class="form-control" data-parsley-required="true" data-parsley-required-message="علت الزامی است" /></td>
+                                                                <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove(); recalculateIndex();">حذف</button></td>
+                                                            }
+                                                            else
+                                                            {
+                                                                <td>@guest.ItemName</td>
+                                                                <td>@guest.Quantity</td>
+                                                                <td>@guest.Description</td>
+                                                            }
+                                                        </tr>
+                                                        rowIndex++;
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (currentState == "start0" && canEdit)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success mt-2" onclick="addGoods()">افزودن کالا</button>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (currentState == "start0" && canEdit)
+                            {
+                                <div class="row justify-content-center">
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label">انتخاب مدیر</label>
+                                        <select class="form-control select2" id="ManagerUserID" name="ManagerUserID">
+                                            <option value="">لطفاً مدیر را انتخاب کنید</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "start0" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message1" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- فرم مرحله دوم (تأیید مسئول) -->
+            @if ((completedSections.Contains("TayidMasool1") && (canEdit || isObserver)) || (currentState == "TayidMasool1" && canEdit))
+            {
+                <div class="card shadow-sm mt-4" id="section2" @(canEdit && currentState == "TayidMasool1" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-warning text-white text-center">
+                        <h5 class="mb-0">تأیید مسئول</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form2" novalidate>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">مورد تأیید است؟</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="TayidMasool" value="0" disabled="@(!canEdit)">
+                                        <label class="form-check-label sq">بله</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="TayidMasool" value="1" disabled="@(!canEdit)">
+                                        <label class="form-check-label sq">خیر</label>
+                                    </div>
+                                    <span id="taeedError" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Tozihat_Masool" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_Masool" class="form-control" rows="5" disabled="@(!canEdit)"></textarea>
+                                </div>
+                            </div>
+
+
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "TayidMasool1" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message2" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- فرم مرحله سوم - تایید واحد صنایع) -->
+            @if ((completedSections.Contains("TayidSanaye2") && (canEdit || isObserver)) || (currentState == "TayidSanaye2" && canEdit))
+            {
+                <div class="card shadow-sm mt-4" id="section3" @(canEdit && currentState == "TayidSanaye2" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-warning text-white text-center">
+                        <h5 class="mb-0">بررسی و تایید - واحد صنایع</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form3" novalidate>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">ایا نیاز به بررسی فنی دارد؟</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="Tayid_Sanaye" value="0" disabled="@(!canEdit)">
+                                        <label class="form-check-label sq">بله</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="Tayid_Sanaye" value="1" disabled="@(!canEdit)">
+                                        <label class="form-check-label sq">خیر</label>
+                                    </div>
+                                    <span id="taeedError" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Tozihat_TayidSanaye" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_TayidSanaye" class="form-control" rows="5" disabled="@(!canEdit)"></textarea>
+                                </div>
+                            </div>
+
+
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "TayidSanaye2" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message3" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- فرم مرحله چهارم -- واحد نت) -->
+            @if ((completedSections.Contains("Net3") && (canEdit || isObserver)) || (currentState == "Net3" && canEdit))
+            {
+                <div class="card shadow-sm mt-4" id="section4" @(canEdit && currentState == "Net3" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-warning text-white text-center">
+                        <h5 class="mb-0">بررسی وارائه نظرات - واحد نت</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form4" novalidate>
+
+                            <div class="form-row">
+
+                                <div class="form-group col-md-12">
+                                    <label asp-for="Tozihat_Net" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_Net" class="form-control" rows="5" disabled="@(!canEdit)"></textarea>
+                                </div>
+                            </div>
+
+
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "Net3" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message4" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- فرم مرحله پنجم - بررسی و تأیید واحد تدارکات -->
+            @if ((completedSections.Contains("TayidTadarokat4") && (canEdit || isObserver)) || (currentState == "TayidTadarokat4" && canEdit))
+            {
+                <div class="card shadow-sm mt-4" id="section5" @(canEdit && currentState == "TayidTadarokat4" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-warning text-white text-center">
+                        <h5 class="mb-0">بررسی و تأیید واحد تدارکات</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form5" novalidate>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label asp-for="Tozihat_Tadarokat" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_Tadarokat" class="form-control" rows="5" disabled="@(!canEdit)"></textarea>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                @if (currentState == "TayidTadarokat4" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message5" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- فرم مرحله ششم - بررسی و تایید - واحد مالی) -->
+            @if ((completedSections.Contains("Mali5") && (canEdit || isObserver)) || (currentState == "Mali5" && canEdit))
+            {
+                <div class="card shadow-sm mt-4" id="section6" @(canEdit && currentState == "Mali5" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-warning text-white text-center">
+                        <h5 class="mb-0">بررسی و تایید - واحد مالی</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form6" novalidate>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">آیا تایید است؟</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="TayidMali" value="0" disabled="@(!canEdit)">
+                                        <label class="form-check-label sq">بله</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input sq" type="radio" asp-for="TayidMali" value="1" disabled="@(!canEdit)">
+                                        <label class="form-check-label sq">خیر</label>
+                                    </div>
+                                    <span id="taeedError" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Tozihat_Mali" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_Mali" class="form-control" rows="5" disabled="@(!canEdit)"></textarea>
+                                </div>
+                            </div>
+
+
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "Mali5" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message6" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- فرم مرحله هشتم -- انبار) -->
+            @if ((completedSections.Contains("Anbar6") && (canEdit || isObserver)) || (currentState == "Anbar6" && canEdit))
+            {
+                <div class="card shadow-sm mt-4" id="section8" @(canEdit && currentState == "Anbar6" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+                    <div class="card-header bg-warning text-white text-center">
+                        <h5 class="mb-0">بررسی و تایید - واحد انبار</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form8" novalidate>
+                            <div class="form-row">
+                                <div class="form-group col-md-5 File">
+                                    <label class="font-weight-bold"> فایل پیوست</label>
+
+                                    @if (currentState == "Anbar6" && canEdit)
+                                    {
+                                        <div class="k-rtl" style="margin-right:5px">
+                                            <div class="demo-section">
+                                                @(
+                                                                                        Html.Kendo().Upload()
+                                                                                        .Name("files")
+                                                                                        .HtmlAttributes(new { aria_label = "files" })
+                                                                                        .Multiple(true)
+                                                                                        .Async(a => a
+                                                                                        .Save("Async_Save", "FileUpload")
+                                                                                        .Remove("Async_Remove", "FileUpload")
+                                                                                        .AutoUpload(true)
+                                                                                        )
+                                                                                        .Validation(validation =>
+                                                                                        {
+                                                                                            validation.MaxFileSize(10000000); // 10 MB
+                                                                                            validation.AllowedExtensions(new string[] { ".jpg", ".png", ".pdf", ".rar", ".zip", ".docx", ".doc", ".xlsx", ".xls" });
+                                                                                        })
+                                                                                        .Events(events => events
+                                                                                        .Upload("onUpload")
+                                                                                        .Remove("onRemove")
+                                                                                        )
+                                                                                        )
+                                        </div>
+                                    </div>
+                                                                }
+                                    else if (isObserver)
+                                    {
+                                        <table class="table table-bordered HideTable" id="ali">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">نام فایل‌ها</th>
+                                                    <th scope="col">عملیات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tableFile">
+                                            </tbody>
+                                        </table>
+
+                                        <script>
+                                            $(document).ready(function () {
+                                                var goodsConsignedId = $('#GoodsConsignedID').val();
+                                                $.ajax({
+                                                    type: "POST",
+                                                    url: "/GoodsConsigned/DownloadFile",
+                                                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                                                    data: { id: goodsConsignedId },
+                                                    success: function (r) {
+                                                       if (r.status === 'OK' && r.data.length > 0) { // بررسی وجود فایل
+                                                                for (var i = 0; i < r.data.length; i++) {
+                                                                    var markup = "<tr><td scope='col'>" + r.data[i].Name + r.data[i].Extension + "</td><td scope='col'><a class='fa fa-download asd' href='/FileUpload/DownloadFileDatabase/" + r.data[i].FileID + "'></a></td></tr>";
+                                                                    $("#tableFile").append(markup);
+                                                                }
+                                                                $("#ali").removeClass("HideTable").addClass("ShowTable"); // نمایش جدول
+                                                            } else {
+                                                                $("#ali").removeClass("ShowTable").addClass("HideTable"); // مخفی نگه داشتن جدول
+                                                            }
+                                                    },
+                                                    failure: function (response) {
+                                                        alert(response.responseText);
+                                                    },
+                                                    error: function (response) {
+                                                        alert(response.responseText);
+                                                    }
+                                                });
+                                            });
+                                        </script>
+                                    }
+                                </div>
+                                <div class="form-group col-md-7 TozihatAnbar6">
+                                    <label asp-for="Tozihat_Anbar" class="font-weight-bold">توضیحات</label>
+                                    <textarea asp-for="Tozihat_Anbar" class="form-control" rows="6" disabled="@(currentState != "Anbar6" || !canEdit)"></textarea>
+                                </div>
+                            </div>
+
+
+
+
+                            <div class="text-center mt-4">
+                                @if (currentState == "Anbar6" && canEdit)
+                                {
+                                    <button type="submit" class="btn btn-primary btn-lg">ثبت</button>
+                                }
+                            </div>
+                            <div id="message8" class="mt-3 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+          <!-- فرم مرحله نهم - نگهبانی (خروج کالا) -->
+@if ((completedSections.Contains("Negahbani7") && (canEdit || isObserver)) || (currentState == "Negahbani7" && canEdit))
+{
+    <div class="card shadow-sm mt-4" id="section-negahbani7" @(canEdit && currentState == "Negahbani7" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+        <div class="card-header bg-warning text-white text-center">
+            <h5 class="mb-0">کنترل خروج کالا - نگهبانی</h5>
+        </div>
+        <div class="card-body">
+            <form id="formNegahbani7" novalidate>
+                <input type="hidden" name="GoodsConsignedID" value="@Model.GoodsConsignedID" />
+                <input type="hidden" name="Guid" value="@guid" />
+
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label class="font-weight-bold">تاریخ خروج</label>
+                        <input name="Khoruj_persiandate" class="form-control" data-jdp data-parsley-required="true" value="@Model.Khoruj_persiandate" disabled="@(!canEdit)" />
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="font-weight-bold">ساعت خروج</label>
+                        <input name="TimeKhoruj_persiandate" class="form-control" data-jdp data-jdp-only-time data-parsley-required="true" value="@Model.TimeKhoruj_persiandate" disabled="@(!canEdit)" />
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-bold">توضیحات خروج</label>
+                        <textarea name="Tozihat_Negahbani" class="form-control" rows="4" disabled="@(!canEdit)">@Model.Tozihat_Negahbani</textarea>
+                    </div>
+                </div>
+
+                @if (currentState == "Negahbani7" && canEdit)
+                {
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">ثبت خروج و ارسال به نگهبانی (ورود)</button>
+                    </div>
+                }
+                <div id="messageNegahbani7" class="mt-3 text-center"></div>
+            </form>
+        </div>
+    </div>
+}
+
+<!-- فرم مرحله بازگشت کالا - نگهبانی (Negahbani8) -->
+@if ((completedSections.Contains("Negahbani8") && (canEdit || isObserver)) || (currentState == "Negahbani8" && canEdit))
+{
+    <div class="card shadow-sm mt-4" id="section-negahbani8" @(canEdit && currentState == "Negahbani8" ? "" : "style='pointer-events: none; opacity: 0.7;'")>
+        <div class="card-header bg-success text-white text-center">
+            <h5 class="mb-0">کنترل بازگشت کالا - نگهبانی (ورود)</h5>
+        </div>
+        <div class="card-body">
+            <form id="formNegahbani8" novalidate>
+                <input type="hidden" name="GoodsConsignedID" value="@Model.GoodsConsignedID" />
+                <input type="hidden" name="Guid" value="@guid" />
+
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label class="font-weight-bold">تاریخ بازگشت</label>
+                        <input name="S_persiandate_Enteringtheguard"
+                            value="@Model.S_persiandate_Enteringtheguard"
+                               class="form-control"
+                               data-jdp
+                               data-parsley-required="true"
+                               disabled="@(currentState != "Negahbani8" || !canEdit)"
+                               autocomplete="off" />
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="font-weight-bold">شماره سریال</label>
+                        <input name="Shomare_Serial_Enteringtheguard"
+                              value="@Model.Shomare_Serial_Enteringtheguard"
+                               class="form-control"
+                               data-parsley-required="true"
+                               disabled="@(currentState != "Negahbani8" || !canEdit)"
+                               autocomplete="off" />
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="font-weight-bold">تحویل دهنده</label>
+                        <input name="TahvilDahande_Enteringtheguard"
+                             value="@Model.TahvilDahande_Enteringtheguard"
+                               class="form-control"
+                               data-parsley-required="true"
+                               disabled="@(currentState != "Negahbani8" || !canEdit)"
+                               autocomplete="off" />
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="font-weight-bold">ساعت ورود</label>
+                        <input name="SaateVorud_Enteringtheguard"
+                             value="@Model.SaateVorud_Enteringtheguard"
+                               class="form-control"
+                               data-jdp data-jdp-only-time
+                               data-parsley-required="true"
+                               disabled="@(currentState != "Negahbani8" || !canEdit)"
+                               autocomplete="off" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label class="font-weight-bold">ساعت خروج</label>
+                        <input name="SaateKhoruj_Enteringtheguard"
+                             value="@Model.SaateKhoruj_Enteringtheguard"
+                               class="form-control"
+                               data-jdp data-jdp-only-time
+                               disabled="@(currentState != "Negahbani8" || !canEdit)"
+                               autocomplete="off" />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="font-weight-bold">تلفن همراه</label>
+                        <input name="Phone_Enteringtheguard"
+                            value="@Model.Phone_Enteringtheguard"
+                               class="form-control"
+                               disabled="@(currentState != "Negahbani8" || !canEdit)"
+                               autocomplete="off" />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="font-weight-bold">خودرو</label>
+                        <input name="Khodro_Enteringtheguard"
+                             value="@Model.Khodro_Enteringtheguard"
+                               class="form-control"
+                               disabled="@(currentState != "Negahbani8" || !canEdit)"
+                               autocomplete="off" />
+                    </div>
+                </div>
+
+          <div class="form-row">
+    <div class="col-md-12">
+        <label class="font-weight-bold">اقلام کالا</label>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="GoodsTablee2">
+                <thead class="thead-light">
+                    <tr>
+                        <th>شرح کالا</th>
+                        <th>تعداد</th>
+                        <th>توضیحات</th>
+                        @if (currentState == "Negahbani8" && canEdit)
+                        {
+                            <th>عملیات</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ReturnedItems != null && Model.ReturnedItems.Any())
+                    {
+                        int index = 0;
+                        foreach (var item in Model.ReturnedItems)
+                        {
+                            <tr>
+                                <td>
+                                    @if (currentState == "Negahbani8" && canEdit)
+                                    {
+                                        <input type="text" name="GoodsGuard_Enteringtheguard[@index].SharhKala" 
+                                               value="@item.SharhKala" class="form-control" data-parsley-required="true" />
+                                    }
+                                    else
+                                    {
+                                        @item.SharhKala
+                                    }
+                                </td>
+                                <td>
+                                    @if (currentState == "Negahbani8" && canEdit)
+                                    {
+                                        <input type="number" name="GoodsGuard_Enteringtheguard[@index].Tedad" 
+                                               value="@item.Tedad" class="form-control" min="1" data-parsley-required="true" />
+                                    }
+                                    else
+                                    {
+                                        @item.Tedad
+                                    }
+                                </td>
+                                <td>
+                                    @if (currentState == "Negahbani8" && canEdit)
+                                    {
+                                        <input type="text" name="GoodsGuard_Enteringtheguard[@index].Description" 
+                                               value="@item.Description" class="form-control" />
+                                    }
+                                    else
+                                    {
+                                        @(item.Description ?? "-")
+                                    }
+                                </td>
+                                @if (currentState == "Negahbani8" && canEdit)
+                                {
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">
+                                            حذف
+                                        </button>
+                                    </td>
+                                }
+                            </tr>
+                            index++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (currentState == "Negahbani8" && canEdit)
+        {
+            <button type="button" class="btn btn-sm btn-success mt-2" onclick="addGoods2()">
+                افزودن کالا
+            </button>
+        }
+    </div>
+</div>
+
+                <div class="text-center mt-4">
+                    @if (currentState == "Negahbani8" && canEdit)
+                    {
+                        <button type="submit" class="btn btn-success btn-lg">
+                            ثبت بازگشت کالا و اتمام فرآیند
+                        </button>
+                    }
+                </div>
+                <div id="messageNegahbani8" class="mt-3 text-center"></div>
+            </form>
+        </div>
+    </div>
+}
+        </div>
+    </div>
+</div>
+
+
+<a onclick='openHistoryModal()'
+   class="floating-help-left2">
+    سوابق <i class="icon-spaced"></i>
+</a>
+<a href="javascript:void(0)" onclick="goBackAndRefresh()"
+   class="floating-help-left">
+    بازگشت <i class="fa fa-arrow-left icon-spaced"></i>
+</a>
+<div class="modal fade" id="AttachModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">سوابق</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="historyTable">
+                        <thead class="table-danger">
+                            <tr>
+                                <th scope="col">فرستنده</th>
+                                <th scope="col">گیرنده</th>
+                                <th scope="col">عنوان</th>
+                                <th scope="col">تاریخ ارسال</th>
+                                <th scope="col">تاریخ مشاهده</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableFile2"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/jalalidatepicker/jalalidatepicker.min.js"></script>
+    <script src="~/Parsley/parsley.min.js"></script>
+    <script src="~/select 2/select 2.js"></script>
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>
+    <script>
+        function onUpload(e) {
+            e.data = {
+                guid: $("#Guid").val()
+            };
+        }
+        function onRemove(e) {
+            e.data = {
+                guid: $("#Guid").val()
+            };
+        }
+    </script>
+    <script>
+                let goodIndex = 0;
+        function addGoods() {
+            const table = document.getElementById('GoodsTable').getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            const cell3 = row.insertCell(2);
+            const cell4 = row.insertCell(3);
+
+            // Backtick ` برای interpolate ${goodIndex}
+            cell1.innerHTML = `<input type="text" name="Goods[\${goodIndex}].ItemName" class="form-control" data-parsley-required="true" data-parsley-required-message="شرح کالا الزامی است" />`;
+            cell2.innerHTML = `<input type="number" name="Goods[\${goodIndex}].Quantity" class="form-control" data-parsley-required="true" data-parsley-required-message="تعداد الزامی است" min="1" />`;
+            cell3.innerHTML = `<input type="text" name="Goods[\${goodIndex}].Description" class="form-control" data-parsley-required="true" data-parsley-required-message="علت الزامی است" />`;
+            cell4.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); recalculateIndex();">حذف</button>`;
+
+            goodIndex++;
+        }
+
+        // بازسازی index بعد از remove (برای model binding درست)
+        function recalculateIndex() {
+            const rows = document.querySelectorAll('#GoodsTable tbody tr');
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 3) {
+                    inputs[0].name = `Goods[${index}].ItemName`;
+                    inputs[1].name = `Goods[${index}].Quantity`;
+                    inputs[2].name = `Goods[${index}].Description`;
+                }
+            });
+            goodIndex = rows.length;
+        }
+
+        // Submit handler (با validation بهبودیافته)
+        $('#form1').on('submit', function (e) {
+            e.preventDefault();
+            let $btn = $(this).find('[type=submit]');
+            $btn.prop('disabled', true).text('در حال ارسال...');
+
+            // Parsley validation برای فیلدهای ثابت
+            if (!$(this).parsley().validate()) {
+                $btn.prop('disabled', false).text('ثبت');
+                return;
+            }
+
+            // Validation کالاها (دقیق‌تر)
+            const GoodsRows = $('#GoodsTable tbody tr');
+            let hasValidGoods = false;
+            let invalidCount = 0;
+            GoodsRows.each(function () {
+                const ItemName = $(this).find('input[name^="Goods"][name$=".ItemName"]').val().trim();
+                const Quantity = $(this).find('input[name^="Goods"][name$=".Quantity"]').val().trim();
+                const Description = $(this).find('input[name^="Goods"][name$=".Description"]').val().trim();
+
+                console.log('Row check:', { ItemName, Quantity, Description });  // دیباگ: F12 > Console چک کن
+
+                if (ItemName && Quantity && Description && !isNaN(parseInt(Quantity)) && parseInt(Quantity) > 0) {
+                    hasValidGoods = true;
+                } else {
+                    invalidCount++;
+                }
+            });
+            console.log('Has valid:', hasValidGoods, 'Invalid rows:', invalidCount);
+
+            if (!hasValidGoods) {
+                $('#message1').text(`لطفاً ${invalidCount > 0 ? invalidCount + ' ' : ''}ردیف کالا را با اطلاعات معتبر (شرح، تعداد عدد >0، علت) کامل کنید.`).addClass('text-danger');
+                $btn.prop('disabled', false).text('ثبت');
+                return;
+            } else {
+                $('#message1').text('').removeClass('text-danger');
+            }
+
+            // اعتبارسنجی فیلد ManagerUserID
+            if (!$('#ManagerUserID').val()) {
+            $('#message1').text('لطفاً مدیر واحد را انتخاب کنید.').addClass('text-danger');
+            $btn.prop('disabled', false).text('ارسال'); // دکمه دوباره فعال بشه
+            return;  // جلوگیری از ارسال فرم
+                }         
+
+            // formData
+            const formData = {
+                GoodsConsignedID: $('#GoodsConsignedID').val(),
+                S_persiandate: $('#S_persiandate').val(),
+                Shomare_Serial: $('#Shomare_Serial').val(),
+                MahalDaryaft: $('#MahalDaryaft').val(),
+                Darkhast_persiandate: $('#Darkhast_persiandate').val(),
+                Name_Darkhastkonnande: $('#Name_Darkhastkonnande').val(),
+                TypeSending: $('input[name="TypeSending"]:checked').val() ?? 0,
+                ManagerUserID:  $('#ManagerUserID').val(),
+                Guid: $('#Guid').val(),
+                Goods: []
+            };
+
+            $('#GoodsTable tbody tr').each(function() {
+                const ItemName = $(this).find('input[name^="Goods"][name$=".ItemName"]').val().trim();
+                const Quantity = $(this).find('input[name^="Goods"][name$=".Quantity"]').val().trim();
+                const Description = $(this).find('input[name^="Goods"][name$=".Description"]').val().trim();
+                if (ItemName && Quantity && Description && !isNaN(parseInt(Quantity)) && parseInt(Quantity) > 0) {
+                    formData.Goods.push({
+                        ItemName: ItemName,
+                        Quantity: parseInt(Quantity),
+                        Description: Description
+                    });
+                }
+            });
+
+            $.ajax({
+                url: '/GoodsConsigned/SaveForm1',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    if (response.success === false) {
+                        $('#message1').text(response.message).removeClass().addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+                        return;
+                    }
+                    window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                },
+                error: function(xhr, status, error) {
+                    console.log("AJAX Error:", status, error);
+                    console.log("Response Text:", xhr.responseText);
+                    $('#message1').text('خطا در ارتباط با سرور.').addClass('text-danger');
+                    $btn.prop('disabled', false).text('ثبت');
+                }
+            });
+        });
+    </script>
+    <script>
+             $(document).ready(function () {
+            $.ajax({
+                url: '/GuestEntry/GetManagerUser',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    var $dropdown = $('#ManagerUserID');
+                    $dropdown.empty();
+                    $dropdown.append($('<option>', {
+                        value: '',
+                        text: 'یک مدیر انتخاب کنید'
+                    }));
+
+                    // افزودن کاربران
+                    $.each(data, function (index, user) {
+                        $dropdown.append($('<option>', {
+                            value: user.id,
+                            text: user.text
+                        }));
+                    });
+
+                    // راه‌اندازی Select2
+                    $dropdown.select2({
+                        placeholder: "انتخاب مدیر واحد",
+                        allowClear: true,
+                        dir: "rtl"
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error:", status, error); // برای دیباگ
+                    console.log("Response:", xhr.responseText); // متن پاسخ سرور
+                    alert('خطا در دریافت لیست کاربران: ' + error);
+                }
+            });
+        });
+    </script>
+    <script>
+
+
+          // ارسال فرم مرحله دوم -- تایید مسئول
+        $('#form2').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find('[type=submit]');
+                $btn.prop('disabled', true).text('در حال ارسال...');
+
+                const formData = {
+                    GoodsConsignedID: $('#GoodsConsignedID').val(),
+                    TayidMasool: $("#TayidMasool").val(),
+                    Tozihat_Masool: $('#Tozihat_Masool').val(),
+                    Guid: $('#Guid').val()
+                };
+
+                $.ajax({
+                    url: '/GoodsConsigned/SaveForm2',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $('#message2').text(response.message).removeClass().addClass('text-danger');
+                            $btn.prop('disabled', false).text('ثبت');
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message2').text('خطا در ارتباط با سرور: ' + error).addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+                    }
+                });
+            }
+        });
+
+          // ارسال فرم مرحله سوم - واحد صنایع
+        $('#form3').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find('[type=submit]');
+                $btn.prop('disabled', true).text('در حال ارسال...');
+
+                const formData = {
+                    GoodsConsignedID: $('#GoodsConsignedID').val(),
+                    Tayid_Sanaye: $('input[name="Tayid_Sanaye"]:checked').val(),
+                    Tozihat_TayidSanaye: $('#Tozihat_TayidSanaye').val(),
+                    Guid: $('#Guid').val()
+                };
+
+
+                $.ajax({
+                    url: '/GoodsConsigned/SaveForm3',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $('#message2').text(response.message).removeClass().addClass('text-danger');
+                            $btn.prop('disabled', false).text('ثبت');
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message2').text('خطا در ارتباط با سرور: ' + error).addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+
+                }
+                });
+            }
+        });
+
+         // ارسال فرم مرحله چهارم -- واحد نت
+        $('#form4').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find('[type=submit]');
+                $btn.prop('disabled', true).text('در حال ارسال...');
+
+                const formData = {
+                    GoodsConsignedID: $('#GoodsConsignedID').val(),
+                    Tozihat_Net: $('#Tozihat_Net').val(),
+                    Guid: $('#Guid').val()
+                };
+
+                $.ajax({
+                    url: '/GoodsConsigned/SaveForm4',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $('#message2').text(response.message).removeClass().addClass('text-danger');
+                            $btn.prop('disabled', false).text('ثبت');
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message2').text('خطا در ارتباط با سرور: ' + error).addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+        }
+                        });
+                    }
+                });
+
+        // ارسال فرم مرحله پنجم -- واحد تدارکات
+        $('#form5').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find('[type=submit]');
+                $btn.prop('disabled', true).text('در حال ارسال...');
+
+                const formData = {
+                    GoodsConsignedID: $('#GoodsConsignedID').val(),
+                    Tozihat_Tadarokat: $('#Tozihat_Tadarokat').val(),
+                    Guid: $('#Guid').val()
+                };
+
+                $.ajax({
+                    url: '/GoodsConsigned/SaveForm5',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $('#message2').text(response.message).removeClass().addClass('text-danger');
+                            $btn.prop('disabled', false).text('ثبت');
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message2').text('خطا در ارتباط با سرور: ' + error).addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+        }
+                        });
+                    }
+                });
+
+          // ارسال فرم مرحله ششم - مالی
+        $('#form6').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find('[type=submit]');
+                $btn.prop('disabled', true).text('در حال ارسال...');
+
+                const formData = {
+                    GoodsConsignedID: $('#GoodsConsignedID').val(),
+                    TayidMali: $('input[name="TayidMali"]:checked').val(),
+                    Tozihat_Mali: $('#Tozihat_Mali').val(),
+                    Guid: $('#Guid').val()
+                };
+
+
+                $.ajax({
+                    url: '/GoodsConsigned/SaveForm6',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $('#message2').text(response.message).removeClass().addClass('text-danger');
+                            $btn.prop('disabled', false).text('ثبت');
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message2').text('خطا در ارتباط با سرور: ' + error).addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+
+                }
+                });
+            }
+        });
+
+        // فرم هفت مدیر عامل بوده که حذف شده فعلا
+
+        // انبار
+        $('#form8').on('submit', function (e) {
+            e.preventDefault();
+            if ($(this).parsley().validate()) {
+                let $btn = $(this).find('[type=submit]');
+                $btn.prop('disabled', true).text('در حال ارسال...');
+
+                const formData = {
+                    GoodsConsignedID: $('#GoodsConsignedID').val(),
+                    Tozihat_Anbar: $('#Tozihat_Anbar').val(),
+                    Guid: $('#Guid').val()
+                };
+
+                $.ajax({
+                    url: '/GoodsConsigned/SaveForm8',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success === false) {
+                            $('#message7').text(response.message).removeClass().addClass('text-danger');
+                            $btn.prop('disabled', false).text('ثبت');
+                            return;
+                        }
+                        window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", status, error);
+                        console.log("Response Text:", xhr.responseText);
+                        $('#message7').text('خطا در ارتباط با سرور: ' + error).addClass('text-danger');
+                        $btn.prop('disabled', false).text('ثبت');
+                    }
+                });
+            }
+        });
+
+       $('#formNegahbani7').on('submit', function (e) {
+    e.preventDefault();
+    if ($(this).parsley().validate()) {
+        let $btn = $(this).find('[type=submit]');
+        $btn.prop('disabled', true).text('در حال ارسال...');
+
+        const formData = {
+            GoodsConsignedID: $('#GoodsConsignedID').val(),
+            Khoruj_persiandate: $('input[name="Khoruj_persiandate"]').val(),
+            TimeKhoruj_persiandate: $('input[name="TimeKhoruj_persiandate"]').val(),
+            Tozihat_Negahbani: $('textarea[name="Tozihat_Negahbani"]').val(),
+            Guid: $('#Guid').val()
+        };
+
+        $.ajax({
+            url: '/GoodsConsigned/SaveForm9', // این متد حالا به Negahbani8 می‌رود
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function (response) {
+                if (!response.success) {
+                    $('#messageNegahbani7').html('<span class="text-danger">' + response.message + '</span>');
+                    $btn.prop('disabled', false).text('ثبت خروج و ارسال به نگهبانی (ورود)');
+                    return;
+                }
+                 window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+            },
+            error: function () {
+                $('#messageNegahbani7').html('<span class="text-danger">خطا در ارسال اطلاعات</span>');
+                $btn.prop('disabled', false).text('ثبت خروج و ارسال به نگهبانی (ورود)');
+            }
+        });
+    }
+});
+
+
+
+let goodIndexx = 0;
+function addGoods2() {
+    const tbody = document.querySelector('#GoodsTablee2 tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" name="GoodsGuard_Enteringtheguard[${goodIndexx}].SharhKala" class="form-control" data-parsley-required="true" placeholder="شرح کالا" /></td>
+        <td><input type="number" name="GoodsGuard_Enteringtheguard[${goodIndexx}].Tedad" class="form-control" min="1" data-parsley-required="true" /></td>
+        <td><input type="text" name="GoodsGuard_Enteringtheguard[${goodIndexx}].Description" class="form-control" placeholder="وضعیت کالا" /></td>
+        <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">حذف</button></td>
+    `;
+    tbody.appendChild(row);
+    goodIndexx++;
+}
+
+// وقتی صفحه لود شد، اگر Negahbani8 بود → یک ردیف اضافه کن
+$(document).ready(function () {
+    if ('@currentState' === 'Negahbani8' && '@canEdit' === 'True') {
+        if ($('#GoodsTablee2 tbody tr').length === 0) {
+            addGoods2();
+        }
+    }
+});
+
+// فرم نگهبانی بازگشت (Negahbani8 → End9) - با جدول GoodsTablee
+$('#formNegahbani8').on('submit', function (e) {
+    e.preventDefault();
+
+    // اعتبارسنجی Parsley
+    if (!$(this).parsley().validate()) {
+        return false;
+    }
+
+    let $btn = $(this).find('button[type="submit"]');
+    $btn.prop('disabled', true).html('در حال ثبت بازگشت...');
+
+    // جمع‌آوری اقلام از جدول GoodsTablee
+    const goods = [];
+    let hasValidRow = false;
+
+    $('#GoodsTablee2 tbody tr').each(function () {
+        const sharhKala = $(this).find('input[name$=".SharhKala"]').val()?.trim();
+        const tedadStr = $(this).find('input[name$=".Tedad"]').val()?.trim();
+    
+        const description = $(this).find('input[name$=".Description"]').val()?.trim();
+
+        // فقط ردیف‌هایی که شرح کالا و تعداد دارن
+        if (sharhKala && tedadStr && !isNaN(tedadStr) && parseInt(tedadStr) > 0) {
+            goods.push({
+                SharhKala: sharhKala,
+                Tedad: parseInt(tedadStr),        // حتماً عدد بشه!
+                Description: description || ""
+            });
+            hasValidRow = true;
+        }
+    });
+
+    // اگر هیچ ردیف معتبری نبود
+    if (!hasValidRow) {
+        $('#messageNegahbani8')
+            .html('<div class="alert alert-danger">حداقل یک قلم کالا با تعداد معتبر وارد کنید.</div>');
+        $btn.prop('disabled', false).html('ثبت بازگشت کالا و اتمام فرآیند');
+        return;
+    }
+
+    // داده‌های نهایی برای ارسال
+    const formData = {
+        GoodsConsignedID: @Model.GoodsConsignedID,
+        Guid: '@guid',
+
+        S_persiandate_Enteringtheguard: $('input[name="S_persiandate_Enteringtheguard"]').val(),
+        Shomare_Serial_Enteringtheguard: $('input[name="Shomare_Serial_Enteringtheguard"]').val(),
+        TahvilDahande_Enteringtheguard: $('input[name="TahvilDahande_Enteringtheguard"]').val(),
+        SaateVorud_Enteringtheguard: $('input[name="SaateVorud_Enteringtheguard"]').val(),
+        SaateKhoruj_Enteringtheguard: $('input[name="SaateKhoruj_Enteringtheguard"]').val() || null,
+        Phone_Enteringtheguard: $('input[name="Phone_Enteringtheguard"]').val() || null,
+        Khodro_Enteringtheguard: $('input[name="Khodro_Enteringtheguard"]').val() || null,
+
+        // آرایه اقلام بازگشتی
+        GoodsGuard_Enteringtheguard: goods
+    };
+
+    $.ajax({
+        url: '/GoodsConsigned/SaveForm10',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function (res) {
+            if (res.success) {
+                toastr.success('بازگشت کالا با موفقیت ثبت شد و فرآیند به پایان رسید!');
+                // setTimeout(() => location.href = '/GoodsConsigned', 2000);
+                   window.location.href = '@Url.Action("Index", "GoodsConsigned")';
+                   console.log('aa');
+            } else {
+                $('#messageNegahbani8')
+                    .html('<div class="alert alert-danger">' + (res.message || 'خطا در ثبت اطلاعات') + '</div>');
+                $btn.prop('disabled', false).html('ثبت بازگشت کالا و اتمام فرآیند');
+                console.log('error');
+            }
+        },
+        error: function (xhr) {
+            console.error("خطا در ثبت بازگشت:", xhr.responseText);
+            $('#messageNegahbani8')
+                .html('<div class="alert alert-danger">خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.</div>');
+            $btn.prop('disabled', false).html('ثبت بازگشت کالا و اتمام فرآیند');
+        }
+    });
+});
+        // ردیف اولیه
+                document.addEventListener('DOMContentLoaded', function() {
+            if ('@currentState' === 'start0' && '@canEdit' === 'True') {
+                addGoods();
+            }
+        });
+    </script>
+
+    <script>
+        function openHistoryModal() {
+                    var Guid = $("#Guid").val();
+                    $.ajax({
+                        type: "POST",
+                        url: "/GoodsConsigned/History",
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        data: { Guid: Guid },
+                        success: function (response) {
+                            if (response.status === 'OK') {
+                                $('#tableFile2').empty();
+                                if (response.data.length > 0) {
+                                    $.each(response.data, function (i, item) {
+                                        var markup = `<tr>
+                                            <td>${item.SenderID}</td>
+                                            <td>${item.ReceiverID}</td>
+                                            <td>${item.Title}</td>
+                                            <td>${item.SendDateTime}</td>
+                                            <td>${item.ViewDateTime}</td>
+                                        </tr>`;
+                                        $("#tableFile2").append(markup);
+                                    });
+                                    $("#historyTable").show();
+                                } else {
+                                    $("#tableFile2").append('<tr><td colspan="6" class="text-center">هیچ رکوردی یافت نشد</td></tr>');
+                                    $("#historyTable").show();
+                                }
+                            }
+                            $("#AttachModal").modal('show');
+                        },
+                        error: function (xhr, status, error) {
+                            alert('خطا در ارتباط با سرور: ' + error);
+                        }
+                    });
+                }
+    </script>
+    <script>
+             $(document).ready(function () {
+            $.ajax({
+                url: '/GoodsDeparture/GetFinanceUser',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    var $dropdown = $('#FinanceUserID');
+                    $dropdown.empty();
+                    $dropdown.append($('<option>', {
+                        value: '',
+                        text: 'یک شخص را انتخاب کنید'
+                    }));
+
+                    // افزودن کاربران
+                    $.each(data, function (index, user) {
+                        $dropdown.append($('<option>', {
+                            value: user.id,
+                            text: user.text
+                        }));
+                    });
+
+                    // راه‌اندازی Select2
+                    $dropdown.select2({
+                        placeholder: "انتخاب فرد تایید کننده",
+                        allowClear: true,
+                        dir: "rtl"
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error:", status, error); // برای دیباگ
+                    console.log("Response:", xhr.responseText); // متن پاسخ سرور
+                    alert('خطا در دریافت لیست کاربران: ' + error);
+                }
+            });
+        });
+    </script>
+
+}
+
+@section styles {
+    <link href="~/jalalidatepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="~/Parsley/parsley.css" rel="stylesheet" />
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .form-control {
+            border: 2px solid black;
+        }
+
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #dee2e6;
+        }
+
+        input.sq[type="radio"][disabled] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+            input.sq[type="radio"][disabled] + label.sq {
+                position: relative;
+                padding-left: 25px;
+                cursor: not-allowed;
+                user-select: none;
+                line-height: 20px;
+                display: inline-block;
+                color: black;
+            }
+
+                input.sq[type="radio"][disabled] + label.sq::before {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 18px;
+                    height: 18px;
+                    border: 2px solid #aaa;
+                    border-radius: 3px;
+                    background: #f5f5f5;
+                    box-sizing: border-box;
+                }
+
+            input.sq[type="radio"][disabled]:checked + label.sq::before {
+                background-color: white;
+                border-color: black;
+                content: "✓";
+                color: black;
+                font-weight: bold;
+                font-size: 15px;
+                text-align: center;
+                line-height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            line-height: 40px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+        }
+
+        .HideTable {
+            display: none !important;
+        }
+
+        .ShowTable {
+            display: inline-table !important;
+        }
+
+        .floating-help-left {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(45deg, #d32f2f, #b71c1c);
+            color: #fff;
+            padding: 10px 16px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+            .floating-help-left:hover {
+                background: linear-gradient(45deg, #c62828, #8e0000);
+                text-decoration: none;
+                padding-left: 20px;
+            }
+
+        .floating-help-left2 {
+            position: fixed;
+            top: 40%; /* کمی بالاتر از وسط */
+            left: 0;
+            background: linear-gradient(45deg, #1976d2, #0d47a1);
+            color: #fff !important;
+            padding: 10px 16px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-bottom: 10px; /* فاصله از دکمه بعدی */
+            cursor: pointer;
+        }
+
+            .floating-help-left2:hover {
+                background: linear-gradient(45deg, #1565c0, #002171) text-decoration: none;
+                padding-left: 20px;
+            }
+
+        .icon-spaced {
+            margin-right: 10px;
+        }
+
+        .modal-xl {
+            max-width: 70%;
+        }
+
+        .id-card {
+            padding: 6px 14px;
+            background: #ffffff;
+            border: 2px solid #dc3545;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc3545;
+            margin-right: 10px;
+            box-shadow: 0 0 6px rgba(220,53,69,0.3);
+        }
+    </style>
+}

@@ -1,0 +1,56 @@
+﻿@model IEnumerable<ERP.Models.WorkflowAccess>
+
+@{
+    ViewData["Title"] = "مدیریت دسترسی‌ها";
+    var usersList = ViewBag.Users as IEnumerable<dynamic>;
+}
+
+<h2>لیست دسترسی‌ها</h2>
+
+<p>
+    <a asp-action="CreateAccess">ایجاد دسترسی جدید</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProcessName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Section)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Role)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var user = usersList?.FirstOrDefault(u => u.Id == item.UserID);
+            var userFullName = user != null ? $"{user.FirstName} {user.LastName}" : "نامشخص";
+            <tr>
+                <td>
+                    @userFullName
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProcessName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Section)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Role)
+                </td>
+                <td>
+                    <a asp-action="EditAccess" asp-route-id="@item.WorkflowAccessID">ویرایش</a> |
+                    <a asp-action="DeleteAccess" asp-route-id="@item.WorkflowAccessID">حذف</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

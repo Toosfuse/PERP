@@ -1,0 +1,46 @@
+﻿/* Theme: Blue Classic */
+:root {
+    --primary: #007bff;
+    --info: #17a2b8;
+    --secondary: #6c757d;
+    --dark: #222831;
+    --light: #f7f9fb;
+    --white: #ffffff;
+    --breakpoint-lg: 992px;
+}
+
+/* هدر و سایدبار */
+.app-header {
+    background-color: var(--primary) !important;
+}
+
+.app-header__logo {
+    background-color: #0056d6 !important;
+}
+
+.app-sidebar {
+    background-color: #0b2340;
+    color: var(--white);
+}
+
+/* دکمه‌های اصلی */
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+    .btn-primary:hover {
+        background-color: #0069d9 !important;
+    }
+
+/* المان‌های مخصوص قالب */
+.path, .m-loader .path {
+    stroke: var(--primary) !important;
+}
+
+.material-half-bg .cover {
+    background-color: var(--primary) !important;
+}
+::-webkit-scrollbar {
+    width: 8px;
+}

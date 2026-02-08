@@ -1,0 +1,464 @@
+﻿@* RegisterCategory.cshtml *@
+@{
+    ViewData["Title"] = "مدیریت دسته‌بندی اموال";
+}
+@Html.AntiForgeryToken()
+
+@section styles {
+   
+<link href="~/select 2/select 2.css" rel="stylesheet">
+<style>
+    :root {
+       /*  --primary: #6366f1; /* indigo */ */
+        --primary-dark: #4f46e5;
+        --bg-card: #ffffff;
+        --shadow: 0 10px 30px rgba(99, 102, 241, 0.12);
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --hover-bg: #f8f9ff;
+    }
+
+   /*  body {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+        min-height: 100vh;
+    } */
+
+    .luxury-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        backdrop-filter: blur(4px);
+    }
+
+    .card-header-lux {
+        background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .card-header-lux h3 {
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+    .tree {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+        .tree ul {
+            list-style: none;
+            padding-left: 24px;
+            margin: 4px 0;
+            transition: all 0.3s ease;
+        }
+
+        .tree li {
+            margin: 8px 0;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .tree .caret {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: var(--primary);
+            font-size: 1.1rem;
+            transition: all 0.25s ease;
+            background: rgba(99, 102, 241, 0.08);
+            margin-right: 8px;
+        }
+
+            .tree .caret:hover {
+                background: rgba(99, 102, 241, 0.18);
+                transform: scale(1.12);
+            }
+
+        .tree .active > .caret {
+            background: var(--primary);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .tree .item-title {
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .tree .item-title:hover {
+                background: var(--hover-bg);
+                color: var(--primary-dark);
+                transform: translateX(4px);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+            }
+
+    .context-menu {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 12px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+        z-index: 10000;
+        min-width: 220px;
+        padding: 8px 0;
+        opacity: 0;
+        transform: scale(0.95);
+        animation: menuFadeIn 0.2s forwards;
+    }
+
+ 
+    @@keyframes menuFadeIn {
+        to
+
+    {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+
+    .context-menu button {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        text-align: right;
+        padding: 10px 20px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: var(--text);
+        transition: all 0.2s;
+    }
+
+        .context-menu button:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-dark);
+        }
+
+    .context-menu .text-danger {
+        color: #ef4444 !important;
+    }
+
+    .no-children {
+        width: 28px;
+        height: 28px;
+        display: inline-block;
+    }
+
+    .btn-lux {
+        background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+    }
+
+        .btn-lux:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+</style>
+}
+<div class="container py-5">
+    <div class="luxury-card mx-auto" style="max-width: 900px;">
+        <div class="card-header-lux" style="background:#6366f1">
+            <i class="fa fa-layer-group fa-2x"></i>
+            <h3 >مدیریت دسته‌بندی اموال</h3>
+        </div>
+
+        <div class="p-4 p-md-5">
+            <div class="text-center mb-4" >
+                <button type="button" class="btn btn-lux btn-lg" style="background:#6366f1" onclick="openAddModal(0)">
+                    <i class="fa fa-plus me-2"></i> افزودن دسته‌بندی جدید
+                </button>
+            </div>
+
+            <ul id="categoryTree" class="tree"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden;">
+
+            <!-- Modal Header -->
+            <div class="modal-header" style="background: linear-gradient(90deg, #6366f1, #4f46e5); color:white;">
+                <h5 class="modal-title" id="modalTitle">افزودن دسته‌بندی جدید</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body p-4">
+                <form id="categoryForm">
+
+                    <input type="hidden" id="Id" value="0" />
+
+                    <div class="form-group">
+                        <label for="Title" class="font-weight-bold">
+                            عنوان <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control form-control-lg"
+                               id="Title"
+                               autocomplete="off"
+                               required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ParentId" class="font-weight-bold">
+                            دسته والد
+                        </label>
+                        <select id="ParentId" class="form-control select2-lg w-100">
+                            <option value="">— بدون والد —</option>
+                        </select>
+                    </div>
+
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox"
+                               class="custom-control-input"
+                               id="IsActive"
+                               checked>
+                        <label class="custom-control-label font-weight-bold" for="IsActive">
+                            فعال
+                        </label>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                    بستن
+                </button>
+                <button type="button" class="btn btn-success" onclick="saveCategory()">
+                    ذخیره
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="~/select 2/select 2.js"></script>
+    <script>
+        const CONTROLLER = "/Assest";
+        const token = $('input[name="__RequestVerificationToken"]').val() || '';
+
+        let currentContextMenu = null;
+
+                  $('#ParentId').select2({
+            placeholder: "انتخاب دسته بندی",
+            allowClear: true,
+            dir: "rtl",
+            width: "100%",
+            dropdownParent: $('#categoryModal')
+        });
+
+        function closeContextMenu() {
+            if (currentContextMenu) {
+                currentContextMenu.remove();
+                currentContextMenu = null;
+            }
+        }
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.item-title, .context-menu').length) {
+                closeContextMenu();
+            }
+        });
+
+        function showContextMenu(e, nodeId, title) {
+            closeContextMenu();
+
+            const menu = $(`
+                <div class="context-menu">
+                    <button onclick="openAddModal(${nodeId})"><i class="fa fa-plus-circle"></i> افزودن زیرمجموعه</button>
+                    <button onclick="openEditModal(${nodeId})"><i class="fa fa-edit"></i> ویرایش</button>
+                    <button class="text-danger" onclick="deleteCategory(${nodeId}, '${title.replace(/'/g, "\\'")}')">
+                        <i class="fa fa-trash-alt"></i> حذف
+                    </button>
+                </div>
+            `);
+
+            menu.css({
+                top: e.pageY + 5 + 'px',
+                left: e.pageX + 5 + 'px'
+            });
+
+            $('body').append(menu);
+            currentContextMenu = menu;
+        }
+
+        function loadTree() {
+            $.getJSON(`${CONTROLLER}/Categories_Read`, (response) => {
+                const items = response.Data || response || [];
+                const treeData = buildTree(items);
+                $("#categoryTree").empty().append(renderTree(treeData));
+            }).fail(() => alert("خطا در بارگذاری درخت"));
+        }
+
+        function buildTree(items) {
+            const map = {};
+            const roots = [];
+            items.forEach(item => map[item.Id] = { ...item, children: [] });
+            items.forEach(item => {
+                if (item.ParentId) {
+                    if (map[item.ParentId]) map[item.ParentId].children.push(map[item.Id]);
+                } else {
+                    roots.push(map[item.Id]);
+                }
+            });
+            return roots;
+        }
+
+        function renderTree(nodes) {
+            const ul = $("<ul>");
+            nodes.forEach(node => {
+                const li = $("<li>");
+                const expander = node.children?.length > 0
+                    ? $(`<span class="caret"><i class="fa fa-chevron-left"></i></span>`)
+                        .on("click", function(e) {
+                            e.stopPropagation();
+                            $(this).parent().toggleClass("active");
+                            $(this).nextAll("ul").first().slideToggle(200);
+                        })
+                    : $(`<span class="no-children"></span>`);
+
+                const title = $(`<span class="item-title"><i class="fa fa-folder me-2 text-warning"></i>${node.Title}</span>`);
+                title.on("click", function(e) {
+                    e.stopPropagation();
+                    showContextMenu(e, node.Id, node.Title);
+                });
+
+                li.append(expander, title);
+
+                if (node.children?.length > 0) {
+                    const nested = renderTree(node.children);
+                    li.append(nested);
+                    nested.hide();
+                }
+
+                ul.append(li);
+            });
+            return ul;
+        }
+
+        function loadParentOptions(selectedId = null) {
+            $.getJSON(`${CONTROLLER}/ParentCategories`, (data) => {
+                const $select = $("#ParentId");
+                $select.empty().append('<option value="">— بدون والد —</option>');
+                data.forEach(item => {
+                    const opt = $("<option>").val(item.id).text(item.title);
+                    if (item.id == selectedId) opt.prop("selected", true);
+                    $select.append(opt);
+                });
+            });
+        }
+
+        function openAddModal(parentId = 0) {
+            closeContextMenu();
+            $("#modalTitle").text("افزودن دسته‌بندی جدید");
+            $("#Id").val(0);
+            $("#Title").val("");
+            $("#IsActive").prop("checked", true);
+            loadParentOptions(parentId);
+            $("#categoryModal").modal("show");
+        }
+
+        function openEditModal(id) {
+            closeContextMenu();
+            $.getJSON(`${CONTROLLER}/Categories_Read`, (response) => {
+                const items = response.Data || response || [];
+                const item = items.find(x => x.Id == id);
+                if (!item) return alert("دسته‌بندی یافت نشد");
+                $("#modalTitle").text("ویرایش دسته‌بندی");
+                $("#Id").val(item.Id);
+                $("#Title").val(item.Title);
+                $("#IsActive").prop("checked", item.IsActive);
+                loadParentOptions(item.ParentId);
+                $("#categoryModal").modal("show");
+            });
+        }
+
+        function deleteCategory(id, title) {
+            closeContextMenu();
+            if (!confirm(`آیا مطمئن هستید که می‌خواهید دسته‌بندی "${title}" و تمام زیرمجموعه‌های آن را حذف کنید؟`)) return;
+            $.ajax({
+                url: `${CONTROLLER}/Categories_Destroy`,
+                type: "POST",
+                data: { model: { Id: id } },
+                headers: { "RequestVerificationToken": token },
+                success: () => {
+                    loadTree();
+                    loadParentOptions();
+                },
+                error: () => alert("خطا در حذف دسته‌بندی")
+            });
+        }
+
+        function saveCategory() {
+            const model = {
+                Id: parseInt($("#Id").val()) || 0,
+                Title: $("#Title").val()?.trim() || "",
+                ParentId: $("#ParentId").val() ? parseInt($("#ParentId").val()) : null,
+                IsActive: $("#IsActive").is(":checked")
+            };
+            if (!model.Title) return alert("عنوان الزامی است");
+            const url = model.Id > 0 ? `${CONTROLLER}/Categories_Update` : `${CONTROLLER}/Categories_Create`;
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: { model },
+                headers: { "RequestVerificationToken": token },
+                success: () => {
+                    $("#categoryModal").modal("hide");
+                    loadTree();
+                    loadParentOptions();
+                },
+                error: (xhr) => {
+                    const msg = xhr.responseJSON?.errors
+                        ? Object.values(xhr.responseJSON.errors)[0][0]
+                        : "خطا در ذخیره‌سازی";
+                    alert(msg);
+                }
+            });
+        }
+
+        $(document).ready(() => {
+            loadTree();
+            loadParentOptions();
+        });
+    </script>
+}
