@@ -24,6 +24,13 @@ namespace ERP.Hubs
             var userId = GetUserId();
             if (userId != null)
             {
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    user.IsOnline = true;
+                    user.LastSeen = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                }
                 await Groups.AddToGroupAsync(Context.ConnectionId, userId);
                 await Clients.All.SendAsync("UserOnline", userId);
             }
@@ -35,6 +42,13 @@ namespace ERP.Hubs
             var userId = GetUserId();
             if (userId != null)
             {
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    user.IsOnline = false;
+                    user.LastSeen = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                }
                 await Clients.All.SendAsync("UserOffline", userId);
             }
             await base.OnDisconnectedAsync(exception);

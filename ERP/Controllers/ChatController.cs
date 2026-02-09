@@ -74,8 +74,7 @@ namespace ERP.Controllers
                     replyToMessage = m.ReplyToMessage,
                     replyToSenderName = m.ReplyToSenderName,
                     forwardedFromMessageId = m.ForwardedFromMessageId,
-                    isMine = m.SenderId == currentUserId,
-                    isDeleted = (m.SenderId == currentUserId && m.IsDeletedBySender) || (m.SenderId == userId && m.IsDeletedByReceiver)
+                    isMine = m.SenderId == currentUserId
                 })
                 .ToListAsync();
 
@@ -337,7 +336,8 @@ namespace ERP.Controllers
             if (message == null || message.SenderId != currentUserId)
                 return Json(new { success = false, error = "پیام یافت نشد" });
             
-            _context.ChatMessages.Remove(message);
+            message.IsDeletedBySender = true;
+            message.DeletedAt = DateTime.Now;
             await _context.SaveChangesAsync();
             
             return Json(new { success = true });

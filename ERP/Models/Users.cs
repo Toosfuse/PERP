@@ -13,5 +13,7 @@ namespace ERP.Models
         public string? Address { get; set; }
         public string? CustCodeAmel { get; set; }
         public bool? InTFC { get; set; }
+        public bool IsOnline { get; set; }
+        public DateTime? LastSeen { get; set; }
     }
 }

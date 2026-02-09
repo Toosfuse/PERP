@@ -1,0 +1,138 @@
+@{
+    ViewData["Title"] = "مانیتورینگ چت";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/CSS/chat-monitoring.css">
+    <link rel="stylesheet" href="~/Fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="monitoring-container">
+        <div class="monitoring-header">
+            <div class="header-left">
+                <i class="fa fa-eye header-icon"></i>
+                <div>
+                    <h1>مانیتورینگ چت سازمانی</h1>
+                    <p>نظارت بر تمام مکالمات کاربران</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="refreshBtn" class="btn-action" title="بروزرسانی">
+                    <i class="fa fa-refresh"></i>
+                </button>
+                <a href="/Home/Cartable" class="btn-back">
+                    <i class="fa fa-arrow-left"></i>
+                    بازگشت
+                </a>
+            </div>
+        </div>
+
+        <div class="stats-bar ">
+            <div class="stat-card">
+                <i class="fa fa-comments"></i>
+                <div>
+                    <span class="stat-value" id="totalMessages">0</span>
+                    <span class="stat-label">کل پیامها</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa fa-users"></i>
+                <div>
+                    <span class="stat-value" id="activeConversations">0</span>
+                    <span class="stat-label">مکالمات فعال</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa fa-clock-o"></i>
+                <div>
+                    <span class="stat-value" id="messagesLast24h">0</span>
+                    <span class="stat-label">24 ساعت گذشته</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa fa-user"></i>
+                <div>
+                    <span class="stat-value" id="totalUsers">0</span>
+                    <span class="stat-label">کل کاربران</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-bar " style="margin-bottom:5px">
+            <div class="filter-group">
+                <label><i class="fa fa-calendar"></i> از تاریخ:</label>
+                <input type="date" id="fromDate" />
+            </div>
+            <div class="filter-group">
+                <label><i class="fa fa-calendar"></i> تا تاریخ:</label>
+                <input type="date" id="toDate" />
+            </div>
+            <div class="filter-group">
+                <label><i class="fa fa-circle"></i> وضعیت:</label>
+                <select id="onlineStatus">
+                    <option value="">همه</option>
+                    <option value="online">آنلاین</option>
+                    <option value="offline">آفلاین</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label><i class="fa fa-eye"></i> پیام:</label>
+                <select id="readStatus">
+                    <option value="">همه</option>
+                    <option value="read">خوانده شده</option>
+                    <option value="unread">خوانده نشده</option>
+                </select>
+            </div>
+            <button id="applyFilters" class="btn-filter"><i class="fa fa-filter"></i> اعمال فیلتر</button>
+            <button id="clearFilters" class="btn-clear"><i class="fa fa-times"></i> پاک کردن</button>
+        </div>
+
+        <div class="monitoring-content">
+            <div class="conversations-panel">
+                <div class="panel-header">
+                    <h3><i class="fa fa-list"></i> مکالمات</h3>
+                    <div class="search-box">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="searchConversations" placeholder="جستجوی کاربر..." />
+                    </div>
+                </div>
+                <div class="conversations-list" id="conversationsList">
+                    <div class="loading">
+                        <i class="fa fa-spinner fa-spin"></i>
+                        <p>در حال بارگذاری...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="messages-panel">
+                <div class="panel-header">
+                    <div class="conversation-info">
+                        <h3 id="conversationTitle">مکالمه را انتخاب کنید</h3>
+                        <p id="conversationSubtitle"></p>
+                    </div>
+                    <div class="message-search">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="searchMessages" placeholder="جستجو در پیامها..." />
+                    </div>
+                </div>
+                <div class="messages-list" id="messagesList">
+                    <div class="empty-state">
+                        <i class="fa fa-comments-o"></i>
+                        <p>یک مکالمه را از سمت راست انتخاب کنید</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/JS/jquery-3.6.0.min.js"></script>
+    <script src="~/SignalR/signalr.min.js"></script>
+    <script src="~/JS/chat-monitoring.js"></script>
+</body>
+</html>

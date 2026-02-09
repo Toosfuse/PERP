@@ -652,7 +652,6 @@ function editGroupMessage() {
 }
 
 function addMessageToChat(message, isMine) {
-    if (message.isDeleted) return;
     let statusIcon = '';
     let editableClass = '';
     let editBtn = '';
