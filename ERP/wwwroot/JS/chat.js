@@ -877,7 +877,7 @@ function escapeHtml(text) {
 }
 
 function showForwardModal(messageId) {
-    $.get('/Chat/GetAllUsers', function(users) {
+    $.get('/Chat/GetChatUsers', function(users) {
         let usersHtml = '';
         users.forEach(function(user) {
             usersHtml += `
