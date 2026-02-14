@@ -314,7 +314,7 @@ $(document).ready(function() {
 
     $('#logoutBtn').click(function() {
         if (confirm('آیا میخواهید خارج شوید؟')) {
-            window.location.href = '/Home/Cartable';
+            window.location.href = '/Account/Login';
         }
     });
 
