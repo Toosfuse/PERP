@@ -137,6 +137,7 @@ function renderConversations(conversations) {
         const user1Status = conv.user1.isOnline ? '<span style="color:#48bb78;">●</span>' : '<span style="color:#cbd5e0;">●</span>';
         const user2Status = conv.user2.isOnline ? '<span style="color:#48bb78;">●</span>' : '<span style="color:#cbd5e0;">●</span>';
         html += `
+      
             <div class="conversation-card" 
                  data-user1-id="${conv.user1.id}" 
                  data-user2-id="${conv.user2.id}"

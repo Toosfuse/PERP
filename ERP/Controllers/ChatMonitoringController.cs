@@ -75,33 +75,66 @@ namespace ERP.Controllers
                 var result = new List<object>();
                 foreach (var conv in grouped)
                 {
-                    var user1 = await _context.Users.FindAsync(conv.user1Id);
-                    var user2 = await _context.Users.FindAsync(conv.user2Id);
+                    object user1Data = null, user2Data = null;
 
-                    if (user1 != null && user2 != null)
-                    {
-                        bool user1Online = false, user2Online = false;
-                        if (isOnline.HasValue)
+                    
+                        var guest1 = await _context.GuestUsers.FirstOrDefaultAsync(g => g.UniqueToken == conv.user1Id && g.IsActive);
+                        if (guest1 != null)
                         {
-                            user1Online = user1.IsOnline;
-                            user2Online = user2.IsOnline;
-                            if (isOnline.Value && !user1Online && !user2Online)
-                                continue;
+                            user1Data = new {
+                                id = conv.user1Id,
+                                name = (guest1.FirstName + " " + guest1.LastName) ?? "مهمان",
+                                image = string.IsNullOrEmpty(guest1.Image) ? "/UserImage/Male.png" : "/UserImage/" + guest1.Image,
+                                isOnline = false,
+                                isGuest = true
+                            };
                         }
-
-                        result.Add(new {
-                            user1 = new {
+                    
+                    
+                        var user1 = await _context.Users.FindAsync(conv.user1Id);
+                        if (user1 != null)
+                        {
+                            user1Data = new {
                                 id = user1.Id,
                                 name = user1.FirstName + " " + user1.LastName,
                                 image = string.IsNullOrEmpty(user1.Image) ? "/UserImage/Male.png" : "/UserImage/" + user1.Image,
-                                isOnline = user1.IsOnline
-                            },
-                            user2 = new {
+                                isOnline = user1.IsOnline,
+                                isGuest = false
+                            };
+                        }
+                    
+
+                    
+                        var guest2 = await _context.GuestUsers.FirstOrDefaultAsync(g => g.UniqueToken == conv.user2Id && g.IsActive);
+                        if (guest2 != null)
+                        {
+                            user2Data = new {
+                                id = conv.user2Id,
+                                name = (guest2.FirstName + " " + guest2.LastName) ?? "مهمان",
+                                image = string.IsNullOrEmpty(guest2.Image) ? "/UserImage/Male.png" : "/UserImage/" + guest2.Image,
+                                isOnline = false,
+                                isGuest = true
+                            };
+                        }
+                   
+            
+                        var user2 = await _context.Users.FindAsync(conv.user2Id);
+                        if (user2 != null)
+                        {
+                            user2Data = new {
                                 id = user2.Id,
                                 name = user2.FirstName + " " + user2.LastName,
                                 image = string.IsNullOrEmpty(user2.Image) ? "/UserImage/Male.png" : "/UserImage/" + user2.Image,
-                                isOnline = user2.IsOnline
-                            },
+                                isOnline = user2.IsOnline,
+                                isGuest = false
+                            };
+                        }
+                   
+                    if (user1Data != null && user2Data != null)
+                    {
+                        result.Add(new {
+                            user1 = user1Data,
+                            user2 = user2Data,
                             lastMessage = conv.lastMessage?.Message,
                             lastMessageTime = conv.lastMessage?.SentAt,
                             messageCount = conv.messageCount,
@@ -207,11 +240,29 @@ namespace ERP.Controllers
             var topUsersData = new List<object>();
             foreach (var user in topUsers)
             {
-                var u = await _context.Users.FindAsync(user.userId);
-                topUsersData.Add(new {
-                    name = u.FirstName + " " + u.LastName,
-                    count = user.count
-                });
+                // بررسی مهمان یا کاربر
+                if (user.userId.Contains("-"))
+                {
+                    var guest = await _context.GuestUsers.FirstOrDefaultAsync(g => g.UniqueToken == user.userId && g.IsActive);
+                    if (guest != null)
+                    {
+                        topUsersData.Add(new {
+                            name = (guest.FirstName + " " + guest.LastName) ?? "مهمان",
+                            count = user.count
+                        });
+                    }
+                }
+                else
+                {
+                    var u = await _context.Users.FindAsync(user.userId);
+                    if (u != null)
+                    {
+                        topUsersData.Add(new {
+                            name = u.FirstName + " " + u.LastName,
+                            count = user.count
+                        });
+                    }
+                }
             }
 
             return Json(new {
@@ -274,17 +325,45 @@ namespace ERP.Controllers
             var result = new List<object>();
             foreach (var conv in conversations)
             {
-                var user = await _context.Users.FindAsync(conv.otherUserId);
-                result.Add(new {
-                    user = new {
-                        id = user.Id,
-                        name = user.FirstName + " " + user.LastName,
-                        image = string.IsNullOrEmpty(user.Image) ? "/UserImage/Male.png" : "/UserImage/" + user.Image
-                    },
-                    messageCount = conv.messageCount,
-                    lastMessage = conv.lastMessage?.Message,
-                    lastMessageTime = conv.lastMessage?.SentAt
-                });
+                object userData = null;
+
+                // بررسی مهمان یا کاربر
+                if (conv.otherUserId.Contains("-"))
+                {
+                    var guest = await _context.GuestUsers.FirstOrDefaultAsync(g => g.UniqueToken == conv.otherUserId && g.IsActive);
+                    if (guest != null)
+                    {
+                        userData = new {
+                            id = conv.otherUserId,
+                            name = (guest.FirstName + " " + guest.LastName) ?? "مهمان",
+                            image = string.IsNullOrEmpty(guest.Image) ? "/UserImage/Male.png" : "/UserImage/" + guest.Image,
+                            isGuest = true
+                        };
+                    }
+                }
+                else
+                {
+                    var user = await _context.Users.FindAsync(conv.otherUserId);
+                    if (user != null)
+                    {
+                        userData = new {
+                            id = user.Id,
+                            name = user.FirstName + " " + user.LastName,
+                            image = string.IsNullOrEmpty(user.Image) ? "/UserImage/Male.png" : "/UserImage/" + user.Image,
+                            isGuest = false
+                        };
+                    }
+                }
+
+                if (userData != null)
+                {
+                    result.Add(new {
+                        user = userData,
+                        messageCount = conv.messageCount,
+                        lastMessage = conv.lastMessage?.Message,
+                        lastMessageTime = conv.lastMessage?.SentAt
+                    });
+                }
             }
 
             return Json(result);
