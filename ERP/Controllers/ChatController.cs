@@ -415,6 +415,8 @@ namespace ERP.Controllers
                         _context.ChatMessages.Add(guestMessage);
                         await _context.SaveChangesAsync();
 
+                        var receiverUser = await _context.Users.FindAsync(receiverId);
+                        
                         var guestMessageData = new
                         {
                             id = guestMessage.Id,
@@ -426,7 +428,11 @@ namespace ERP.Controllers
                             isDelivered = false,
                             isRead = false,
                             attachmentPath = attachmentPath,
-                            attachmentName = attachmentName
+                            attachmentName = attachmentName,
+                            senderName = (guest.FirstName ?? "") + " " + (guest.LastName ?? ""),
+                            senderImage = "/UserImage/" + guest.Image,
+                            receiverName = receiverUser?.FirstName + " " + receiverUser?.LastName,
+                            receiverImage = receiverUser?.Image ?? "/UserImage/Male.png"
                         };
 
                         await _hubContext.Clients.All.SendAsync("ReceiveMessage", guestMessageData);
@@ -460,8 +466,8 @@ namespace ERP.Controllers
                     if (repliedMessage != null)
                     {
                         replyToMessage = repliedMessage.Message;
-                        var sender = await _context.Users.FindAsync(repliedMessage.SenderId);
-                        replyToSenderName = sender?.FirstName + " " + sender?.LastName;
+                        var replySender = await _context.Users.FindAsync(repliedMessage.SenderId);
+                        replyToSenderName = replySender?.FirstName + " " + replySender?.LastName;
                     }
                 }
                 
@@ -485,6 +491,9 @@ namespace ERP.Controllers
                 _context.ChatMessages.Add(chatMessage);
                 await _context.SaveChangesAsync();
 
+                var senderUser = await _context.Users.FindAsync(currentUserId);
+                var receiverUser2 = await _context.Users.FindAsync(receiverId);
+                
                 var messageData = new
                 {
                     id = chatMessage.Id,
@@ -499,7 +508,11 @@ namespace ERP.Controllers
                     attachmentName = attachmentName,
                     replyToMessageId = replyToMessageId,
                     replyToMessage = replyToMessage,
-                    replyToSenderName = replyToSenderName
+                    replyToSenderName = replyToSenderName,
+                    senderName = senderUser?.FirstName + " " + senderUser?.LastName,
+                    senderImage = senderUser?.Image ?? "/UserImage/Male.png",
+                    receiverName = receiverUser2?.FirstName + " " + receiverUser2?.LastName,
+                    receiverImage = receiverUser2?.Image ?? "/UserImage/Male.png"
                 };
 
                 await _hubContext.Clients.All.SendAsync("ReceiveMessage", messageData);

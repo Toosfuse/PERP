@@ -62,25 +62,26 @@ $(document).ready(function() {
         
         const userItem = $(`.user-item[data-user-id="${otherUserId}"]`);
         
-        if (userItem.length === 0 && msg.receiverId === myUserId && otherUserId) {
-            $.get('/Chat/GetUserInfo', { userId: otherUserId }, function(user) {
-                if (user.success) {
-                    const newUserHtml = `
-                        <div class="user-item" data-user-id="${user.id}" data-user-name="${user.name}">
-                            <div class="user-avatar">
-                                <img src="${user.image}" alt="${user.name}" />
-                                <span class="online-status ${user.isOnline ? 'online' : ''}"></span>
-                            </div>
-                            <div class="user-info">
-                                <div class="user-name">${user.name}</div>
-                                <div class="last-message">${msg.message}</div>
-                            </div>
-                            <div class="unread-count">1</div>
-                        </div>
-                    `;
-                    $('.users-list').prepend(newUserHtml);
-                }
-            });
+        if (userItem.length === 0 && otherUserId) {
+            $('.users-list > div:not(.user-item)').remove();
+            
+            const userName = isMine ? msg.receiverName : msg.senderName;
+            const userImage = isMine ? msg.receiverImage : msg.senderImage;
+            
+            const newUserHtml = `
+                <div class="user-item" data-user-id="${otherUserId}" data-user-name="${userName}">
+                    <div class="user-avatar">
+                        <img src="${userImage}" alt="${userName}" />
+                        <span class="online-status"></span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">${userName}</div>
+                        <div class="last-message">${msg.message}</div>
+                    </div>
+                    ${msg.receiverId === myUserId ? '<div class="unread-count">1</div>' : ''}
+                </div>
+            `;
+            $('.users-list').prepend(newUserHtml);
         } else if (userItem.length > 0) {
             userItem.prependTo('.users-list');
             userItem.find('.last-message').text(msg.message);
@@ -461,6 +462,8 @@ function selectUserFromSearch(element) {
     $('.user-item').removeClass('active');
     
     if ($(`.user-item[data-user-id="${userId}"]`).length === 0) {
+        $('.users-list > div:not(.user-item)').remove();
+        
         const newUserHtml = `
             <div class="user-item active" data-user-id="${userId}" data-user-name="${userName}">
                 <div class="user-avatar">
@@ -535,6 +538,8 @@ function selectUserFromAllUsers(element) {
     
     const userItem = $(`.user-item[data-user-id="${userId}"]`);
     if (userItem.length === 0) {
+        $('.users-list > div:not(.user-item)').remove();
+        
         const newUserHtml = `
             <div class="user-item active" data-user-id="${userId}" data-user-name="${userName}">
                 <div class="user-avatar">
@@ -624,6 +629,8 @@ function sendMessage() {
             
             const userItem = $(`.user-item[data-user-id="${currentUserId}"]`);
             if (userItem.length === 0) {
+                $('.users-list > div:not(.user-item)').remove();
+                
                 $.get('/Chat/GetUserInfo', { userId: currentUserId }, function(user) {
                     const newUserHtml = `
                         <div class="user-item active" data-user-id="${user.id}" data-user-name="${user.name}">
@@ -924,7 +931,7 @@ function forwardMessage(messageId, userId) {
         if (result.success) {
             $('#forwardModal').removeClass('show');
             alert('پیام با موفقیت انتقال یافت');
-            window.reload();
+            window.location.reload();
         } else {
             alert(result.error || 'خطا در انتقال پیام');
         }
