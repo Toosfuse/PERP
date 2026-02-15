@@ -672,7 +672,10 @@ namespace ERP.Controllers
                     IsRead = false,
                     AttachmentPath = originalMessage.AttachmentPath,
                     AttachmentName = originalMessage.AttachmentName,
-                    ForwardedFromMessageId = messageId
+                    ForwardedFromMessageId = messageId,
+                    ReplyToMessageId = originalMessage.ReplyToMessageId,
+                    ReplyToMessage = originalMessage.ReplyToMessage,
+                    ReplyToSenderName = originalMessage.ReplyToSenderName
                 };
                 
                 _context.ChatMessages.Add(forwardedMessage);
@@ -690,7 +693,10 @@ namespace ERP.Controllers
                     isRead = false,
                     attachmentPath = forwardedMessage.AttachmentPath,
                     attachmentName = forwardedMessage.AttachmentName,
-                    forwardedFromMessageId = messageId
+                    forwardedFromMessageId = messageId,
+                    replyToMessageId = originalMessage.ReplyToMessageId,
+                    replyToMessage = originalMessage.ReplyToMessage,
+                    replyToSenderName = originalMessage.ReplyToSenderName
                 };
 
                 await _hubContext.Clients.All.SendAsync("ReceiveMessage", messageData);

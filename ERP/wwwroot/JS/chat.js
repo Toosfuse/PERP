@@ -355,8 +355,28 @@ $(document).ready(function() {
         const messageText = messageEl.find('.message-text').text();
         
         replyingToMessageId = messageId;
+        
+        // Show reply indicator
+        let replyIndicator = $('#replyIndicator');
+        if (replyIndicator.length === 0) {
+            replyIndicator = $('<div id="replyIndicator" style="padding:8px 12px; background:#e3f2fd; border-left:3px solid #2196f3; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;"></div>');
+            $('#chatInput').prepend(replyIndicator);
+        }
+        
+        replyIndicator.html(`
+            <div>
+                <div style="font-size:12px; color:#2196f3; font-weight:600;">پاسخ به:</div>
+                <div style="font-size:13px; color:#666;">${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}</div>
+            </div>
+            <button id="cancelReply" style="background:none; border:none; color:#999; cursor:pointer; font-size:18px;">&times;</button>
+        `);
+        
         $('#messageInput').focus();
-        $('#messageInput').attr('placeholder', 'پاسخ به: ' + messageText.substring(0, 30) + '...');
+    });
+    
+    $(document).on('click', '#cancelReply', function() {
+        replyingToMessageId = null;
+        $('#replyIndicator').remove();
     });
 
     $(document).on('click', '.edit-btn', function(e) {
@@ -599,8 +619,9 @@ function sendMessage() {
     }, function(result) {
         if (result.success) {
             $('#messageInput').val('');
-            $('#messageInput').attr('placeholder', 'پیام خود را بنویسید...');
             replyingToMessageId = null;
+            $('#replyIndicator').remove();
+            
             const userItem = $(`.user-item[data-user-id="${currentUserId}"]`);
             if (userItem.length === 0) {
                 $.get('/Chat/GetUserInfo', { userId: currentUserId }, function(user) {
@@ -941,8 +962,8 @@ function sendGroupMessage() {
     }, function(result) {
         if (result.success) {
             $('#messageInput').val('');
-            $('#messageInput').attr('placeholder', 'پیام خود را بنویسید...');
             replyingToMessageId = null;
+            $('#replyIndicator').remove();
             scrollToBottom();
         } else {
             console.error(result.error);
