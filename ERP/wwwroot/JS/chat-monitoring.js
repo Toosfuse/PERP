@@ -177,7 +177,7 @@ function selectConversation(user1Id, user2Id, user1Name, user2Name) {
     $('.conversation-card').removeClass('active');
     $(`.conversation-card[data-user1-id="${user1Id}"][data-user2-id="${user2Id}"]`).addClass('active');
     
-    $('#conversationTitle').html(`<span style="color:#667eea;font-weight:600;">${user1Name}</span><span style="color:#718096;margin:0 5px;">(فرستنده)</span> <span style="color:#667eea;margin:0 5px;">↔</span> <span style="color:#f59e0b;font-weight:600;">${user2Name}</span><span style="color:#718096;margin:0 5px;">(گیرنده)</span>`);
+    $('#conversationTitle').html(`<span style="color:#667eea;font-weight:600;">${user1Name}</span><span style="color:#718096;margin:0 5px;"></span> <span style="color:#667eea;margin:0 5px;">↔</span> <span style="color:#f59e0b;font-weight:600;">${user2Name}</span><span style="color:#718096;margin:0 5px;"></span>`);
     $('#conversationSubtitle').text('مشاهده پیامها');
     
     loadMessages(user1Id, user2Id);
