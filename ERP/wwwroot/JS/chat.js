@@ -324,6 +324,8 @@ $(document).ready(function() {
     });
 
     $('#newChatBtn').click(function() {
+        $('#searchUserInModal').val('');
+        $('#searchResultsInModal').empty().hide();
         loadAllUsers();
         $('#allUsersModal').show();
         $('#newChatBtn').hide();
@@ -334,6 +336,43 @@ $(document).ready(function() {
         $('#allUsersModal').hide();
         $('#closeModalBtn').hide();
         $('#newChatBtn').show();
+        $('#searchUserInModal').val('');
+        $('#searchResultsInModal').empty().hide();
+    });
+
+    $('#searchUserInModal').on('input', function() {
+        const searchText = $(this).val().trim();
+        
+        if (searchText.length === 0) {
+            $('#searchResultsInModal').empty().hide();
+            $('#allUsersList').show();
+            return;
+        }
+        
+        if (searchText.length < 2) {
+            return;
+        }
+        
+        $('#allUsersList').hide();
+        
+        $.get('/Chat/SearchUsers', { query: searchText }, function(users) {
+            $('#searchResultsInModal').empty();
+            
+            if (users.length > 0) {
+                users.forEach(function(user) {
+                    const html = `
+                        <div class="all-user-item" data-user-id="${user.id}" data-user-name="${user.name}">
+                            <img src="${user.image}" alt="${user.name}" />
+                            <div class="user-name">${user.name}</div>
+                        </div>
+                    `;
+                    $('#searchResultsInModal').append(html);
+                });
+                $('#searchResultsInModal').show();
+            } else {
+                $('#searchResultsInModal').html('<p style="text-align:center;color:#666;padding:20px;">کاربری یافت نشد</p>').show();
+            }
+        });
     });
 
     $(document).on('click', '.message', function(e) {
@@ -460,7 +499,9 @@ function selectUserFromSearch(element) {
     
     $('.user-item').removeClass('active');
     
-    if ($(`.user-item[data-user-id="${userId}"]`).length === 0) {
+    const existingUser = $(`.user-item[data-user-id="${userId}"]`);
+    
+    if (existingUser.length === 0) {
         $('.users-list > div:not(.user-item)').remove();
         
         const newUserHtml = `
@@ -477,8 +518,12 @@ function selectUserFromSearch(element) {
         `;
         $('.users-list').prepend(newUserHtml);
     } else {
-        $(`.user-item[data-user-id="${userId}"]`).addClass('active').prependTo('.users-list');
+        existingUser.addClass('active').prependTo('.users-list');
     }
+    
+    $('#messageInput').prop('disabled', false).attr('placeholder', 'پیام خود را بنویسید...');
+    $('#sendBtn').prop('disabled', false);
+    $('#attachBtn').prop('disabled', false);
     
     loadMessages(userId);
     markAsRead(userId);

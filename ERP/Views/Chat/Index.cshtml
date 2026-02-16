@@ -106,12 +106,16 @@
            
         </div>
         <div class="all-users-modal" id="allUsersModal" style="display:none;">
+            <div style="padding:15px;background:linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.95) 100%);border-bottom:1px solid rgba(255,255,255,0.1);">
+                <input type="text" id="searchUserInModal" placeholder="جستجوی کاربر..." style="width:100%;padding:12px 20px;border:2px solid rgba(255,255,255,0.3);border-radius:25px;outline:none;background:rgba(255,255,255,0.2);color:white;font-size:14px;backdrop-filter:blur(10px);transition:all 0.3s ease;" />
+            </div>
+            <div id="searchResultsInModal" style="display:none;padding:0;"></div>
             <div class="modal-body" id="allUsersList"></div>
         </div>
-        <div class="search-box">
+       @*  <div class="search-box">
             <input type="text" id="searchUser" placeholder="جستجو کاربر" />
             <div class="search-results" id="searchResults"></div>
-        </div>
+        </div> *@
         <div class="tab-buttons">
             <button type="button" id="tabUsers" class="tab-btn active">کاربران</button>
            @*  <button type="button" id="refreshBtn" class="refresh-btn" onclick="window.location.href='@Url.Action("Index", "Chat")'">
@@ -650,3 +654,15 @@
 
 </body>
 </html>
+
+<style>
+#searchUserInModal::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+#searchUserInModal:focus {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
+}
+</style>

@@ -64,6 +64,25 @@ namespace ERP.Controllers
                         })
                         .ToListAsync();
 
+                    // برای مهمانها فقط پیامهای بین مهمان و کارمند نمایش داده شود
+                    foreach (var user in users)
+                    {
+                        var lastMsg = await _context.ChatMessages
+                            .Where(m => (m.SenderId == guestToken && m.ReceiverId == user.Id && !m.IsDeletedBySender) ||
+                                       (m.SenderId == user.Id && m.ReceiverId == guestToken && !m.IsDeletedByReceiver))
+                            .OrderByDescending(m => m.SentAt)
+                            .FirstOrDefaultAsync();
+
+                        if (lastMsg != null)
+                        {
+                            user.LastMessage = lastMsg.Message;
+                            user.LastMessageTime = lastMsg.SentAt;
+                        }
+
+                        user.UnreadCount = await _context.ChatMessages
+                            .CountAsync(m => m.SenderId == user.Id && m.ReceiverId == guestToken && !m.IsRead && !m.IsDeletedByReceiver);
+                    }
+
                     return View(users);
                 }
                 else
@@ -435,7 +454,8 @@ namespace ERP.Controllers
                             receiverImage = string.IsNullOrEmpty(receiverUser?.Image) ? "/UserImage/Male.png" : "/UserImage/" + receiverUser.Image
                         };
 
-                        await _hubContext.Clients.All.SendAsync("ReceiveMessage", guestMessageData);
+                        await _hubContext.Clients.Group($"User_{receiverId}").SendAsync("ReceiveMessage", guestMessageData);
+                        await _hubContext.Clients.Group($"User_{guestToken}").SendAsync("ReceiveMessage", guestMessageData);
 
                         return Json(new { success = true, messageId = guestMessage.Id });
                     }
@@ -515,11 +535,8 @@ namespace ERP.Controllers
                     receiverImage = string.IsNullOrEmpty(receiverUser2?.Image) ? "/UserImage/Male.png" : "/UserImage/" + receiverUser2.Image
                 };
 
-                await _hubContext.Clients.All.SendAsync("ReceiveMessage", messageData);
-                
-                var unreadCount = await _context.ChatMessages
-                    .CountAsync(m => m.ReceiverId == receiverId && !m.IsRead && !m.IsDeletedByReceiver);
-                await _hubContext.Clients.User(receiverId).SendAsync("UpdateUnreadCount", unreadCount);
+                await _hubContext.Clients.Group($"User_{receiverId}").SendAsync("ReceiveMessage", messageData);
+                await _hubContext.Clients.Group($"User_{currentUserId}").SendAsync("ReceiveMessage", messageData);
                 
                 return Json(new { success = true, messageId = chatMessage.Id });
             }
@@ -561,7 +578,8 @@ namespace ERP.Controllers
             });
             await _context.SaveChangesAsync();
             
-            await _hubContext.Clients.All.SendAsync("MessagesRead", userId, currentUserId);
+            await _hubContext.Clients.Group($"User_{userId}").SendAsync("MessagesRead", userId, currentUserId);
+            await _hubContext.Clients.Group($"User_{currentUserId}").SendAsync("MessagesRead", userId, currentUserId);
             
             return Json(new { success = true });
         }
@@ -584,7 +602,8 @@ namespace ERP.Controllers
                 
                 await _context.SaveChangesAsync();
                 
-                await _hubContext.Clients.All.SendAsync("MessageDelivered", new { id = messageId });
+                await _hubContext.Clients.Group($"User_{message.SenderId}").SendAsync("MessageDelivered", new { id = messageId });
+                await _hubContext.Clients.Group($"User_{message.ReceiverId}").SendAsync("MessageDelivered", new { id = messageId });
             }
             return Json(new { success = true });
         }
@@ -627,7 +646,12 @@ namespace ERP.Controllers
             message.EditedAt = DateTime.Now;
             await _context.SaveChangesAsync();
             
-            await _hubContext.Clients.All.SendAsync("MessageEdited", new { 
+            await _hubContext.Clients.Group($"User_{message.ReceiverId}").SendAsync("MessageEdited", new { 
+                id = messageId, 
+                message = sanitizedMessage,
+                editedAt = message.EditedAt
+            });
+            await _hubContext.Clients.Group($"User_{currentUserId}").SendAsync("MessageEdited", new { 
                 id = messageId, 
                 message = sanitizedMessage,
                 editedAt = message.EditedAt
@@ -712,7 +736,8 @@ namespace ERP.Controllers
                     replyToSenderName = originalMessage.ReplyToSenderName
                 };
 
-                await _hubContext.Clients.All.SendAsync("ReceiveMessage", messageData);
+                await _hubContext.Clients.Group($"User_{receiverId}").SendAsync("ReceiveMessage", messageData);
+                await _hubContext.Clients.Group($"User_{currentUserId}").SendAsync("ReceiveMessage", messageData);
                 
                 return Json(new { success = true, messageId = forwardedMessage.Id });
             }
