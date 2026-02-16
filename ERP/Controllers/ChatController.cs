@@ -469,12 +469,20 @@ namespace ERP.Controllers
                 
                 if (!isReceiverGuest)
                 {
-                    // Check access only for company users
-                    var hasAccess = await _context.ChatAccesses
-                        .AnyAsync(c => c.UserId == currentUserId && c.AllowedUserId == receiverId && !c.IsBlocked);
+                    // Check if there's existing conversation
+                    var hasExistingConversation = await _context.ChatMessages
+                        .AnyAsync(m => (m.SenderId == currentUserId && m.ReceiverId == receiverId) ||
+                                      (m.SenderId == receiverId && m.ReceiverId == currentUserId));
                     
-                    if (!hasAccess)
-                        return Json(new { success = false, error = "شما مجاز به ارسال پیام به این کاربر نیستید" });
+                    if (!hasExistingConversation)
+                    {
+                        // Only check access for new conversations
+                        var hasAccess = await _context.ChatAccesses
+                            .AnyAsync(c => c.UserId == currentUserId && c.AllowedUserId == receiverId && !c.IsBlocked);
+                        
+                        if (!hasAccess)
+                            return Json(new { success = false, error = "شما مجاز به ارسال پیام به این کاربر نیستید" });
+                    }
                 }
                 
                 string replyToMessage = null;

@@ -123,7 +123,7 @@ $(document).ready(function() {
     });
 
     connection.on("ReceiveGroupMessage", function (msg) {
-        if (window.currentGroupId) {
+        if (window.currentGroupId && msg.groupId === window.currentGroupId) {
             addGroupMessageToChat(msg);
             scrollToBottom();
         }
@@ -313,13 +313,19 @@ $(document).ready(function() {
         if (guestToken) {
             window.location.href = '/Chat/Index';
         } else {
-            $.get('/Chat/GetCurrentUserName', function(data) {
-                if (data.isGuest) {
-                    window.location.href = '/Chat/GuestLogin';
-                } else {
-                    window.location.href = '/Home/Index';
-                }
-            });
+            if (confirm('آیا میخواهید خارج شوید؟')) {
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                const formData = $('<form>', {
+                    method: 'POST',
+                    action: '/Account/LogOut'
+                }).append($('<input>', {
+                    type: 'hidden',
+                    name: '__RequestVerificationToken',
+                    value: token
+                }));
+                $('body').append(formData);
+                formData.submit();
+            }
         }
     });
 
@@ -496,6 +502,9 @@ function selectUserFromSearch(element) {
     $('.no-chat-selected').hide();
     $('#searchResults').empty().hide();
     $('#searchUser').val('');
+    $('#groupMembersBtn').hide();
+    $('#deleteGroupBtn').hide();
+    $('#deleteChatBtn').show();
     
     $('.user-item').removeClass('active');
     
@@ -547,6 +556,8 @@ function selectUser(element) {
     $('#chatInput').show();
     $('.no-chat-selected').hide();
     $('#groupMembersBtn').hide();
+    $('#deleteGroupBtn').hide();
+    $('#deleteChatBtn').show();
     
     element.find('.unread-count').remove();
     
@@ -577,6 +588,9 @@ function selectUserFromAllUsers(element) {
     $('#allUsersModal').hide();
     $('#closeModalBtn').hide();
     $('#newChatBtn').show();
+    $('#groupMembersBtn').hide();
+    $('#deleteGroupBtn').hide();
+    $('#deleteChatBtn').show();
     
     $('.user-item').removeClass('active');
     
@@ -1034,19 +1048,25 @@ function selectGroup(groupId) {
     $('#chatMessages').empty();
     $('.no-chat-selected').hide();
     $('#groupMembersBtn').show();
-    $('#deleteGroupBtn').show();
     $('#deleteChatBtn').hide();
     $('.user-item').removeClass('active');
+    $(`.group-item[data-group-id="${groupId}"]`).addClass('active');
     
     $.get('/GroupChat/GetUserGroups', function(groups) {
         const group = groups.find(g => g.id === groupId);
         if (group) {
             $('#selectedUserName').text(group.name);
             $('#selectedUserAvatar').attr('src', group.image);
+            
+            if (group.createdBy === window.myUserId) {
+                $('#deleteGroupBtn').show();
+            } else {
+                $('#deleteGroupBtn').hide();
+            }
         }
     });
     
-    connection.invoke('JoinGroup', groupId);
+    connection.invoke('JoinGroup', groupId).catch(err => console.error('Error joining group:', err));
     loadGroupMessages(groupId);
 }
 
@@ -1084,6 +1104,10 @@ function addGroupMessageToChat(msg) {
     const html = `
         <div class="message ${isMine ? 'mine' : ''}" data-message-id="${msg.id}">
             <div class="message-content">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <img src="${msg.senderImage}" alt="${msg.senderName}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #667eea;" />
+                    <span style="font-weight:600;color:#2d3748;font-size:13px;">${escapeHtml(msg.senderName)}</span>
+                </div>
                 ${replyBox}
                 <span class="message-text">${escapeHtml(msg.message)}</span>
                 ${editedLabel}

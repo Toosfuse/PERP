@@ -21,6 +21,8 @@ namespace ERP.Models
         public string UserId { get; set; }
         public bool IsAdmin { get; set; }
         public DateTime JoinedAt { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime? LeftAt { get; set; }
         public ChatGroup Group { get; set; }
     }
 

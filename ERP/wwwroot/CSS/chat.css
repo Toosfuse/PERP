@@ -1331,7 +1331,7 @@ body.dark-mode .forward-user-item:hover {
     }
     
     .message:not(.mine) .message-content {
-        background: #e5e5ea;
+
         color: #000;
         border-radius: 18px;
         margin-right: 0;

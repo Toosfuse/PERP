@@ -39,7 +39,71 @@ namespace ERP.Controllers
             return pc.ToDateTime(year, month, day, 0, 0, 0, 0);
         }
         [HttpGet]
-        public async Task<IActionResult> GetActiveConversations(string fromDate, string toDate, bool? isOnline, bool? isRead)
+        public async Task<IActionResult> GetGroups()
+        {
+            var groups = await _context.ChatGroups
+                .Select(g => new { id = g.Id, name = g.Name })
+                .ToListAsync();
+            return Json(groups);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetGroupMembers(int groupId)
+        {
+            var groupMembers = await _context.GroupMembers
+                .Where(gm => gm.GroupId == groupId && gm.IsActive)
+                .ToListAsync();
+
+            var members = new List<object>();
+            foreach (var gm in groupMembers)
+            {
+                var user = await _context.Users.FindAsync(gm.UserId);
+                if (user != null)
+                {
+                    members.Add(new {
+                        userId = gm.UserId,
+                        userName = user.FirstName + " " + user.LastName,
+                        userImage = string.IsNullOrEmpty(user.Image) ? "/UserImage/Male.png" : "/UserImage/" + user.Image,
+                        isOnline = user.IsOnline,
+                        isAdmin = gm.IsAdmin,
+                        joinedAt = gm.JoinedAt,
+                        isActive = gm.IsActive
+                    });
+                }
+            }
+            return Json(members);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetGroupMembersHistory(int groupId)
+        {
+            var allMembers = await _context.GroupMembers
+                .Where(gm => gm.GroupId == groupId)
+                .ToListAsync();
+
+            var members = new List<object>();
+            foreach (var gm in allMembers)
+            {
+                var user = await _context.Users.FindAsync(gm.UserId);
+                if (user != null)
+                {
+                    members.Add(new {
+                        userId = gm.UserId,
+                        userName = user.FirstName + " " + user.LastName,
+                        userImage = string.IsNullOrEmpty(user.Image) ? "/UserImage/Male.png" : "/UserImage/" + user.Image,
+                        isOnline = user.IsOnline,
+                        isAdmin = gm.IsAdmin,
+                        joinedAt = gm.JoinedAt,
+                        leftAt = gm.LeftAt,
+                        isActive = gm.IsActive
+                    });
+                }
+            }
+            return Json(members);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetActiveConversations(string fromDate, string toDate, int? groupId, bool? isOnline, bool? isRead)
         {
             try
             {
@@ -66,7 +130,8 @@ namespace ERP.Controllers
                         user2Id = g.Key.User2,
                         lastMessage = g.OrderByDescending(m => m.SentAt).FirstOrDefault(),
                         messageCount = g.Count(),
-                        unreadCount = g.Count(m => !m.IsRead)
+                        unreadCount = g.Count(m => !m.IsRead),
+                        isGroup = false
                     })
                     .OrderByDescending(c => c.lastMessage.SentAt)
                     .Take(50)
@@ -138,12 +203,53 @@ namespace ERP.Controllers
                             lastMessage = conv.lastMessage?.Message,
                             lastMessageTime = conv.lastMessage?.SentAt,
                             messageCount = conv.messageCount,
-                            unreadCount = conv.unreadCount
+                            unreadCount = conv.unreadCount,
+                            isGroup = false
                         });
                     }
                 }
 
-                return Json(result);
+                var groupQuery = _context.GroupMessages.AsQueryable();
+                if (!string.IsNullOrEmpty(fromDate))
+                    groupQuery = groupQuery.Where(m => m.SentAt.Date >= ShamsiStringToMiladi(fromDate).Date);
+                if (!string.IsNullOrEmpty(toDate))
+                    groupQuery = groupQuery.Where(m => m.SentAt.Date <= ShamsiStringToMiladi(toDate).Date);
+                if (groupId.HasValue)
+                    groupQuery = groupQuery.Where(m => m.GroupId == groupId.Value);
+
+                var groupConversations = await groupQuery
+                    .GroupBy(m => m.GroupId)
+                    .Select(g => new {
+                        groupId = g.Key,
+                        lastMessage = g.OrderByDescending(m => m.SentAt).FirstOrDefault(),
+                        messageCount = g.Count()
+                    })
+                    .ToListAsync();
+
+                foreach (var groupConv in groupConversations)
+                {
+                    var group = await _context.ChatGroups.FindAsync(groupConv.groupId);
+                    if (group != null)
+                    {
+                        result.Add(new {
+                            user1 = new {
+                                id = group.Id.ToString(),
+                                name = group.Name,
+                                image = group.Image,
+                                isOnline = false,
+                                isGuest = false
+                            },
+                            user2 = (object)null,
+                            lastMessage = groupConv.lastMessage?.Message,
+                            lastMessageTime = groupConv.lastMessage?.SentAt,
+                            messageCount = groupConv.messageCount,
+                            unreadCount = 0,
+                            isGroup = true
+                        });
+                    }
+                }
+
+                return Json(result.OrderByDescending(r => ((dynamic)r).lastMessageTime));
             }
             catch (Exception ex)
             {
@@ -152,8 +258,56 @@ namespace ERP.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetConversationMessages(string user1Id, string user2Id, string? fromDate, string? toDate, bool? isRead)
+        public async Task<IActionResult> GetConversationMessages(string user1Id, string user2Id, string? fromDate, string? toDate, bool? isRead, bool isGroup = false)
         {
+            if (isGroup)
+            {
+                if (!int.TryParse(user1Id, out int groupId))
+                    return Json(new List<object>());
+
+                var groupQuery = _context.GroupMessages.Where(m => m.GroupId == groupId);
+
+                if (!string.IsNullOrEmpty(fromDate))
+                    groupQuery = groupQuery.Where(m => m.SentAt.Date >= ShamsiStringToMiladi(fromDate).Date);
+                if (!string.IsNullOrEmpty(toDate))
+                    groupQuery = groupQuery.Where(m => m.SentAt.Date <= ShamsiStringToMiladi(toDate).Date);
+
+                var groupMessages = await groupQuery
+                    .OrderBy(m => m.SentAt)
+                    .ToListAsync();
+
+                var result = new List<object>();
+                foreach (var msg in groupMessages)
+                {
+                    var sender = await _context.Users.FindAsync(msg.SenderId);
+                    var senderName = sender != null ? sender.FirstName + " " + sender.LastName : "نامشخص";
+                    
+                    result.Add(new
+                    {
+                        id = msg.Id,
+                        senderId = msg.SenderId,
+                        senderName = senderName,
+                        receiverId = (string)null,
+                        message = msg.Message,
+                        sentAt = msg.SentAt,
+                        isRead = true,
+                        isDelivered = true,
+                        attachmentPath = msg.AttachmentPath,
+                        attachmentName = msg.AttachmentName,
+                        isEdited = msg.IsEdited,
+                        editedAt = msg.EditedAt,
+                        replyToMessageId = msg.ReplyToMessageId,
+                        replyToMessage = msg.ReplyToMessage,
+                        replyToSenderName = msg.ReplyToSenderName,
+                        isDeletedBySender = false,
+                        isDeletedByReceiver = false,
+                        deletedAt = (DateTime?)null
+                    });
+                }
+
+                return Json(result);
+            }
+
             var query = _context.ChatMessages
                 .Where(m => (m.SenderId == user1Id && m.ReceiverId == user2Id) ||
                            (m.SenderId == user2Id && m.ReceiverId == user1Id));
@@ -215,6 +369,7 @@ namespace ERP.Controllers
         {
             var totalMessages = await _context.ChatMessages.CountAsync();
             var totalUsers = await _context.Users.CountAsync();
+            var totalGroups = await _context.ChatGroups.CountAsync();
             var activeConversations = await _context.ChatMessages
                 .GroupBy(m => new { 
                     User1 = m.SenderId.CompareTo(m.ReceiverId) < 0 ? m.SenderId : m.ReceiverId,
@@ -240,7 +395,6 @@ namespace ERP.Controllers
             var topUsersData = new List<object>();
             foreach (var user in topUsers)
             {
-                // بررسی مهمان یا کاربر
                 if (user.userId.Contains("-"))
                 {
                     var guest = await _context.GuestUsers.FirstOrDefaultAsync(g => g.UniqueToken == user.userId && g.IsActive);
@@ -268,6 +422,7 @@ namespace ERP.Controllers
             return Json(new {
                 totalMessages,
                 totalUsers,
+                totalGroups,
                 activeConversations,
                 messagesLast24h,
                 topUsers = topUsersData

@@ -78,14 +78,14 @@ namespace ERP.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var groups = await _context.ChatGroups
-                .Where(g => g.Members.Any(m => m.UserId == currentUserId))
+                .Where(g => g.Members.Any(m => m.UserId == currentUserId && m.IsActive))
                 .Select(g => new
                 {
                     id = g.Id,
                     name = g.Name,
                     image = g.Image,
                     createdBy = g.CreatedBy,
-                    memberCount = g.Members.Count,
+                    memberCount = g.Members.Count(m => m.IsActive),
                     lastMessage = g.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault().Message
                 })
                 .ToListAsync();
@@ -96,13 +96,24 @@ namespace ERP.Controllers
         [HttpGet]
         public async Task<IActionResult> GetGroupMembers(int groupId)
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isMember = await _context.GroupMembers.AnyAsync(m => m.GroupId == groupId && m.UserId == currentUserId && m.IsActive);
+            
+            if (!isMember)
+                return Json(new { success = false, error = "دسترسی رد شد" });
+
             var members = await _context.GroupMembers
-                .Where(m => m.GroupId == groupId)
-                .Select(m => new
-                {
-                    userId = m.UserId,
-                    isAdmin = m.IsAdmin
-                })
+                .Where(m => m.GroupId == groupId && m.IsActive)
+                .Join(_context.Users,
+                    gm => gm.UserId,
+                    u => u.Id,
+                    (gm, u) => new
+                    {
+                        userId = gm.UserId,
+                        isAdmin = gm.IsAdmin,
+                        userName = u.FirstName + " " + u.LastName,
+                        userImage = string.IsNullOrEmpty(u.Image) ? "/UserImage/Male.png" : "/UserImage/" + u.Image
+                    })
                 .ToListAsync();
 
             return Json(members);
@@ -113,29 +124,41 @@ namespace ERP.Controllers
         public async Task<IActionResult> AddMember(int groupId, string userId)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var group = await _context.ChatGroups.FindAsync(groupId);
+            
+            var isAdmin = await _context.GroupMembers
+                .AnyAsync(m => m.GroupId == groupId && m.UserId == currentUserId && m.IsAdmin && m.IsActive);
 
-            if (group == null || group.CreatedBy != currentUserId)
-                return Json(new { success = false, error = "دسترسی رد شد" });
+            if (!isAdmin)
+                return Json(new { success = false, error = "فقط ادمین میتواند عضو اضافه کند" });
 
             var existingMember = await _context.GroupMembers
                 .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
 
             if (existingMember != null)
-                return Json(new { success = false, error = "کاربر قبلاً عضو است" });
-
-            var member = new GroupMember
             {
-                GroupId = groupId,
-                UserId = userId,
-                IsAdmin = false,
-                JoinedAt = DateTime.Now
-            };
+                if (existingMember.IsActive)
+                    return Json(new { success = false, error = "کاربر قبلاً عضو است" });
+                
+                existingMember.IsActive = true;
+                existingMember.LeftAt = null;
+                existingMember.JoinedAt = DateTime.Now;
+            }
+            else
+            {
+                var member = new GroupMember
+                {
+                    GroupId = groupId,
+                    UserId = userId,
+                    IsAdmin = false,
+                    JoinedAt = DateTime.Now,
+                    IsActive = true
+                };
+                _context.GroupMembers.Add(member);
+            }
 
-            _context.GroupMembers.Add(member);
             await _context.SaveChangesAsync();
 
-            var memberCount = await _context.GroupMembers.CountAsync(m => m.GroupId == groupId);
+            var memberCount = await _context.GroupMembers.CountAsync(m => m.GroupId == groupId && m.IsActive);
             await _hubContext.Clients.All.SendAsync("GroupMemberCountUpdated", groupId, memberCount);
 
             return Json(new { success = true });
@@ -146,21 +169,31 @@ namespace ERP.Controllers
         public async Task<IActionResult> RemoveMember(int groupId, string userId)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
             var group = await _context.ChatGroups.FindAsync(groupId);
+            if (group == null)
+                return Json(new { success = false, error = "گروه یافت نشد" });
 
-            if (group == null || group.CreatedBy != currentUserId)
-                return Json(new { success = false, error = "دسترسی رد شد" });
+            if (group.CreatedBy == userId)
+                return Json(new { success = false, error = "مدیر گروه نمیتواند از گروه خارج شود" });
+            
+            var isAdmin = await _context.GroupMembers
+                .AnyAsync(m => m.GroupId == groupId && m.UserId == currentUserId && m.IsAdmin);
+
+            if (!isAdmin && userId != currentUserId)
+                return Json(new { success = false, error = "فقط ادمین یا خود شخص میتواند حذف کند" });
 
             var member = await _context.GroupMembers
-                .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
+                .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId && m.IsActive);
 
             if (member == null)
                 return Json(new { success = false, error = "عضو یافت نشد" });
 
-            _context.GroupMembers.Remove(member);
+            member.IsActive = false;
+            member.LeftAt = DateTime.Now;
             await _context.SaveChangesAsync();
 
-            var memberCount = await _context.GroupMembers.CountAsync(m => m.GroupId == groupId);
+            var memberCount = await _context.GroupMembers.CountAsync(m => m.GroupId == groupId && m.IsActive);
             await _hubContext.Clients.All.SendAsync("GroupMemberCountUpdated", groupId, memberCount);
 
             return Json(new { success = true });
@@ -177,23 +210,31 @@ namespace ERP.Controllers
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .OrderBy(m => m.SentAt)
-                    .Select(m => new
+                    .ToListAsync();
+
+                var result = new List<object>();
+                foreach (var m in messages)
+                {
+                    var sender = await _context.Users.FindAsync(m.SenderId);
+                    result.Add(new
                     {
                         id = m.Id,
                         senderId = m.SenderId,
+                        senderName = sender?.FirstName + " " + sender?.LastName,
+                        senderImage = string.IsNullOrEmpty(sender?.Image) ? "/UserImage/Male.png" : "/UserImage/" + sender.Image,
                         message = m.Message,
                         sentAt = m.SentAt.ToString("HH:mm"),
-                        dateAt = m.SentAt.ToString("yyyy-MM-dd"),
+                        dateAt = _services.iGregorianToPersian(m.SentAt),
                         isEdited = m.IsEdited,
                         attachmentPath = m.AttachmentPath,
                         attachmentName = m.AttachmentName,
                         replyToMessageId = m.ReplyToMessageId,
                         replyToMessage = m.ReplyToMessage,
                         replyToSenderName = m.ReplyToSenderName
-                    })
-                    .ToListAsync();
+                    });
+                }
 
-                return Json(messages);
+                return Json(result);
             }
             catch (Exception ex)
             {
@@ -247,10 +288,15 @@ namespace ERP.Controllers
                 _context.GroupMessages.Add(groupMessage);
                 await _context.SaveChangesAsync();
 
+                var senderUser = await _context.Users.FindAsync(currentUserId);
+
                 await _hubContext.Clients.Group($"group-{groupId}").SendAsync("ReceiveGroupMessage", new
                 {
                     id = groupMessage.Id,
+                    groupId = groupId,
                     senderId = currentUserId,
+                    senderName = senderUser?.FirstName + " " + senderUser?.LastName,
+                    senderImage = string.IsNullOrEmpty(senderUser?.Image) ? "/UserImage/Male.png" : "/UserImage/" + senderUser.Image,
                     message = message,
                     sentAt = groupMessage.SentAt.ToString("HH:mm"),
                     dateAt = _services.iGregorianToPersian(groupMessage.SentAt),

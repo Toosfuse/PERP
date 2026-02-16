@@ -1,4 +1,4 @@
-﻿using ERP.Data;
+using ERP.Data;
 using ERP.Models;
 using ERP.ViewModels.Account;
 using Microsoft.AspNetCore.Authorization;
@@ -130,7 +130,11 @@ namespace ERP.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             if (_signInManager.IsSignedIn(User))
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = true });
                 return RedirectToAction("Index", "Home");
+            }
 
             ViewData["returnUrl"] = returnUrl;
 
@@ -141,13 +145,15 @@ namespace ERP.Controllers
 
                 if (result.Succeeded)
                 {
-                    
-                    //string ip = Request.UserHostAddress;
                     string getIP = HttpContext.Connection.RemoteIpAddress.ToString();
                     var username = User.Identity.Name;
                     var userid = _context.Users.Where(p => p.UserName == username).Select(p => p.Id).Single();
 
                     await _context.SaveChangesAsync();
+                    
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        return Json(new { success = true });
+                    
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                         return Redirect(returnUrl);
                     return RedirectToAction("Index", "Home");
@@ -155,17 +161,27 @@ namespace ERP.Controllers
 
                 if (result.IsLockedOut)
                 {
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        return Json(new { success = false, error = "اکانت شما به دلیل پنج بار ورود ناموفق به مدت پنج دقیقه قفل شده است" });
+                    
                     ViewData["ErrorMessage"] = "اکانت شما به دلیل پنج بار ورود ناموفق به مدت پنج دقیقه قفل شده است";
                     return View(model);
                 }
 
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, error = "رمزعبور یا نام کاربری اشتباه است" });
+                
                 ModelState.AddModelError("", "رمزعبور یا نام کاربری اشتباه است");
             }
+            
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = false, error = "اطلاعات ورود نامعتبر است" });
+            
             return View(model);
         }
 
         [HttpPost]
-         
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOut()
         {
             await _signInManager.SignOutAsync();

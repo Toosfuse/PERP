@@ -91,9 +91,12 @@
             <button type="button" id="newChatBtn" class="new-chat-btn" title="چت جدید">
                 <i class="fa fa-pencil"></i>
             </button>
-          @*   <button type="button" id="newGroupBtn" class="new-chat-btn" title="گروه جدید">
-                <i class="fa fa-users"></i>
-            </button> *@
+            @if (User.Identity.IsAuthenticated)
+            {
+                <button type="button" id="newGroupBtn" class="new-chat-btn" title="گروه جدید">
+                    <i class="fa fa-users"></i>
+                </button>
+            }
             <button type="button" id="notificationToggleBtn" class="notification-toggle-btn active" title="اطلاعات فعال">
                 <i class="fa fa-bell"></i>
             </button>
@@ -112,17 +115,16 @@
             <div id="searchResultsInModal" style="display:none;padding:0;"></div>
             <div class="modal-body" id="allUsersList"></div>
         </div>
-       @*  <div class="search-box">
-            <input type="text" id="searchUser" placeholder="جستجو کاربر" />
-            <div class="search-results" id="searchResults"></div>
-        </div> *@
+     
         <div class="tab-buttons">
             <button type="button" id="tabUsers" class="tab-btn active">کاربران</button>
            @*  <button type="button" id="refreshBtn" class="refresh-btn" onclick="window.location.href='@Url.Action("Index", "Chat")'">
                 <i class="fa fa-refresh"></i> بروزرسانی
             </button> *@
-@*             <button type="button" id="tabGroups" class="tab-btn">گروهها</button>
- *@       
+           @if (User.Identity.IsAuthenticated)
+           {
+               <button type="button" id="tabGroups" class="tab-btn">گروهها</button>
+           }
         </div>
         <div class="users-list" id="usersList">
             @if (Model != null && Model.Any())
@@ -166,9 +168,9 @@
                 <input type="text" id="searchMessages" placeholder="جستجو در پیام ها..." style="width:100%; padding:8px 12px; border:1px solid rgba(255,255,255,0.3); border-radius:20px; background:rgba(255,255,255,0.1); color:white; font-size:12px;" />
             </div>
             <div class="chat-actions" style="justify-content: flex-start;">
-                 @* <button type="button" id="groupMembersBtn" class="restore-chat-btn" title="اعضای گروه" style="display:none;">
+                 <button type="button" id="groupMembersBtn" class="restore-chat-btn" title="اعضای گروه" style="display:none;">
                    <i class="fa fa-users"></i>
-                </button> *@
+                </button> 
                 <button type="button" id="restoreChatBtn" class="restore-chat-btn" title="بازیابی چت" style="display:none;">
                     <i class="fa fa-undo"></i>
                 </button>
@@ -291,7 +293,7 @@
                 <div id="groupMembersListModal" style="max-height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:4px; padding:10px;"></div>
             </div>
             <div style="flex:1;">
-                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:13px;">اعضای انتخاب شده:</label>
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:13px;">اعضای انتخاب شده (مدیر اضافه کرده):</label>
                 <div id="selectedGroupMembersList" style="max-height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:4px; padding:10px; background:#f9f9f9;"></div>
             </div>
         </div>
@@ -494,52 +496,56 @@
             $.get('/Chat/GetAllUsers', function(users) {
                 window.groupMembers = members;
                 window.allUsers = users;
+                $('#selectedGroupMembersList').parent().show();
                 displayGroupMembers(members, users);
             });
         });
     }
 
     function displayGroupMembers(members, users) {
-        let html = '';
+        let membersHtml = '';
+        let nonMembersHtml = '';
         const memberIds = members.map(m => m.userId);
+        
+        members.forEach(function(member) {
+            membersHtml += `
+                <div class="group-member-item" style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; justify-content:space-between;" data-user-id="${member.userId}">
+                    <div style="display:flex; align-items:center; flex:1;">
+                        <img src="${member.userImage}" alt="${member.userName}" style="width:35px; height:35px; border-radius:50%; margin-left:10px;">
+                        <span style="font-weight:600;">${member.userName}</span>
+                    </div>
+                    <button class="leave-group-btn" data-user-id="${member.userId}" style="padding:5px 10px; background:#f44336; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">خروج از گروه</button>
+                </div>
+            `;
+        });
+        
         users.forEach(function(user) {
             if (!memberIds.includes(user.id)) {
-                html += `
+                nonMembersHtml += `
                     <div class="group-member-item" style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; justify-content:space-between;" data-user-id="${user.id}">
-                        <div style="display:flex; align-items:center;">
+                        <div style="display:flex; align-items:center; flex:1;">
                             <img src="${user.image}" alt="${user.name}" style="width:35px; height:35px; border-radius:50%; margin-left:10px;">
-                            <div style="font-weight:600;">${user.name}</div>
+                            <span style="font-weight:600;">${user.name}</span>
                         </div>
                         <button class="add-member-btn" data-user-id="${user.id}" style="padding:5px 10px; background:#4caf50; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">اضافه</button>
                     </div>
                 `;
-            } else {
-                const member = members.find(m => m.userId === user.id);
-                html += `
-                    <div class="group-member-item" style="display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; justify-content:space-between;" data-user-id="${user.id}">
-                        <div style="display:flex; align-items:center;">
-                            <img src="${user.image}" alt="${user.name}" style="width:35px; height:35px; border-radius:50%; margin-left:10px;">
-                            <div>
-                                <div style="font-weight:600;">${user.name}</div>
-                                <div style="font-size:12px; color:#666;">${member.isAdmin ? 'مدیر' : 'عضو'}</div>
-                            </div>
-                        </div>
-                        <button class="remove-member-btn" data-user-id="${user.id}" style="padding:5px 10px; background:#f44336; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">حذف</button>
-                    </div>
-                `;
             }
         });
-        $('#groupMembersListModal').html(html);
-        updateSelectedGroupMembersList();
+        
+        $('#groupMembersListModal').html(membersHtml || '<div style="color:#999; text-align:center; padding:10px;">عضوی وجود ندارد</div>');
+        
+        if (nonMembersHtml) {
+            $('#selectedGroupMembersList').html(nonMembersHtml);
+        } else {
+            $('#selectedGroupMembersList').parent().hide();
+        }
     }
 
     function updateSelectedGroupMembersList() {
         let selectedHtml = '';
         window.groupMembers.forEach(function(member) {
-            const user = window.allUsers.find(u => u.id === member.userId);
-            if (user) {
-                selectedHtml += `<div style="display:flex; align-items:center; padding:8px; background:#e3f2fd; border-radius:4px; margin-bottom:5px;" data-user-id="${user.id}"><img src="${user.image}" style="width:25px; height:25px; border-radius:50%; margin-left:8px;"><span style="flex:1;">${user.name}</span><button type="button" class="remove-group-member-btn" data-user-id="${user.id}" style="background:none; border:none; color:#f44336; cursor:pointer; font-size:16px;"><i class="fa fa-times"></i></button></div>`;
-            }
+            selectedHtml += `<div style="display:flex; align-items:center; padding:8px; background:${member.isAdmin ? '#e8f5e9' : '#e3f2fd'}; border-radius:4px; margin-bottom:5px;" data-user-id="${member.userId}"><img src="${member.userImage}" style="width:25px; height:25px; border-radius:50%; margin-left:8px;"><span style="flex:1;">${member.userName}</span><span style="font-size:11px; color:${member.isAdmin ? '#4caf50' : '#666'}; font-weight:600;">${member.isAdmin ? 'مدیر' : 'عضو'}</span></div>`;
         });
         $('#selectedGroupMembersList').html(selectedHtml || '<div style="color:#999; text-align:center; padding:10px;">هیچ کاربری انتخاب نشده</div>');
     }
@@ -557,12 +563,14 @@
         }
     });
 
-    $(document).on('click', '.remove-member-btn', function() {
+    $(document).on('click', '.leave-group-btn', function() {
         const userId = $(this).data('user-id');
         if (confirm('آیا مطمئن هستید؟')) {
             $.post('/GroupChat/RemoveMember', { groupId: window.currentGroupId, userId: userId }, function(result) {
                 if (result.success) {
                     loadGroupMembersModal();
+                } else {
+                    alert(result.error || 'خطا در حذف');
                 }
             });
         }

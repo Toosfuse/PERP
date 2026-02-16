@@ -165,7 +165,7 @@ body::before {
 
 .stats-bar {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 15px;
     padding: 10px 30px;
     background: rgba(255, 255, 255, 0.08);
@@ -613,6 +613,10 @@ body::before {
     color: #4a5568;
     font-size: 14px;
     line-height: 1.6;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .message-attachment {

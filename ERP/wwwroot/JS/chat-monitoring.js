@@ -5,6 +5,7 @@ let currentFilters = {};
 $(document).ready(function() {
     initSignalR();
     loadStatistics();
+    loadGroups();
     loadConversations();
     
     $('#refreshBtn').click(function() {
@@ -19,6 +20,7 @@ $(document).ready(function() {
         currentFilters = {
             fromDate: fromDateVal || null,
             toDate: toDateVal || null,
+            groupId: $('#groupFilter').val() || null,
             isOnline: $('#onlineStatus').val() === 'online' ? true : ($('#onlineStatus').val() === 'offline' ? false : null),
             isRead: $('#readStatus').val() === 'read' ? true : ($('#readStatus').val() === 'unread' ? false : null)
         };
@@ -26,14 +28,15 @@ $(document).ready(function() {
         console.log('Filters applied:', currentFilters);
         loadConversations();
         
-        if (selectedConversation) {
-            loadMessages(selectedConversation.user1Id, selectedConversation.user2Id);
+        if (selectedConversation && !currentFilters.groupId) {
+            loadMessages(selectedConversation.user1Id, selectedConversation.user2Id, selectedConversation.isGroup);
         }
     });
     
     $('#clearFilters').click(function() {
         $('#fromDate').val('');
         $('#toDate').val('');
+        $('#groupFilter').val('');
         $('#onlineStatus').val('');
         $('#readStatus').val('');
         currentFilters = {};
@@ -58,8 +61,9 @@ $(document).ready(function() {
         const user2Id = $(this).data('user2-id');
         const user1Name = $(this).data('user1-name');
         const user2Name = $(this).data('user2-name');
+        const isGroup = $(this).data('is-group') === true;
         
-        selectConversation(user1Id, user2Id, user1Name, user2Name);
+        selectConversation(user1Id, user2Id, user1Name, user2Name, isGroup);
     });
     
     $(document).on('click', '.delete-message-btn', function() {
@@ -93,6 +97,16 @@ function initSignalR() {
     });
 }
 
+function loadGroups() {
+    $.get('/ChatMonitoring/GetGroups', function(groups) {
+        const select = $('#groupFilter');
+        select.find('option:not(:first)').remove();
+        groups.forEach(g => {
+            select.append(`<option value="${g.id}">${g.name}</option>`);
+        });
+    });
+}
+
 function loadStatistics() {
     $.get('/ChatMonitoring/GetStatistics', function(stats) {
         console.log('Statistics loaded:', stats);
@@ -100,6 +114,7 @@ function loadStatistics() {
         $('#activeConversations').text(stats.activeConversations || 0);
         $('#messagesLast24h').text(stats.messagesLast24h || 0);
         $('#totalUsers').text(stats.totalUsers || 0);
+        $('#totalGroups').text(stats.totalGroups || 0);
     }).fail(function(error) {
         console.error('Error loading statistics:', error);
     });
@@ -111,6 +126,7 @@ function loadConversations() {
     const params = {};
     if (currentFilters.fromDate) params.fromDate = currentFilters.fromDate;
     if (currentFilters.toDate) params.toDate = currentFilters.toDate;
+    if (currentFilters.groupId) params.groupId = currentFilters.groupId;
     if (currentFilters.isOnline !== null && currentFilters.isOnline !== undefined) params.isOnline = currentFilters.isOnline;
     if (currentFilters.isRead !== null && currentFilters.isRead !== undefined) params.isRead = currentFilters.isRead;
     
@@ -134,64 +150,145 @@ function loadConversations() {
 function renderConversations(conversations) {
     let html = '';
     conversations.forEach(function(conv) {
-        const user1Status = conv.user1.isOnline ? '<span style="color:#48bb78;">●</span>' : '<span style="color:#cbd5e0;">●</span>';
-        const user2Status = conv.user2.isOnline ? '<span style="color:#48bb78;">●</span>' : '<span style="color:#cbd5e0;">●</span>';
-        html += `
-      
-            <div class="conversation-card" 
-                 data-user1-id="${conv.user1.id}" 
-                 data-user2-id="${conv.user2.id}"
-                 data-user1-name="${conv.user1.name}"
-                 data-user2-name="${conv.user2.name}">
-                <div class="conversation-users">
-                    <div style="position:relative;">
-                        <img src="${conv.user1.image}" class="user-avatar" alt="${conv.user1.name}" />
-                        <span style="position:absolute;bottom:0;left:0;font-size:12px;">${user1Status}</span>
+        if (conv.isGroup) {
+            html += `
+                <div class="conversation-card" 
+                     data-user1-id="${conv.user1.id}" 
+                     data-user2-id=""
+                     data-user1-name="${conv.user1.name}"
+                     data-user2-name=""
+                     data-is-group="true">
+                    <div class="conversation-users">
+                        <div style="position:relative;">
+                            <img src="${conv.user1.image}" class="user-avatar" alt="${conv.user1.name}" />
+                        </div>
+                        <div class="user-names"><i class="fa fa-users"></i> ${conv.user1.name}</div>
                     </div>
-                    <i class="fa fa-exchange" style="color:#667eea;"></i>
-                    <div style="position:relative;">
-                        <img src="${conv.user2.image}" class="user-avatar" alt="${conv.user2.name}" />
-                        <span style="position:absolute;bottom:0;left:0;font-size:12px;">${user2Status}</span>
+                    <div class="conversation-meta">
+                        <span>${formatDate(conv.lastMessageTime)}</span>
+                        <span class="message-count">${conv.messageCount} پیام</span>
                     </div>
-                    <div class="user-names">${conv.user1.name} ↔ ${conv.user2.name}</div>
                 </div>
-                <div class="conversation-meta">
-                    <span>${formatDate(conv.lastMessageTime)}</span>
-                    <span class="message-count">${conv.messageCount} پیام</span>
-                    ${conv.unreadCount > 0 ? `<span style="background:#f56565;color:white;padding:2px 8px;border-radius:10px;font-size:11px;">${conv.unreadCount} خوانده نشده</span>` : ''}
+            `;
+        } else {
+            const user1Status = conv.user1.isOnline ? '<span style="color:#48bb78;">●</span>' : '<span style="color:#cbd5e0;">●</span>';
+            const user2Status = conv.user2 && conv.user2.isOnline ? '<span style="color:#48bb78;">●</span>' : '<span style="color:#cbd5e0;">●</span>';
+            html += `
+                <div class="conversation-card" 
+                     data-user1-id="${conv.user1.id}" 
+                     data-user2-id="${conv.user2 ? conv.user2.id : ''}" 
+                     data-user1-name="${conv.user1.name}"
+                     data-user2-name="${conv.user2 ? conv.user2.name : ''}">
+                    <div class="conversation-users">
+                        <div style="position:relative;">
+                            <img src="${conv.user1.image}" class="user-avatar" alt="${conv.user1.name}" />
+                            <span style="position:absolute;bottom:0;left:0;font-size:12px;">${user1Status}</span>
+                        </div>
+                        <i class="fa fa-exchange" style="color:#667eea;"></i>
+                        <div style="position:relative;">
+                            <img src="${conv.user2 ? conv.user2.image : '/UserImage/Male.png'}" class="user-avatar" alt="${conv.user2 ? conv.user2.name : ''}" />
+                            <span style="position:absolute;bottom:0;left:0;font-size:12px;">${user2Status}</span>
+                        </div>
+                        <div class="user-names">${conv.user1.name} ↔ ${conv.user2 ? conv.user2.name : ''}</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <span>${formatDate(conv.lastMessageTime)}</span>
+                        <span class="message-count">${conv.messageCount} پیام</span>
+                        ${conv.unreadCount > 0 ? `<span style="background:#f56565;color:white;padding:2px 8px;border-radius:10px;font-size:11px;">${conv.unreadCount} خوانده نشده</span>` : ''}
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     });
     $('#conversationsList').html(html || '<div class="empty-state"><i class="fa fa-comments-o"></i><p>مکالمهای یافت نشد</p></div>');
     
-    // بازگردانی مکالمه انتخاب شده بعد از فیلتر
     if (selectedConversation) {
         $(`.conversation-card[data-user1-id="${selectedConversation.user1Id}"][data-user2-id="${selectedConversation.user2Id}"]`).addClass('active');
     }
 }
 
-function selectConversation(user1Id, user2Id, user1Name, user2Name) {
-    selectedConversation = { user1Id, user2Id, user1Name, user2Name };
+function selectConversation(user1Id, user2Id, user1Name, user2Name, isGroup = false) {
+    selectedConversation = { user1Id, user2Id, user1Name, user2Name, isGroup };
     
     $('.conversation-card').removeClass('active');
     $(`.conversation-card[data-user1-id="${user1Id}"][data-user2-id="${user2Id}"]`).addClass('active');
     
-    $('#conversationTitle').html(`<span style="color:#667eea;font-weight:600;">${user1Name}</span><span style="color:#718096;margin:0 5px;"></span> <span style="color:#667eea;margin:0 5px;">↔</span> <span style="color:#f59e0b;font-weight:600;">${user2Name}</span><span style="color:#718096;margin:0 5px;"></span>`);
-    $('#conversationSubtitle').text('مشاهده پیامها');
+    if (isGroup) {
+        $('#conversationTitle').html(`<span style="color:#667eea;font-weight:600;"><i class="fa fa-users"></i> ${user1Name}</span>`);
+        $('#conversationSubtitle').html(`<button id="showGroupMembersBtn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;transition:all 0.3s;"><i class="fa fa-users"></i> مشاهده اعضای گروه</button>`);
+    } else {
+        $('#conversationTitle').html(`<span style="color:#667eea;font-weight:600;">${user1Name}</span><span style="color:#718096;margin:0 5px;"></span> <span style="color:#667eea;margin:0 5px;">↔</span> <span style="color:#f59e0b;font-weight:600;">${user2Name}</span><span style="color:#718096;margin:0 5px;"></span>`);
+        $('#conversationSubtitle').text('مشاهده پیامها');
+    }
     
-    loadMessages(user1Id, user2Id);
+    loadMessages(user1Id, user2Id, isGroup);
 }
 
-function loadMessages(user1Id, user2Id) {
+$(document).on('click', '#showGroupMembersBtn', function() {
+    if (selectedConversation && selectedConversation.isGroup) {
+        showGroupMembers(selectedConversation.user1Id, false);
+    }
+});
+
+$(document).on('click', '#showHistoryBtn', function() {
+    if (selectedConversation && selectedConversation.isGroup) {
+        showGroupMembers(selectedConversation.user1Id, true);
+    }
+});
+
+function showGroupMembers(groupId, showHistory = false) {
+    $('#groupMembersModal').fadeIn(300);
+    $('#groupMembersContent').html('<div class="loading"><i class="fa fa-spinner fa-spin"></i><p>در حال بارگذاری...</p></div>');
+    
+    const url = showHistory ? '/ChatMonitoring/GetGroupMembersHistory' : '/ChatMonitoring/GetGroupMembers';
+    
+    $.get(url, { groupId: groupId }, function(members) {
+        let html = '';
+        if (members.length === 0) {
+            html = '<div class="empty-state"><i class="fa fa-users"></i><p>عضوی در این گروه نیست</p></div>';
+        } else {
+            members.forEach(function(member) {
+                const onlineStatus = member.isOnline ? '<span class="online-dot"></span>' : '<span class="offline-dot"></span>';
+                const adminBadge = member.isAdmin ? '<span class="admin-badge"><i class="fa fa-star"></i> ادمین</span>' : '';
+                const leftBadge = !member.isActive ? '<span class="left-badge"><i class="fa fa-sign-out"></i> خارج شده</span>' : '';
+                const leftDate = member.leftAt ? `<div class="member-status">خروج: ${formatDate(member.leftAt)}</div>` : '';
+                const opacity = !member.isActive ? 'opacity:0.6;' : '';
+                
+                html += `
+                    <div class="member-item" style="${opacity}">
+                        <img src="${member.userImage}" class="member-avatar" alt="${member.userName}" />
+                        <div class="member-info">
+                            <div class="member-name">${member.userName} ${member.isActive ? onlineStatus : ''}</div>
+                            <div class="member-status">عضویت: ${formatDate(member.joinedAt)}</div>
+                            ${leftDate}
+                        </div>
+                        ${adminBadge}
+                        ${leftBadge}
+                    </div>
+                `;
+            });
+        }
+        $('#groupMembersContent').html(html);
+    }).fail(function() {
+        $('#groupMembersContent').html('<div class="empty-state"><i class="fa fa-exclamation-triangle"></i><p>خطا در بارگذاری اعضا</p></div>');
+    });
+}
+
+$(document).on('click', '.close-modal, #groupMembersModal', function(e) {
+    if (e.target === this) {
+        $('#groupMembersModal').fadeOut(300);
+    }
+});
+
+function loadMessages(user1Id, user2Id, isGroup = false) {
     $('#messagesList').html('<div class="loading"><i class="fa fa-spinner fa-spin"></i><p>در حال بارگذاری پیامها...</p></div>');
     
     const params = { 
         user1Id, 
-        user2Id
+        user2Id,
+        isGroup: isGroup
     };
     
-    // اضافه کردن فیلترها به پارامترها
     if (currentFilters.fromDate) params.fromDate = currentFilters.fromDate;
     if (currentFilters.toDate) params.toDate = currentFilters.toDate;
     if (currentFilters.isRead !== null && currentFilters.isRead !== undefined) params.isRead = currentFilters.isRead;
@@ -212,7 +309,7 @@ function renderMessages(messages) {
     messages.forEach(function(msg) {
         const readStatus = msg.isRead ? '<span style="color:#48bb78;"><i class="fa fa-check-circle"></i> خوانده شده</span>' : '<span style="color:#f56565;"><i class="fa fa-circle"></i> خوانده نشده</span>';
         const isSender = msg.senderId === selectedConversation.user1Id;
-        const senderName = isSender ? selectedConversation.user1Name : selectedConversation.user2Name;
+        const senderName = selectedConversation.isGroup ? (msg.senderName || 'نامشخص') : (isSender ? selectedConversation.user1Name : selectedConversation.user2Name);
         const isDeleted = msg.isDeletedBySender || msg.isDeletedByReceiver;
         const messageBg = isDeleted ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.2) 100%)' : (isSender ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(102, 126, 234, 0.12) 100%)' : 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.12) 100%)');
         const borderColor = isDeleted ? '#ef4444' : (isSender ? '#667eea' : '#f59e0b');
@@ -229,6 +326,7 @@ function renderMessages(messages) {
         }
         
         const deletedLabel = isDeleted ? '<span style="color:#ef4444;font-size:11px;font-weight:600;margin-right:8px;"><i class="fa fa-trash"></i> حذف شده</span>' : '';
+        const editedLabel = msg.isEdited ? '<span style="color:#f59e0b;font-size:11px;font-weight:600;margin-right:8px;"><i class="fa fa-pencil"></i> ویرایش شده</span>' : '';
         
         html += `
             <div class="message-item" data-message-id="${msg.id}" style="background:${messageBg};border-right-color:${borderColor};max-width:40%;${messageAlign}border-radius:12px;">
@@ -238,8 +336,9 @@ function renderMessages(messages) {
                     </span>
                     <div>
                         ${deletedLabel}
+                        ${editedLabel}
                         <span class="message-time">${formatDateTime(msg.sentAt)}</span>
-                        <span style="margin:0 10px;font-size:12px;">${readStatus}</span>
+                        ${!selectedConversation.isGroup ? `<span style="margin:0 10px;font-size:12px;">${readStatus}</span>` : ''}
                     </div>
                 </div>
                 ${replyHtml}
@@ -250,7 +349,6 @@ function renderMessages(messages) {
                         <a href="${msg.attachmentPath}" target="_blank">${msg.attachmentName}</a>
                     </div>
                 ` : ''}
-                ${msg.isEdited ? '<span style="font-size:11px;color:#718096;margin-top:5px;display:block;">(ویرایش شده)</span>' : ''}
             </div>
         `;
     });
