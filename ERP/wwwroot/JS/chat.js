@@ -959,16 +959,28 @@ function escapeHtml(text) {
 }
 
 function showForwardModal(messageId) {
-    $.get('/Chat/GetForwardUsers', function(users) {
+    $.get('/Chat/GetAllUsersAndGuests', function(data) {
         let usersHtml = '';
-        users.forEach(function(user) {
-            usersHtml += `
-                <div class="forward-user-item" data-user-id="${user.id}" data-message-id="${messageId}">
-                    <img src="${user.image}" alt="${user.name}" />
-                    <div class="user-name">${user.name}</div>
-                </div>
-            `;
-        });
+        if (data.users) {
+            data.users.forEach(function(user) {
+                usersHtml += `
+                    <div class="forward-user-item" data-user-id="${user.id}" data-message-id="${messageId}">
+                        <img src="${user.image}" alt="${user.name}" />
+                        <div class="user-name">${user.name}</div>
+                    </div>
+                `;
+            });
+        }
+        if (data.guests) {
+            data.guests.forEach(function(guest) {
+                usersHtml += `
+                    <div class="forward-user-item" data-user-id="${guest.id}" data-message-id="${messageId}">
+                        <img src="${guest.image}" alt="${guest.name}" />
+                        <div class="user-name">${guest.name} (مهمان)</div>
+                    </div>
+                `;
+            });
+        }
         $('#forwardUsersList').html(usersHtml);
         $('#forwardModal').addClass('show');
     });
