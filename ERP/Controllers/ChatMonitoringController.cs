@@ -316,14 +316,31 @@ namespace ERP.Controllers
                 var result = new List<object>();
                 foreach (var msg in groupMessages)
                 {
+                    string senderName = "نامشخص";
+                    string senderImage = "/UserImage/Male.png";
+                    
                     var sender = await _context.Users.FindAsync(msg.SenderId);
-                    var senderName = sender != null ? sender.FirstName + " " + sender.LastName : "نامشخص";
+                    if (sender != null)
+                    {
+                        senderName = sender.FirstName + " " + sender.LastName;
+                        senderImage = string.IsNullOrEmpty(sender.Image) ? "/UserImage/Male.png" : "/UserImage/" + sender.Image;
+                    }
+                    else
+                    {
+                        var guest = await _context.GuestUsers.FirstOrDefaultAsync(g => g.UniqueToken == msg.SenderId && g.IsActive);
+                        if (guest != null)
+                        {
+                            senderName = (guest.FirstName + " " + guest.LastName) ?? "مهمان";
+                            senderImage = string.IsNullOrEmpty(guest.Image) ? "/UserImage/Male.png" : "/UserImage/" + guest.Image;
+                        }
+                    }
                     
                     result.Add(new
                     {
                         id = msg.Id,
                         senderId = msg.SenderId,
                         senderName = senderName,
+                        senderImage = senderImage,
                         receiverId = (string)null,
                         message = msg.Message,
                         sentAt = msg.SentAt,
