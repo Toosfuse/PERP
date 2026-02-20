@@ -1,5 +1,6 @@
-﻿using ERP.Data;
+using ERP.Data;
 using ERP.Models;
+using ERP.Services;
 using ERP.ViewModels.SMT;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
@@ -18,12 +19,12 @@ namespace ERP.Controllers
     {
 
         private readonly ERPContext _context;
-        
+        private readonly IServices _services;
 
-        public SMTController(ERPContext context)
+        public SMTController(ERPContext context, IServices services)
         {
             _context = context;
-           
+           _services  = services;
         }
 
         public async Task<IActionResult> Index(string? searchData)
@@ -207,6 +208,176 @@ namespace ERP.Controllers
 
 
             return hasConflict;
+        }
+
+        public IActionResult SecondaryList()
+        {
+            return View();
+        }
+
+        public IActionResult SecondaryListDetails(string date)
+        {
+            ViewBag.Date = date;
+            return View();
+        }
+        public IActionResult Secondary()
+        {
+            return View();
+        }
+        public async Task<ActionResult> SMTSecondaryList_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var data = await _context.smtSecondary
+                .Where(x => !x.IsDelete && !string.IsNullOrEmpty(x.SecondaryDatePersian))
+                .GroupBy(x => x.SecondaryDatePersian)
+                .OrderByDescending(g => g.Key)
+                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var result = data.Select(x => new SMTSecondaryListViewModel
+            {
+                SecondaryDatePersian = x.Date,
+                count = x.Count
+            }).ToList();
+
+            var pagedResult = result.AsQueryable().ToDataSourceResult(request);
+            return Json(pagedResult);
+        }
+
+        public async Task<ActionResult> SMTSecondaryByDate_Read([DataSourceRequest] DataSourceRequest request, string date)
+        {
+            if (string.IsNullOrEmpty(date))
+                return Json(new DataSourceResult { Data = new List<SMTSecondaryViewModel>(), Total = 0 });
+
+            var dateTime = ConvertPersianDate(date, useCurrentTime: false);
+
+            var result = await _context.smtSecondary
+                .Where(x => x.SecondaryDate.Date == dateTime.Date && !x.IsDelete)
+                .Include(x => x.SMT)
+                .OrderByDescending(x => x.Id)
+                .Select(x => new SMTSecondaryViewModel
+                {
+                    Id = x.Id,
+                    SMTId = x.SMTId,
+                    DataValue = x.SMT.DataValue,
+                    DateCreate = x.SMT.DateCreate.ToString("yyyy/MM/dd", new CultureInfo("fa-IR")),
+                    SecondaryDate = x.SecondaryDate.ToString("yyyy/MM/dd", new CultureInfo("fa-IR")),
+                    Username = x.Username,
+                    CreatedAt = x.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR"))
+                })
+                .ToDataSourceResultAsync(request);
+
+            return Json(result);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SearchSMT(string barcode)
+        {
+            try
+            {
+                var smt = await _context.smt.FirstOrDefaultAsync(x => x.DataValue == barcode && !x.IsDelete);
+                if (smt == null)
+                    return Json(new { success = false, message = "بارکد یافت نشد" });
+
+                return Json(new
+                {
+                    success = true,
+                    id = smt.Id,
+                    dataValue = smt.DataValue,
+                    dateCreate = smt.DateCreate.ToString("yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR"))
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "خطا در جستجو", error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> RegisterSecondary(long smtId, string secondaryDate)
+        {
+            try
+            {
+                var username = User.Identity?.Name ?? "Unknown";
+               
+                var existing = await _context.smtSecondary.FirstOrDefaultAsync(x => x.SMTId == smtId && !x.IsDelete);
+                
+                if (existing != null)
+                {
+                    existing.SecondaryDate = DateTime.Now;
+                    existing.SecondaryDatePersian = _services.iGregorianToPersian(DateTime.Now);
+                    existing.Username = username;
+                    existing.CreatedAt = DateTime.Now;
+                    _context.smtSecondary.Update(existing);
+                    await _context.SaveChangesAsync();
+
+                    return Json(new
+                    {
+                        success = true,
+                        id = existing.Id,
+                        isUpdate = true,
+                        secondaryDate = DateTime.Now,
+                        username = existing.Username,
+                        createdAt = existing.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR"))
+                    });
+                }
+                else
+                {
+                    var secondary = new SMTSecondary
+                    {
+                        SMTId = smtId,
+                        SecondaryDate = DateTime.Now,
+                        SecondaryDatePersian = _services.iGregorianToPersian(DateTime.Now),
+                        Username = username,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    _context.smtSecondary.Add(secondary);
+                    await _context.SaveChangesAsync();
+
+                    return Json(new
+                    {
+                        success = true,
+                        id = secondary.Id,
+                        isUpdate = false,
+                        secondaryDate = DateTime.Now,
+                        username = secondary.Username,
+                        createdAt = secondary.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR"))
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "خطا در ثبت: " + ex.Message });
+            }
+        
+      
+              
+            
+          
+        }
+
+        public async Task<ActionResult> SMTSecondary_Read([DataSourceRequest] DataSourceRequest request, long? smtId)
+        {
+            if (!smtId.HasValue)
+                return Json(new DataSourceResult { Data = new List<SMTSecondaryViewModel>(), Total = 0 });
+
+            var result = await _context.smtSecondary
+                .Where(x => x.SMTId == smtId && !x.IsDelete)
+                .Include(x => x.SMT)
+                .OrderByDescending(x => x.Id)
+                .Select(x => new SMTSecondaryViewModel
+                {
+                    Id = x.Id,
+                    SMTId = x.SMTId,
+                    DataValue = x.SMT.DataValue,
+                    DateCreate = x.SMT.DateCreate.ToString("yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR")),
+                    SecondaryDate = x.SecondaryDate.ToString("yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR")),
+                    Username = x.Username,
+                    CreatedAt = x.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR"))
+                })
+                .ToDataSourceResultAsync(request);
+
+            return Json(result);
         }
 
         public DateTime ConvertPersianDate(string persianDateString, bool useCurrentTime = true, TimeSpan? specificTime = null)

@@ -59,6 +59,7 @@ namespace ERP.Data
         public DbSet<CoInqueryItem> CoInqueryItems { get; set; }
         public DbSet<GuaranteeLetter> GuaranteeLetters { get; set; }
         public DbSet<SMT> smt { get; set; }
+        public DbSet<SMTSecondary> smtSecondary { get; set; }
 
         public DbSet<AssestUser> AssestUsers { get; set; }
         public DbSet<AssestCategory> AssestCategories { get; set; }

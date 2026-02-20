@@ -1,0 +1,283 @@
+@using Kendo.Mvc.UI
+@using System.Globalization
+@{
+    ViewData["Title"] = "ثبت اطلاعات ثانویه SMT";
+    Layout = "_Layout";
+}
+
+<link href="~/fonts/fontawesome-free-7.1.0-web/css/all.min.css" rel="stylesheet" />
+
+<style>
+    body { background-color: #f8f9fa; }
+    .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .card-header { border-radius: 12px 12px 0 0; border: none; }
+    .gradient-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+</style>
+
+<div class="container" dir="rtl" style="margin-top: -30px; padding-top: 20px;">
+    @Html.AntiForgeryToken()
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card gradient-header">
+                <div class="card-body text-center py-4">
+                    <h2 class="mb-2"><i class="fas fa-barcode me-3"></i>اسکن و ثبت اطلاعات ثانویه SMT</h2>
+                    <p class="mb-0">بارکد را اسکن کنید و اطلاعات ثانویه خودکار ثبت میشود</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertContainer" class="mb-4"></div>
+
+    <!-- فرم اسکن -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header gradient-header">
+                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>جستجوی بارکد</h5>
+                </div>
+                <div class="card-body p-4">
+                    <input type="text" id="barcodeSearch" class="form-control form-control-lg"
+                           placeholder="📦 بارکد را اسکن کنید..." autocomplete="off" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نمایش اطلاعات بارکد -->
+    <div id="smtInfoContainer" style="display: none;" class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="border-left: 5px solid #28a745;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 text-success"><i class="fas fa-check-circle me-2"></i>اطلاعات بارکد</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-barcode text-primary" style="font-size: 24px; margin-left: 15px;"></i>
+                                <div>
+                                    <small class="text-muted d-block">📦 بارکد</small>
+                                    <p id="displayDataValue" class="text-primary font-weight-bold mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar text-info" style="font-size: 24px; margin-left: 15px;"></i>
+                                <div>
+                                    <small class="text-muted d-block">📅 تاریخ ثبت اولیه</small>
+                                    <p id="displayDateCreate" class="text-info font-weight-bold mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 35px; display: none;" id="progressContainer">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    </div>
+                    <p id="progressText" class="text-center mt-3 font-weight-bold" style="display: none;"></p>
+                    <input type="hidden" id="currentSmtId" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid اطلاعات ثانویه -->
+    <div id="gridContainer" style="display: none;" class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-list me-2 text-primary"></i>لیست اطلاعات ثبت شده</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="k-rtl" style="overflow-x:auto;width:100%;">
+                        @(
+                            Html.Kendo().Grid<ERP.ViewModels.SMT.SMTSecondaryViewModel>()
+                                .Name("gridSecondary")
+                                .Columns(columns =>
+                                {
+                                    columns.Bound(c => c.DataValue).Title("📦 بارکد").Width(120);
+                                    columns.Bound(c => c.DateCreate).Title("📅 تاریخ ثبت اولیه").Width(140);
+                                    columns.Bound(c => c.Username).Title("👤 نام کاربر").Width(130);
+                                    columns.Bound(c => c.CreatedAt).Title("⏰ تاریخ ثبت").Width(160);
+                                })
+                                .Pageable(p => p
+                                    .PageSizes(new[] { 10, 20, 50 })
+                                    .Refresh(true)
+                                    .ButtonCount(5)
+                                    .Messages(m => m
+                                        .Display("نمایش {0} - {1} از {2}")
+                                        .Empty("هیچ رکوردی یافت نشد")))
+                                .Sortable()
+                                .Filterable()
+                                .Scrollable(s => s.Height("auto"))
+                                .Resizable(r => r.Columns(true))
+                                .Reorderable(r => r.Columns(true))
+                                .DataSource(ds => ds
+                                    .Ajax()
+                                    .PageSize(20)
+                                    .ServerOperation(true)
+                                    .Read(read => read
+                                        .Action("SMTSecondary_Read", "SMT")
+                                        .Data("getGridData"))
+                                    .Model(m => m.Id(p => p.Id))
+                                )
+                        )
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentSmtId = null;
+
+        function showAlert(message, type = 'danger') {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>`;
+            $("#alertContainer").html(alertHtml);
+            setTimeout(() => $("#alertContainer .alert").alert('close'), 5000);
+        }
+
+        function getGridData() {
+            return { smtId: currentSmtId };
+        }
+
+        $(document).ready(function () {
+            $("#barcodeSearch").focus();
+        });
+
+        $("#barcodeSearch").on("keypress", function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                const barcode = $(this).val().trim();
+                if (!barcode) {
+                    showAlert("لطفاً بارکد را وارد کنید", "warning");
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("SearchSMT", "SMT")',
+                    type: 'POST',
+                    data: { barcode: barcode },
+                    success: function (res) {
+                        if (res.success) {
+                            currentSmtId = res.id;
+                            $("#currentSmtId").val(res.id);
+                            $("#displayDataValue").text(res.dataValue);
+                            $("#displayDateCreate").text(res.dateCreate);
+                            $("#smtInfoContainer").show();
+                            $("#gridContainer").show();
+
+                            const grid = $("#gridSecondary").data("kendoGrid");
+                            if (grid) {
+                                grid.dataSource.read();
+                            }
+
+                            registerSecondaryAuto();
+                        } else {
+                            showAlert(res.message, "danger");
+                            $("#smtInfoContainer").hide();
+                            $("#gridContainer").hide();
+                        }
+                    },
+                    error: function () {
+                        showAlert("خطا در جستجو", "danger");
+                    }
+                });
+            }
+        });
+
+        function registerSecondaryAuto() {
+            $("#progressContainer").show();
+            $("#progressText").show();
+            $("#progressBar").css("width", "0%");
+            $("#progressText").text("ثبت در حال انجام...");
+
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 90) progress = 90;
+                $("#progressBar").css("width", progress + "%");
+            }, 200);
+
+            const today = new Date();
+            const persianDate = getPersianDate(today);
+
+            $.ajax({
+                url: '@Url.Action("RegisterSecondary", "SMT")',
+                type: 'POST',
+                data: {
+                    smtId: currentSmtId,
+                    secondaryDate: persianDate
+                },
+                success: function (res) {
+                    clearInterval(progressInterval);
+                    $("#progressBar").css("width", "100%");
+                    $("#progressText").text("✓ ثبت انجام شد").addClass("text-success");
+
+                    if (res.success) {
+                        const grid = $("#gridSecondary").data("kendoGrid");
+                        if (grid) {
+                            if (res.isUpdate) {
+                                grid.dataSource.read();
+                            } else {
+                                const newRecord = {
+                                    id: res.id,
+                                    smtId: currentSmtId,
+                                    dataValue: $("#displayDataValue").text(),
+                                    dateCreate: $("#displayDateCreate").text(),
+                                    secondaryDate: res.secondaryDate,
+                                    username: res.username,
+                                    createdAt: res.createdAt
+                                };
+                                grid.dataSource.insert(0, newRecord);
+                            }
+                        }
+
+                        setTimeout(() => {
+                            $("#progressContainer").hide();
+                            $("#progressText").hide().removeClass("text-success");
+                            $("#barcodeSearch").val("").focus();
+                        }, 1500);
+                    } else {
+                        showAlert(res.message, "danger");
+                        $("#progressContainer").hide();
+                        $("#progressText").hide().removeClass("text-success");
+                    }
+                },
+                error: function (xhr) {
+                    clearInterval(progressInterval);
+                    showAlert("خطا در ثبت اطلاعات", "danger");
+                    $("#progressContainer").hide();
+                    $("#progressText").hide().removeClass("text-success");
+                }
+            });
+        }
+
+        function getPersianDate(date) {
+            const jd = Math.floor((date / 86400000) - (date.getTimezoneOffset() / 1440) + 2440587.5);
+            let l = jd + 68569;
+            const n = Math.floor((4 * l) / 146097);
+            l = l - Math.floor((146097 * n + 3) / 4);
+            const i = Math.floor((4000 * (l + 1)) / 1461001);
+            l = l - Math.floor((1461 * i) / 4) + 31;
+            const j = Math.floor((80 * l) / 2447);
+            const day = l - Math.floor((2447 * j) / 80);
+            l = Math.floor(j / 11);
+            const month = j + 2 - (12 * l);
+            const year = 100 * (n - 49) + i + l;
+            return `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+        }
+    </script>
+}
