@@ -31,6 +31,7 @@
             font-weight: normal;
             text-rendering: optimizeLegibility;
         }
+
         body {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
@@ -42,23 +43,28 @@
             position: relative;
             overflow: hidden;
         }
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(102, 102, 255, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(255, 51, 153, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.08) 0%, transparent 60%);
-            animation: backgroundShift 20s ease-in-out infinite;
-        }
+
+            body::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(circle at 20% 30%, rgba(102, 102, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255, 51, 153, 0.15) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.08) 0%, transparent 60%);
+                animation: backgroundShift 20s ease-in-out infinite;
+            }
+
         @@keyframes backgroundShift {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
+
         .guest-login-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -70,39 +76,47 @@
             z-index: 10;
             backdrop-filter: blur(10px);
         }
+
         .guest-login-header {
             text-align: center;
             margin-bottom: 30px;
         }
-        .guest-login-header h2 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .guest-login-header p {
-            color: #666;
-            font-size: 14px;
-        }
+
+            .guest-login-header h2 {
+                color: #333;
+                margin-bottom: 10px;
+            }
+
+            .guest-login-header p {
+                color: #666;
+                font-size: 14px;
+            }
+
         .form-group {
             margin-bottom: 20px;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: bold;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                color: #333;
+                font-weight: bold;
+            }
+
+            .form-group input, .form-group select {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: border-color 0.3s;
+            }
+
+                .form-group input:focus, .form-group select:focus {
+                    outline: none;
+                    border-color: #667eea;
+                }
+
         .btn-submit {
             width: 100%;
             padding: 14px;
@@ -116,6 +130,7 @@
             transition: transform 0.2s;
             margin-bottom: 15px;
         }
+
         .btn-company-login {
             width: 100%;
             padding: 14px;
@@ -129,45 +144,48 @@
             transition: transform 0.2s;
             margin-bottom: 15px;
         }
-        .btn-company-login:hover {
-            transform: translateY(-2px);
-        }
+
+            .btn-company-login:hover {
+                transform: translateY(-2px);
+            }
+
         .hidden-form {
             display: none !important;
         }
-        .hidden-form.show {
-            display: block !important;
-        }
+
+            .hidden-form.show {
+                display: block !important;
+            }
+
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 15px;
         }
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-        }
+
+            .checkbox-group input[type="checkbox"] {
+                width: auto;
+            }
+
         .btn-submit:hover {
             transform: translateY(-2px);
         }
+
         .btn-submit:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
+
         .error-message {
             color: #e74c3c;
             font-size: 14px;
             margin-top: 10px;
             text-align: center;
         }
+
         .rainbow_text_animated {
-            background: linear-gradient(90deg, 
-                #6666ff 0%, 
-                #0099ff 20%, 
-                #00ff00 40%, 
-                #ffff00 60%, 
-                #ff3399 80%, 
-                #6666ff 100%);
+            background: linear-gradient(90deg, #6666ff 0%, #0099ff 20%, #00ff00 40%, #ffff00 60%, #ff3399 80%, #6666ff 100%);
             background-size: 300% 100%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -179,10 +197,17 @@
             filter: drop-shadow(0 0 20px rgba(102, 102, 255, 0.4));
             letter-spacing: 2px;
         }
+
         @@keyframes rainbow_animation {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 300% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 300% 50%;
+            }
         }
+
         .logo {
             text-align: center;
             margin-bottom: 40px;
@@ -341,6 +366,17 @@
             if (!groupId) {
                 errorDiv.textContent = 'لطفا بخش را انتخاب کنید';
                 return;
+            }
+
+            try {
+                const checkResponse = await fetch(`/Chat/CheckGuestPhone?phoneNumber=${phoneNumber}`);
+                const checkData = await checkResponse.json();
+                if (!checkData.exists) {
+                    errorDiv.textContent = 'این شماره ثبت نام نشده است. لطفا ثبت نام کنید';
+                    return;
+                }
+            } catch (error) {
+                console.error('خطا:', error);
             }
 
             btn.disabled = true;
