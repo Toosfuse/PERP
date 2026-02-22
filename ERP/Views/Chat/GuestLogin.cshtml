@@ -59,27 +59,6 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
-        .app-header {
-            text-align: center;
-            z-index: 10;
-            margin-bottom: 30px;
-        }
-        .app-title {
-            font-size: 32px;
-            font-weight: 800;
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: rainbowFlow 4s ease infinite;
-            margin: 0;
-            letter-spacing: 1px;
-        }
-        @@keyframes rainbowFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
         .guest-login-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -148,15 +127,16 @@
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s;
+            margin-bottom: 15px;
         }
         .btn-company-login:hover {
             transform: translateY(-2px);
         }
-        .company-login-form {
-            display: none;
+        .hidden-form {
+            display: none !important;
         }
-        .company-login-form.active {
-            display: block;
+        .hidden-form.show {
+            display: block !important;
         }
         .checkbox-group {
             display: flex;
@@ -180,7 +160,6 @@
             margin-top: 10px;
             text-align: center;
         }
-
         .rainbow_text_animated {
             background: linear-gradient(90deg, 
                 #6666ff 0%, 
@@ -217,35 +196,52 @@
     </div>
     <div class="guest-login-container">
         <div class="guest-login-header">
-            <h2>ورود مهمان</h2>
-            <p>برای دسترسی به چت، اطلاعات خود را وارد کنید</p>
+            <h2 id="headerTitle">ورود مهمان</h2>
+            <p id="headerDesc">شماره موبایل و بخش خود را وارد کنید</p>
         </div>
 
-        <form id="guestForm">
+        <form id="loginForm">
             <div class="form-group">
                 <label>شماره موبایل</label>
-                <input type="text" id="phoneNumber" placeholder="09123456789" maxlength="11" required>
-            </div>
-            <div class="form-group">
-                <label>نام</label>
-                <input type="text" id="firstName" placeholder="نام" required>
-            </div>
-            <div class="form-group">
-                <label>نام خانوادگی</label>
-                <input type="text" id="lastName" placeholder="نام خانوادگی" required>
+                <input type="text" id="loginPhoneNumber" placeholder="09123456789" maxlength="11" required>
             </div>
             <div class="form-group">
                 <label>بخش</label>
-                <select id="groupSelect" required>
+                <select id="loginGroupSelect" required>
                     <option value="">انتخاب بخش...</option>
                 </select>
             </div>
-            <button type="submit" class="btn-submit" id="loginBtn">ورود مهمان</button>
-            <button type="button" class="btn-company-login" id="companyLoginBtn">ورود کارکنان سازمان</button>
+            <button type="submit" class="btn-submit" id="loginBtn">ورود</button>
+            <button type="button" class="btn-company-login" id="toRegisterBtn">ثبت نام</button>
+            <button type="button" class="btn-company-login" id="toCompanyBtn">ورود کارکنان</button>
             <div id="loginError" class="error-message"></div>
         </form>
 
-        <form id="companyForm" class="company-login-form">
+        <form id="registerForm" class="hidden-form">
+            <div class="form-group">
+                <label>شماره موبایل</label>
+                <input type="text" id="regPhoneNumber" placeholder="09123456789" maxlength="11" required>
+            </div>
+            <div class="form-group">
+                <label>نام</label>
+                <input type="text" id="regFirstName" placeholder="نام" required>
+            </div>
+            <div class="form-group">
+                <label>نام خانوادگی</label>
+                <input type="text" id="regLastName" placeholder="نام خانوادگی" required>
+            </div>
+            <div class="form-group">
+                <label>بخش</label>
+                <select id="regGroupSelect" required>
+                    <option value="">انتخاب بخش...</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-submit" id="registerBtn">ثبت نام</button>
+            <button type="button" class="btn-company-login" id="backToLoginBtn">بازگشت</button>
+            <div id="registerError" class="error-message"></div>
+        </form>
+
+        <form id="companyForm" class="hidden-form">
             <div class="form-group">
                 <label>نام کاربری</label>
                 <input type="text" id="username" placeholder="نام کاربری" required>
@@ -258,23 +254,82 @@
                 <input type="checkbox" id="rememberMe">
                 <label for="rememberMe" style="margin:0;">مرا به خاطر بسپار</label>
             </div>
-            <button type="submit" class="btn-submit" id="companyLoginSubmitBtn">ورود</button>
-            <button type="button" class="btn-company-login" id="backToGuestBtn">بازگشت به ورود مهمان</button>
-            <div id="companyLoginError" class="error-message"></div>
+            <button type="submit" class="btn-submit" id="companyLoginBtn">ورود</button>
+            <button type="button" class="btn-company-login" id="backToLoginBtn2">بازگشت</button>
+            <div id="companyError" class="error-message"></div>
         </form>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            loadGroups();
+        document.getElementById('toRegisterBtn').addEventListener('click', function() {
+            document.getElementById('loginForm').classList.add('hidden-form');
+            document.getElementById('registerForm').classList.add('show');
+            document.getElementById('headerTitle').textContent = 'ثبت نام مهمان';
+            document.getElementById('headerDesc').textContent = 'اطلاعات خود را وارد کنید';
         });
 
-        document.getElementById('guestForm').addEventListener('submit', async function(e) {
+        document.getElementById('toCompanyBtn').addEventListener('click', function() {
+            document.getElementById('loginForm').classList.add('hidden-form');
+            document.getElementById('companyForm').classList.add('show');
+            document.getElementById('headerTitle').textContent = 'ورود کارکنان';
+            document.getElementById('headerDesc').textContent = 'نام کاربری و رمز عبور خود را وارد کنید';
+        });
+
+        document.getElementById('backToLoginBtn').addEventListener('click', function() {
+            document.getElementById('registerForm').classList.remove('show');
+            document.getElementById('loginForm').classList.remove('hidden-form');
+            document.getElementById('headerTitle').textContent = 'ورود مهمان';
+            document.getElementById('headerDesc').textContent = 'شماره موبایل و بخش خود را وارد کنید';
+        });
+
+        document.getElementById('backToLoginBtn2').addEventListener('click', function() {
+            document.getElementById('companyForm').classList.remove('show');
+            document.getElementById('loginForm').classList.remove('hidden-form');
+            document.getElementById('headerTitle').textContent = 'ورود مهمان';
+            document.getElementById('headerDesc').textContent = 'شماره موبایل و بخش خود را وارد کنید';
+        });
+
+        async function loadGroups() {
+            try {
+                const response = await fetch('/Chat/GetGroups');
+                if (!response.ok) return;
+                const groups = await response.json();
+                if (Array.isArray(groups)) {
+                    [document.getElementById('loginGroupSelect'), document.getElementById('regGroupSelect')].forEach(select => {
+                        select.innerHTML = '<option value="">انتخاب بخش...</option>';
+                        groups.forEach(group => {
+                            const option = document.createElement('option');
+                            option.value = group.id;
+                            option.textContent = group.name;
+                            select.appendChild(option);
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('خطا:', error);
+            }
+        }
+        loadGroups();
+
+        document.getElementById('regPhoneNumber').addEventListener('blur', async function() {
+            const phoneNumber = this.value;
+            if (!/^09\d{9}$/.test(phoneNumber)) return;
+            try {
+                const response = await fetch(`/Chat/CheckGuestPhone?phoneNumber=${phoneNumber}`);
+                const data = await response.json();
+                if (data.exists) {
+                    document.getElementById('regFirstName').value = data.firstName || '';
+                    document.getElementById('regLastName').value = data.lastName || '';
+                }
+            } catch (error) {
+                console.error('خطا:', error);
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const phoneNumber = document.getElementById('phoneNumber').value;
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const groupId = document.getElementById('groupSelect').value;
+            const phoneNumber = document.getElementById('loginPhoneNumber').value;
+            const groupId = document.getElementById('loginGroupSelect').value;
             const errorDiv = document.getElementById('loginError');
             const btn = document.getElementById('loginBtn');
 
@@ -296,9 +351,6 @@
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
                 const formData = new URLSearchParams();
                 formData.append('phoneNumber', phoneNumber);
-                formData.append('firstName', firstName);
-                formData.append('lastName', lastName);
-                formData.append('image', 'Male.png');
                 formData.append('groupId', groupId);
                 formData.append('__RequestVerificationToken', token);
 
@@ -326,34 +378,72 @@
             }
         });
 
-        async function loadGroups() {
-            try {
-                const response = await fetch('/Chat/GetGroups');
-                const groups = await response.json();
-                const select = document.getElementById('groupSelect');
-                groups.forEach(group => {
-                    const option = document.createElement('option');
-                    option.value = group.id;
-                    option.textContent = group.name;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('خطا در بارگذاری بخشها', error);
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phoneNumber = document.getElementById('regPhoneNumber').value;
+            const firstName = document.getElementById('regFirstName').value;
+            const lastName = document.getElementById('regLastName').value;
+            const groupId = document.getElementById('regGroupSelect').value;
+            const errorDiv = document.getElementById('registerError');
+            const btn = document.getElementById('registerBtn');
+
+            if (!/^09\d{9}$/.test(phoneNumber)) {
+                errorDiv.textContent = 'شماره موبایل معتبر نیست';
+                return;
             }
-        }
 
-        document.getElementById('companyLoginBtn').addEventListener('click', function() {
-            document.getElementById('guestForm').style.display = 'none';
-            document.getElementById('companyForm').classList.add('active');
-            document.querySelector('.guest-login-header h2').textContent = 'ورود کارکنان';
-            document.querySelector('.guest-login-header p').textContent = 'با نام کاربری و رمز عبور خود وارد شوید';
-        });
+            if (!groupId) {
+                errorDiv.textContent = 'لطفا بخش را انتخاب کنید';
+                return;
+            }
 
-        document.getElementById('backToGuestBtn').addEventListener('click', function() {
-            document.getElementById('companyForm').classList.remove('active');
-            document.getElementById('guestForm').style.display = 'block';
-            document.querySelector('.guest-login-header h2').textContent = 'ورود مهمان';
-            document.querySelector('.guest-login-header p').textContent = 'برای دسترسی به چت، اطلاعات خود را وارد کنید';
+            try {
+                const checkResponse = await fetch(`/Chat/CheckGuestPhone?phoneNumber=${phoneNumber}`);
+                const checkData = await checkResponse.json();
+                if (checkData.exists) {
+                    errorDiv.textContent = 'این شماره قبلاً ثبت شده است';
+                    return;
+                }
+            } catch (error) {
+                console.error('خطا:', error);
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'در حال ثبت نام...';
+            errorDiv.textContent = '';
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const formData = new URLSearchParams();
+                formData.append('phoneNumber', phoneNumber);
+                formData.append('firstName', firstName);
+                formData.append('lastName', lastName);
+                formData.append('image', 'Male.png');
+                formData.append('groupId', groupId);
+                formData.append('__RequestVerificationToken', token);
+
+                const response = await fetch('/Chat/GuestDirectLogin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData.toString()
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = '/Chat/Index';
+                } else {
+                    errorDiv.textContent = data.error || 'خطا در ثبت نام';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'خطا در ارتباط با سرور';
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ثبت نام';
+            }
         });
 
         document.getElementById('companyForm').addEventListener('submit', async function(e) {
@@ -361,8 +451,8 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
-            const errorDiv = document.getElementById('companyLoginError');
-            const btn = document.getElementById('companyLoginSubmitBtn');
+            const errorDiv = document.getElementById('companyError');
+            const btn = document.getElementById('companyLoginBtn');
 
             btn.disabled = true;
             btn.textContent = 'در حال ورود...';

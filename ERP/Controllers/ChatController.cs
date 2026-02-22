@@ -180,6 +180,20 @@ namespace ERP.Controllers
             return Json(groups);
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> CheckGuestPhone(string phoneNumber)
+        {
+            var guest = await _context.GuestUsers
+                .FirstOrDefaultAsync(g => g.PhoneNumber == phoneNumber);
+            
+            if (guest != null)
+            {
+                return Json(new { exists = true, firstName = guest.FirstName, lastName = guest.LastName });
+            }
+            return Json(new { exists = false });
+        }
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -261,8 +275,8 @@ namespace ERP.Controllers
                     existingGuest.LastActivity = DateTime.Now;
                     existingGuest.ExpiryDate = DateTime.Now.AddHours(2);
                     existingGuest.GroupId = groupId;
-                    existingGuest.FirstName = firstName;
-                    existingGuest.LastName = lastName;
+                    existingGuest.FirstName = existingGuest.FirstName;
+                    existingGuest.LastName = existingGuest.LastName;
                     existingGuest.IsActive = true;
                     await _context.SaveChangesAsync();
 
