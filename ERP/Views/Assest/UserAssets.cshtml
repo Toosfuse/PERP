@@ -1,0 +1,67 @@
+@model ERP.ViewModels.AssestViewModel.AssetViewModel
+@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "وسایل کاربر";
+    var userId = ViewBag.UserId;
+    var userName = ViewBag.UserName;
+}
+
+<div class="container-fluid mt-5" dir="rtl">
+    <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 fw-bold">
+                    <i class="fas fa-box me-2"></i>وسایل @userName
+                </h3>
+                <a href="/Assest/RegisterUser" class="btn btn-light">
+                    <i class="fas fa-arrow-right me-2"></i>بازگشت به اطلاعات مشتریان
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            @(Html.Kendo().Grid<ERP.ViewModels.AssestViewModel.AssetViewModel>()
+                        .Name("userAssetsGrid")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(c => c.AssetCode).Title("کد اموال").Width("20%").HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.AssetName).Title("نام اموال").Width("30%").HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.CategoryTitle).Title("دسته بندی").Width("20%").HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.CreatedAt).Title("تاریخ ثبت").Width("15%").HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.IsActive).Title("وضعیت").Width("15%").ClientTemplate("#= IsActive ? '<span class=\"badge bg-success\">فعال</span>' : '<span class=\"badge bg-danger\">غیرفعال</span>' #").HtmlAttributes(new { style = "text-align:center;" });
+                        })
+                        .ToolBar(toolbar => {
+                            toolbar.Search();
+                            toolbar.Custom().Text("چاپ").HtmlAttributes(new { id = "printAssetsBtn", @class = "btn btn-info" });
+                        })
+                        .Sortable()
+                        .Filterable()
+                        .Pageable()
+                        .Scrollable()
+                        .DataSource(ds => ds
+                        .Ajax()
+                        .PageSize(20)
+                        .Read(r => r.Action("UserAssets_Read", "Assest").Data("getUserId"))
+                        .Model(m => { m.Id(f => f.Id); })
+                        )
+                        .Excel(excel => excel
+                            .FileName("وسایل_کاربر.xlsx")
+                            .Filterable(true)
+                        )
+                        )
+        </div>
+    </div>
+</div>
+
+<script>
+    function getUserId() {
+        return { userId: @userId };
+    }
+    
+    $(document).ready(function() {
+        $("#printAssetsBtn").click(function() {
+            window.print();
+        });
+    });
+</script>

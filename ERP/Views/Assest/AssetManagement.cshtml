@@ -7,8 +7,6 @@
 <div class="container-fluid mt-5" dir="rtl">
     @Html.AntiForgeryToken()
 
-    <div id="alertContainer" class="mb-2"></div>
-
     <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
         <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem;">
             <h3 class="mb-0 fw-bold">
@@ -21,10 +19,11 @@
                 <button type="button" id="btnAddAsset" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>ثبت اموال جدید
                 </button>
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="showDeleted">
-                    <label class="custom-control-label" for="showDeleted">نمایش حذف شده ها</label>
-                </div>
+               @*  <div class="col-md-6 mb-3">
+                    <label class="form-label font-weight-bold">دسته بندی</label>
+                    <select id="CategoryId" class="form-control"></select>
+                </div> *@
+                
             </div>
 
             @(Html.Kendo().Grid<ERP.ViewModels.AssestViewModel.AssetViewModel>()
@@ -40,8 +39,8 @@
                     columns.Command(cmd =>
                     {
                         cmd.Custom("ویرایش").Click("openEditModal").HtmlAttributes(new { @class = "btn-sm btn-primary" }).Visible("isEditVisible");
-                        cmd.Custom("حذف").Click("deleteAsset").HtmlAttributes(new { @class = "btn-sm btn-danger" }).Visible("isDeleteVisible");
-                        cmd.Custom("تاریخچه").Click("showHistory").HtmlAttributes(new { @class = "btn-sm btn-info" });
+@*                       
+ *@                        cmd.Custom("تاریخچه").Click("showHistory").HtmlAttributes(new { @class = "btn-sm btn-info" });
                     })
                     .Title("عملیات").Width("20%").HtmlAttributes(new { style = "text-align:center;" });
                 })
@@ -81,18 +80,19 @@
                 </button>
             </div>
             <div class="modal-body p-4">
+                <div id="alertContainer" class="mb-2"></div>
                 <div class="border p-3 mb-4" style="border-radius: 10px; border-left: 4px solid #667eea;">
                     <h6 class="font-weight-bold mb-3"><i class="fas fa-box me-2" style="color: #667eea;"></i>معلومات اموال</h6>
-                    <div class="row">
-                        <div class="mb-3 col-md-6">
+                   
+                        <div class="mb-3">
                         <label class="form-label font-weight-bold">کد اموال</label>
                         <input type="text" id="AssetCode" class="form-control" />
                     </div>
-                        <div class="mb-3 col-md-6">
+                        <div class="mb-3 ">
                         <label class="form-label font-weight-bold">نام اموال</label>
                         <input type="text" id="AssetName" class="form-control" />
                     </div>
-                    </div>
+                   
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label font-weight-bold">دسته بندی</label>
@@ -104,7 +104,7 @@
                         </div>
                     </div>
                 </div>
-
+@* 
                 <div class="border p-3" style="border-radius: 10px; border-left: 4px solid #764ba2;">
                     <h6 class="font-weight-bold mb-3"><i class="fas fa-puzzle-piece me-2" style="color: #764ba2;"></i>قطعات اموال</h6>
                     <div class="row mb-3">
@@ -128,7 +128,7 @@
                         </button>
                     </div>
                     <div id="partsListContainer"></div>
-                </div>
+                </div> *@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">انصراف</button>
@@ -149,6 +149,7 @@
                 </button>
             </div>
             <div class="modal-body p-4">
+                <div id="editAlertContainer" class="mb-2"></div>
                 <input type="hidden" id="editId" />
 
                 <div class="border p-3 mb-4" style="border-radius: 10px; border-left: 4px solid #667eea;">
@@ -164,7 +165,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label font-weight-bold">دسته بندی</label>
-                            <select id="editCategoryId" class="form-control"></select>
+                            <select id="editCategoryId" class="form-control select2"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label font-weight-bold">مالک</label>
@@ -176,7 +177,7 @@
                         <label class="custom-control-label font-weight-bold" for="editIsActive">فعال</label>
                     </div>
                 </div>
-
+@* 
                 <div class="border p-3" style="border-radius: 10px; border-left: 4px solid #764ba2;">
                     <h6 class="font-weight-bold mb-3"><i class="fas fa-puzzle-piece me-2" style="color: #764ba2;"></i>قطعات اموال</h6>
                     <div class="row mb-3">
@@ -200,7 +201,7 @@
                        
                     </div>
                     <div id="itemsGrid"></div>
-                </div>
+                </div> *@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">انصراف</button>
@@ -210,25 +211,32 @@
     </div>
 </div>
 
+@section styles {
+    <link href="~/select 2/select 2.css" rel="stylesheet" />
+}
 @section Scripts {
+    <script src="~/select 2/select 2.js"></script>
     <script>
         let grid;
         let tempParts = [];
         let editTempParts = [];
 
+         
+       
         function antiForgery() {
             return { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() };
         }
 
-        function showAlert(msg, type = 'success') {
-            $("#alertContainer").html(`
+        function showAlert(msg, type = 'success', modalId = null) {
+            let container = modalId ? $(modalId).find('#' + (modalId === '#addModal' ? 'alertContainer' : 'editAlertContainer')) : $("#alertContainer");
+            container.html(`
                 <div class="alert alert-${type} alert-dismissible fade show">
                     <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
                     ${msg}
                     <button type="button" class="close" data-dismiss="alert"></button>
                 </div>
             `);
-            setTimeout(() => $("#alertContainer .alert").alert('close'), 4000);
+            setTimeout(() => container.find('.alert').alert('close'), 4000);
         }
 
         $(document).ready(function () {
@@ -390,15 +398,17 @@
 
         $("#btnRegister").click(function () {
             if (!$("#AssetCode").val() || !$("#AssetName").val() || !$("#CategoryId").val() || !$("#CurrentOwnerId").val()) {
-                showAlert("تمام فیلدهای الزامی را پر کنید", "warning");
+                showAlert("تمام فیلدهای الزامی را پر کنید", "warning", "#addModal");
                 return;
             }
 
+            const ownerText = $("#CurrentOwnerId option:selected").text();
             const payload = {
                 assetCode: $("#AssetCode").val(),
                 assetName: $("#AssetName").val(),
                 categoryId: parseInt($("#CategoryId").val()),
                 currentOwnerId: parseInt($("#CurrentOwnerId").val()),
+                currentOwnerName: ownerText,
                 items: tempParts
             };
 
@@ -410,23 +420,75 @@
                 headers: { "RequestVerificationToken": antiForgery().__RequestVerificationToken },
                 success: function (response) {
                     if (response.success) {
-                        showAlert(response.message);
+                        showAlert(response.message, "success", "#addModal");
                         clearForm();
-                        $("#addModal").modal("hide");
+                        setTimeout(() => $("#addModal").modal("hide"), 1500);
                         grid.dataSource.read();
                     } else {
-                        showAlert(response.message, "danger");
+                        showAlert(response.message, "danger", "#addModal");
                     }
                 },
                 error: function (xhr) {
-                    showAlert("خطا در ثبت: " + (xhr.responseJSON?.message || xhr.statusText), "danger");
+                    showAlert("خطا در ثبت: " + (xhr.responseJSON?.message || xhr.statusText), "danger", "#addModal");
                 }
             });
         });
 
+
+            $('#addModal').on('shown.bs.modal', function () {
+            if (!$('#CurrentOwnerId').hasClass('select2-hidden-accessible')) {
+                $('#CurrentOwnerId').select2({
+                    placeholder: "انتخاب مالک",
+                    allowClear: true,
+                    dir: "rtl",
+                    width: "100%",
+                    dropdownParent: $('#addModal')   // خیلی مهم برای کارکرد داخل modal
+                });
+            }
+        });
+
+        // برای مودال ویرایش
+        $('#editModal').on('shown.bs.modal', function () {
+            if (!$('#editCurrentOwnerId').hasClass('select2-hidden-accessible')) {
+                $('#editCurrentOwnerId').select2({
+                    placeholder: "انتخاب مالک",
+                    allowClear: true,
+                    dir: "rtl",
+                    width: "100%",
+                    dropdownParent: $('#editModal')   // خیلی مهم
+                });
+            }
+        });
+               $('#addModal').on('shown.bs.modal', function () {
+            if (!$('#CategoryId').hasClass('select2-hidden-accessible')) {
+                $('#CategoryId').select2({
+                    placeholder: "انتخاب دسته بندی",
+                    allowClear: true,
+                    dir: "rtl",
+                    width: "100%",
+                    dropdownParent: $('#addModal')
+                });
+            }
+        });
+
+        $('#editModal').on('shown.bs.modal', function () {
+            if (!$('#editCategoryId').hasClass('select2-hidden-accessible')) {
+                $('#editCategoryId').select2({
+                    placeholder: "انتخاب دسته بندی",
+                    allowClear: true,
+                    dir: "rtl",
+                    width: "100%",
+                    dropdownParent: $('#editModal')
+                });
+            }
+        });
+
+
         function openEditModal(e) {
             e.preventDefault();
             let item = grid.dataItem($(e.currentTarget).closest("tr"));
+
+          
             if (!item) {
                 showAlert("خطا در دریافت اطلاعات", "danger");
                 return;
@@ -533,7 +595,7 @@
 
         $("#saveEditBtn").click(function () {
             if (!$("#editAssetCode").val() || !$("#editAssetName").val() || !$("#editCategoryId").val() || !$("#editCurrentOwnerId").val()) {
-                showAlert("تمام فیلدهای الزامی را پر کنید", "warning");
+                showAlert("تمام فیلدهای الزامی را پر کنید", "warning", "#editModal");
                 return;
             }
             let id = parseInt($("#editId").val());
@@ -542,10 +604,12 @@
                 showAlert("رکورد یافت نشد", "danger");
                 return;
             }
+            const ownerText = $("#editCurrentOwnerId option:selected").text();
             item.set("AssetCode", $("#editAssetCode").val());
             item.set("AssetName", $("#editAssetName").val());
             item.set("CategoryId", parseInt($("#editCategoryId").val()));
             item.set("CurrentOwnerId", parseInt($("#editCurrentOwnerId").val()));
+            item.set("CurrentOwnerName", ownerText);
             item.set("IsActive", $("#editIsActive").is(":checked"));
             
             if (editTempParts.length > 0) {

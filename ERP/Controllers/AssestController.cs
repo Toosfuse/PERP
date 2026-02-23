@@ -292,7 +292,7 @@ namespace ERP.Controllers
                     CategoryId = x.CategoryId,
                     CategoryTitle = x.Category != null ? x.Category.Title : "",
                     CurrentOwnerId = x.CurrentOwnerId,
-                    CurrentOwnerName = x.CurrentOwner != null ? x.CurrentOwner.Name + " " + x.CurrentOwner.Family : "",
+                    CurrentOwnerName = x.CurrentOwner != null ? x.CurrentOwner.Name + " " + x.CurrentOwner.Family + (x.CurrentOwner.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") : "",
                     IsActive = x.IsActive,
                     IsDeleted = x.IsDeleted,
                     CreatedAt = _services.iGregorianToPersianDateTime(x.CreatedAt),
@@ -351,7 +351,7 @@ namespace ERP.Controllers
             model.Id = entity.Id;
             model.AssetName = entity.AssetName;
             model.CategoryTitle = category?.Title;
-            model.CurrentOwnerName = owner?.Name + " " + owner?.Family;
+            model.CurrentOwnerName = owner != null ? owner.Name + " " + owner.Family + (owner.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") : "";
             model.IsActive = entity.IsActive;
             model.CreatedAt = _services.iGregorianToPersianDateTime(entity.CreatedAt);
             model.LastModifiedDate = _services.iGregorianToPersianDateTime(entity.CreatedAt);
@@ -374,6 +374,10 @@ namespace ERP.Controllers
 
                 if (string.IsNullOrWhiteSpace(assetCode))
                     return Json(new { success = false, message = "کد اموال الزامی است" });
+
+                var exists = await _context.Assets.AnyAsync(x => x.AssetCode == assetCode.Trim());
+                if (exists)
+                    return Json(new { success = false, message = "این کد اموال قبلاً ثبت شده است" });
 
                 var asset = new Asset
                 {
@@ -432,6 +436,13 @@ namespace ERP.Controllers
                 return Json(new[] { model }.ToDataSourceResult(request, ModelState));
             }
 
+            var exists = await _context.Assets.AnyAsync(x => x.AssetCode == model.AssetCode.Trim() && x.Id != model.Id);
+            if (exists)
+            {
+                ModelState.AddModelError("", "این کد اموال قبلاً ثبت شده است");
+                return Json(new[] { model }.ToDataSourceResult(request, ModelState));
+            }
+
             int oldOwnerId = entity.CurrentOwnerId;
             entity.AssetCode = model.AssetCode.Trim();
             entity.AssetName = model.AssetName.Trim();
@@ -459,7 +470,7 @@ namespace ERP.Controllers
             var owner = await _context.AssestUsers.FindAsync(model.CurrentOwnerId);
 
             model.CategoryTitle = category?.Title;
-            model.CurrentOwnerName = owner?.Name + " " + owner?.Family;
+            model.CurrentOwnerName = owner != null ? owner.Name + " " + owner.Family + (owner.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") : "";
             model.CreatedAt = _services.iGregorianToPersianDateTime(entity.CreatedAt);
 
             return Json(new[] { model }.ToDataSourceResult(request));
@@ -496,7 +507,7 @@ namespace ERP.Controllers
             var data = await _context.AssestUsers
                 .AsNoTracking()
                 .Where(x => x.IsActive)
-                .Select(x => new { id = x.Id, title = x.Name + " " + x.Family })
+                .Select(x => new { id = x.Id, title = x.Name + " " + x.Family + (x.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") })
                 .OrderBy(x => x.title)
                 .ToListAsync();
 
@@ -551,9 +562,9 @@ namespace ERP.Controllers
                     AssetCode = x.Asset.AssetCode,
                     AssetName = x.Asset.AssetName,
                     FromUserId = x.FromUserId,
-                    FromUserName = x.FromUser.Name + " " + x.FromUser.Family,
+                    FromUserName = x.FromUser.Name + " " + x.FromUser.Family + (x.FromUser.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : ""),
                     ToUserId = x.ToUserId,
-                    ToUserName = x.ToUser.Name + " " + x.ToUser.Family,
+                    ToUserName = x.ToUser.Name + " " + x.ToUser.Family + (x.ToUser.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : ""),
                     AssignDate = _services.iGregorianToPersianDateTime(x.AssignDate),
                     Description = x.Description
                 })
@@ -601,8 +612,8 @@ namespace ERP.Controllers
             model.Id = history.Id;
             model.AssetCode = asset.AssetCode;
             model.AssetName = asset.AssetName;
-            model.FromUserName = fromUser?.Name + " " + fromUser?.Family;
-            model.ToUserName = toUser?.Name + " " + toUser?.Family;
+            model.FromUserName = fromUser != null ? fromUser.Name + " " + fromUser.Family + (fromUser.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") : "";
+            model.ToUserName = toUser != null ? toUser.Name + " " + toUser.Family + (toUser.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") : "";
             model.AssignDate = _services.iGregorianToPersianDateTime(history.AssignDate);
 
             return Json(new[] { model }.ToDataSourceResult(request));
@@ -722,16 +733,52 @@ namespace ERP.Controllers
         }
         #endregion
 
-        public async Task<IActionResult> GetParentAssets()
+        public async Task<IActionResult> GetAssetsByUser(int userId)
         {
             var data = await _context.Assets
                 .AsNoTracking()
-                .Where(x => x.IsActive && !x.IsDeleted)
-                .Select(x => new { id = x.Id, title = x.AssetCode + " - " + x.AssetName })
-                .OrderBy(x => x.title)
+                .Where(x => x.CurrentOwnerId == userId && !x.IsDeleted)
+                .Select(x => new { assetCode = x.AssetCode, assetName = x.AssetName })
+                .OrderBy(x => x.assetCode)
                 .ToListAsync();
 
             return Json(data);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TransferAssets(int fromUserId, int toUserId)
+        {
+            try
+            {
+                var assets = await _context.Assets
+                    .Where(x => x.CurrentOwnerId == fromUserId && !x.IsDeleted)
+                    .ToListAsync();
+
+                if (assets.Count == 0)
+                    return Json(new { success = false, message = "هیچ وسیله ای برای انتقال وجود ندارد" });
+
+                foreach (var asset in assets)
+                {
+                    var history = new AssetHistory
+                    {
+                        AssetId = asset.Id,
+                        FromUserId = fromUserId,
+                        ToUserId = toUserId,
+                        AssignDate = DateTime.Now,
+                        Description = "انتقال دسته جمعی وسایل"
+                    };
+                    _context.AssetHistories.Add(history);
+                    asset.CurrentOwnerId = toUserId;
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = $"{assets.Count} وسیله با موفقیت انتقال یافت" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
       
 
@@ -772,6 +819,41 @@ namespace ERP.Controllers
             }
 
             return Json(new[] { model }.ToDataSourceResult(request));
+        }
+
+        public IActionResult UserAssets(int userId, string userName)
+        {
+            ViewBag.UserId = userId;
+            ViewBag.UserName = userName;
+            return View();
+        }
+
+        public IActionResult TransferAssets(int userId, string userName)
+        {
+            ViewBag.UserId = userId;
+            ViewBag.UserName = userName;
+            return View();
+        }
+
+        public async Task<IActionResult> UserAssets_Read([DataSourceRequest] DataSourceRequest request, int userId)
+        {
+            var data = await _context.Assets
+                .AsNoTracking()
+                .Where(x => x.CurrentOwnerId == userId && !x.IsDeleted)
+                .Include(x => x.Category)
+                .OrderByDescending(x => x.Id)
+                .Select(x => new AssetViewModel
+                {
+                    Id = x.Id,
+                    AssetCode = x.AssetCode,
+                    AssetName = x.AssetName,
+                    CategoryTitle = x.Category.Title,
+                    IsActive = x.IsActive,
+                    CreatedAt = _services.iGregorianToPersianDateTime(x.CreatedAt)
+                })
+                .ToListAsync();
+
+            return Json(data.ToDataSourceResult(request));
         }
         #endregion
     }

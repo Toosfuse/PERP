@@ -1,0 +1,111 @@
+@model ERP.ViewModels.AssestViewModel.AssetViewModel
+@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "انتقال وسایل";
+    var userId = ViewBag.UserId;
+    var userName = ViewBag.UserName;
+}
+
+<div class="container-fluid mt-5" dir="rtl">
+    <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 fw-bold">
+                    <i class="fas fa-exchange-alt me-2"></i>انتقال وسایل @userName
+                </h3>
+                <a href="/Assest/RegisterUser" class="btn btn-light">
+                    <i class="fas fa-arrow-right me-2"></i>بازگشت به اطلاعات مشتریان
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">انتقال به:</label>
+                    <select id="transferToUserId" class="form-control form-control-lg">
+                        <option value="">انتخاب کنید</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button id="confirmTransferBtn" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-check me-2"></i>تایید انتقال
+                    </button>
+                </div>
+            </div>
+
+            @(Html.Kendo().Grid<ERP.ViewModels.AssestViewModel.AssetViewModel>()
+                        .Name("transferAssetsGrid")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(c => c.AssetCode).Title("کد اموال").Width("25%").HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.AssetName).Title("نام اموال").Width("35%").HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.CategoryTitle).Title("دسته بندی").Width("25%").HtmlAttributes(new { style = "text-align:center;" });
+                            columns.Bound(c => c.CreatedAt).Title("تاریخ ثبت").Width("15%").HtmlAttributes(new { style = "text-align:center;" });
+                        })
+                        .ToolBar(toolbar => toolbar.Search())
+                        .Sortable()
+                        .Filterable()
+                        .Pageable()
+                        .Scrollable()
+                        .DataSource(ds => ds
+                        .Ajax()
+                        .PageSize(20)
+                        .Read(r => r.Action("UserAssets_Read", "Assest").Data("getUserId"))
+                        .Model(m => { m.Id(f => f.Id); })
+                        )
+                        )
+        </div>
+    </div>
+</div>
+
+<script>
+    function getUserId() {
+        return { userId: @userId };
+    }
+
+    $(document).ready(function() {
+        // بارگذاری کاربران
+        $.getJSON("/Assest/GetUsers", function(data) {
+            $("#transferToUserId").empty().append($("<option>").val("").text("انتخاب کنید"));
+            $.each(data, function(i, user) {
+                if (user.id !== @userId) {
+                    $("#transferToUserId").append($("<option>").val(user.id).text(user.title));
+                }
+            });
+        });
+
+        $("#confirmTransferBtn").click(function() {
+            var toUserId = $("#transferToUserId").val();
+            if (!toUserId) {
+                alert("لطفا کاربر مقصد را انتخاب کنید");
+                return;
+            }
+            
+            if (confirm("آیا از انتقال تمام وسایل اطمینان دارید؟")) {
+                $.ajax({
+                    url: "/Assest/TransferAssets",
+                    type: "POST",
+                    data: { 
+                        fromUserId: @userId, 
+                        toUserId: toUserId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $("#transferAssetsGrid").data("kendoGrid").dataSource.read();
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                });
+            }
+        });
+        
+        $("#printAssetsBtn").click(function() {
+            window.print();
+        });
+    });
+</script>
