@@ -28,6 +28,7 @@ namespace ERP.Controllers
         #region User
         public IActionResult RegisterUser()
         {
+
             return View();
         }
 
@@ -289,6 +290,7 @@ namespace ERP.Controllers
                     Id = x.Id,
                     AssetCode = x.AssetCode ?? "",
                     AssetName = x.AssetName ?? "",
+                    PurchaseDate = x.PurchaseDate ?? "",
                     CategoryId = x.CategoryId,
                     CategoryTitle = x.Category != null ? x.Category.Title : "",
                     CurrentOwnerId = x.CurrentOwnerId,
@@ -328,6 +330,7 @@ namespace ERP.Controllers
             ModelState.Remove("CreatedAt");
             ModelState.Remove("LastModifiedDate");
             ModelState.Remove("AssetName");
+            ModelState.Remove("PurchaseDate");
 
             if (!ModelState.IsValid)
                 return Json(new[] { model }.ToDataSourceResult(request, ModelState));
@@ -336,6 +339,7 @@ namespace ERP.Controllers
             {
                 AssetCode = model.AssetCode?.Trim() ?? "",
                 AssetName = model.AssetName?.Trim() ?? "",
+                PurchaseDate = _services.iGregorianToPersianDateTime(DateTime.Now),
                 CategoryId = model.CategoryId,
                 CurrentOwnerId = model.CurrentOwnerId,
                 IsActive = true,
@@ -350,6 +354,7 @@ namespace ERP.Controllers
 
             model.Id = entity.Id;
             model.AssetName = entity.AssetName;
+            model.PurchaseDate = entity.PurchaseDate;
             model.CategoryTitle = category?.Title;
             model.CurrentOwnerName = owner != null ? owner.Name + " " + owner.Family + (owner.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") : "";
             model.IsActive = entity.IsActive;
@@ -425,6 +430,7 @@ namespace ERP.Controllers
             ModelState.Remove("CreatedAt");
             ModelState.Remove("LastModifiedDate");
             ModelState.Remove("LastModifiedBy");
+            ModelState.Remove("PurchaseDate");
 
             if (!ModelState.IsValid)
                 return Json(new[] { model }.ToDataSourceResult(request, ModelState));
@@ -448,7 +454,6 @@ namespace ERP.Controllers
             entity.AssetName = model.AssetName.Trim();
             entity.CategoryId = model.CategoryId;
             entity.CurrentOwnerId = model.CurrentOwnerId;
-          
             entity.IsActive = model.IsActive;
 
             if (oldOwnerId != model.CurrentOwnerId)
@@ -472,6 +477,7 @@ namespace ERP.Controllers
             model.CategoryTitle = category?.Title;
             model.CurrentOwnerName = owner != null ? owner.Name + " " + owner.Family + (owner.AssestUserTypes == AssestUserTypes.Vahed ? " - واحد" : "") : "";
             model.CreatedAt = _services.iGregorianToPersianDateTime(entity.CreatedAt);
+            model.PurchaseDate = entity.PurchaseDate;
 
             return Json(new[] { model }.ToDataSourceResult(request));
         }

@@ -67,6 +67,8 @@ namespace ERP.Data
         public DbSet<AssetItem> AssetItems { get; set; }
         public DbSet<AssetHistory> AssetHistories { get; set; }
 
+        public DbSet<TableTemp> TableTemp { get; set; }
+
 
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<ChatGroup> ChatGroups { get; set; }

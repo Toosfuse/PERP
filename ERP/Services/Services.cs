@@ -4,6 +4,36 @@ namespace ERP.Services
 {
     public class Services: IServices
     {
+        public DateTime ConvertPersianDate(string persianDateString, bool useCurrentTime = true, TimeSpan? specificTime = null)
+        {
+            var parts = persianDateString.Split('/');
+            if (parts.Length != 3)
+                throw new FormatException("فرمت تاریخ شمسی اشتباه است. باید yyyy/MM/dd باشد.");
+
+            int year = int.Parse(parts[0]);
+            int month = int.Parse(parts[1]);
+            int day = int.Parse(parts[2]);
+
+            var pc = new PersianCalendar();
+
+            int hour = 0, minute = 0, second = 0;
+            if (useCurrentTime)
+            {
+                var now = DateTime.Now;
+                hour = now.Hour;
+                minute = now.Minute;
+                second = now.Second;
+            }
+            else if (specificTime.HasValue)
+            {
+                hour = specificTime.Value.Hours;
+                minute = specificTime.Value.Minutes;
+                second = specificTime.Value.Seconds;
+            }
+
+            return pc.ToDateTime(year, month, day, hour, minute, second, 0);
+        }
+
         public string iGregorianToPersian(DateTime? date)
         {
             if (!date.HasValue)

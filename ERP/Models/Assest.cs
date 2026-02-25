@@ -32,6 +32,7 @@ namespace ERP.Models.asset
         public int Id { get; set; }
         public string AssetCode { get; set; }
         public string AssetName { get; set; }
+        public string PurchaseDate { get; set; }
         public int CategoryId { get; set; }
         public int CurrentOwnerId { get; set; }
         public bool IsActive { get; set; }
